@@ -144,7 +144,7 @@ If you prefer to use your own styling or are not using Tailwind CSS in your proj
 
 - Set `disableDefaultStyles` to true
 
-Pass the `disableDefaultStyles` prop to the TableComponent:
+  Pass the `disableDefaultStyles` prop to the TableComponent:
 
 ```tsx
 <TableComponent
@@ -161,7 +161,7 @@ Pass the `disableDefaultStyles` prop to the TableComponent:
 
 - Provide Custom Class Names (Optional)
 
-If you want to apply your own styles, you can pass custom class names via the customClassNames prop. This allows you to fully customize the appearance of the table.
+  If you want to apply your own styles, you can pass custom class names via the customClassNames prop. This allows you to fully customize the appearance of the table.
 
 ```tsx
 "use client";
@@ -217,6 +217,95 @@ const MyTablePage: React.FC = () => {
         dropdownMenu: "my-custom-dropdown-menu",
         dropdownItem: "my-custom-dropdown-item",
       }}
+    />
+  );
+};
+
+export default MyTablePage;
+```
+
+- Use custom rows
+
+  If you want to customize the appearance of the table rows, you can pass a custom renderRow function to the TableComponent. This allows you to fully control the rendering of each row.
+
+```tsx
+"use client";
+import React from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css"; // Import default styles
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
+const data: User[] = [
+  {
+    id: 1,
+    name: "John Doe",
+    email: "john@example.com",
+    role: "Admin",
+    status: "Active",
+  },
+  // ... more data
+];
+
+const columns = ["Name", "Email", "Role", "Status"];
+
+const MyTablePage: React.FC = () => {
+  const handleEdit = (item: User) => {
+    console.log("Edit", item);
+  };
+
+  const handleDelete = (item: User) => {
+    console.log("Delete", item);
+  };
+
+  const renderCustomRow = (item: User, index: number) => {
+    return (
+      <>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+          {item.name}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+          <a
+            href={`mailto:${item.email}`}
+            className="text-blue-500 hover:underline"
+          >
+            {item.email}
+          </a>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+          {item.role}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm">
+          <span
+            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              item.status === "Active"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {item.status}
+          </span>
+        </td>
+      </>
+    );
+  };
+
+  return (
+    <TableComponent<User>
+      columns={columns}
+      data={data}
+      props={["name", "email", "role", "status"] as const}
+      actions={true}
+      actionTexts={["Edit", "Delete"]}
+      actionFunctions={[handleEdit, handleDelete]}
+      loading={false}
+      renderRow={renderCustomRow}
     />
   );
 };
