@@ -224,7 +224,7 @@ const MyTablePage: React.FC = () => {
 export default MyTablePage;
 ```
 
-- Use custom rows
+- Use Custom Rows
 
   If you want to customize the appearance of the table rows, you can pass a custom renderRow function to the TableComponent. This allows you to fully control the rendering of each row.
 
@@ -301,9 +301,6 @@ const MyTablePage: React.FC = () => {
       columns={columns}
       data={data}
       props={["name", "email", "role", "status"] as const}
-      actions={true}
-      actionTexts={["Edit", "Delete"]}
-      actionFunctions={[handleEdit, handleDelete]}
       loading={false}
       renderRow={renderCustomRow}
     />
