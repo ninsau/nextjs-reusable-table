@@ -1,10 +1,10 @@
 import React from "react";
-import { formatDate, isDateString, trimText } from "../utils/helpers";
-import { TableProps } from "../types";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
 import ActionDropdown from "./ActionDropdown";
 import Link from "next/link";
+import { TableProps } from "../types";
+import { formatDate, isDateString, trimText } from "../utils/helpers";
 
 function TableComponent<T>({
   columns,
@@ -17,6 +17,9 @@ function TableComponent<T>({
   searchValue,
   disableDefaultStyles = false,
   customClassNames = {},
+  renderRow,
+  rowOnClick,
+  paginationComponent,
 }: TableProps<T>) {
   if (!data || loading) {
     return <TableSkeleton />;
@@ -63,10 +66,6 @@ function TableComponent<T>({
     ? customClassNames.td || ""
     : `${defaultTdClassName} ${customClassNames.td || ""}`;
 
-  const actionTdClassName = disableDefaultStyles
-    ? customClassNames.actionTd || ""
-    : `${defaultActionTdClassName} ${customClassNames.actionTd || ""}`;
-
   return (
     <div className={containerClassName}>
       <div className="inline-block min-w-full align-middle">
@@ -87,65 +86,88 @@ function TableComponent<T>({
               </tr>
             </thead>
             <tbody>
-              {data.map((item, dataIndex) => (
-                <tr key={dataIndex} className={trClassName(dataIndex)}>
-                  {props.map((prop) => {
-                    const value = item[prop as keyof T];
-                    let displayValue: React.ReactNode;
+              {data.map((item, dataIndex) => {
+                if (renderRow) {
+                  return (
+                    <tr
+                      key={dataIndex}
+                      onClick={() => rowOnClick && rowOnClick(item)}
+                      className={`${trClassName(dataIndex)} ${
+                        rowOnClick ? "cursor-pointer" : ""
+                      }`}
+                    >
+                      {renderRow(item, dataIndex)}
+                    </tr>
+                  );
+                }
 
-                    if (typeof value === "string" && isDateString(value)) {
-                      displayValue = formatDate(new Date(value), true);
-                    } else if (Array.isArray(value)) {
-                      displayValue = (
-                        <div className="flex flex-wrap gap-1">
-                          {value.map((chip, idx) => (
+                return (
+                  <tr
+                    key={dataIndex}
+                    onClick={() => rowOnClick && rowOnClick(item)}
+                    className={`${trClassName(dataIndex)} ${
+                      rowOnClick ? "cursor-pointer" : ""
+                    }`}
+                  >
+                    {props.map((prop) => {
+                      const value = item[prop as keyof T];
+                      let displayValue: React.ReactNode;
+
+                      if (typeof value === "string" && isDateString(value)) {
+                        displayValue = formatDate(new Date(value), true);
+                      } else if (Array.isArray(value)) {
+                        displayValue = (
+                          <div className="flex flex-wrap gap-1">
+                            {value.map((chip, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                              >
+                                {trimText(String(chip), 20)}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      } else if (
+                        typeof value === "string" &&
+                        value.startsWith("http")
+                      ) {
+                        displayValue = (
+                          <Link href={value}>
                             <span
-                              key={idx}
-                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                              className="text-blue-500 hover:underline"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              {trimText(String(chip), 20)}
+                              {trimText(value, 30)}
                             </span>
-                          ))}
-                        </div>
-                      );
-                    } else if (
-                      typeof value === "string" &&
-                      value.startsWith("http")
-                    ) {
-                      displayValue = (
-                        <Link href={value}>
-                          <span
-                            className="text-blue-500 hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {trimText(value, 30)}
-                          </span>
-                        </Link>
-                      );
-                    } else {
-                      displayValue = trimText(String(value), 30);
-                    }
+                          </Link>
+                        );
+                      } else {
+                        displayValue = trimText(String(value), 30);
+                      }
 
-                    return (
-                      <td key={String(prop)} className={tdClassName}>
-                        {displayValue}
-                      </td>
-                    );
-                  })}
-                  {actions && actionTexts && actionFunctions && (
-                    <ActionDropdown<T>
-                      item={item}
-                      index={dataIndex}
-                      actionTexts={actionTexts}
-                      actionFunctions={actionFunctions}
-                      disableDefaultStyles={disableDefaultStyles}
-                      customClassNames={customClassNames}
-                    />
-                  )}
-                </tr>
-              ))}
+                      return (
+                        <td key={String(prop)} className={tdClassName}>
+                          {displayValue}
+                        </td>
+                      );
+                    })}
+                    {actions && actionTexts && actionFunctions && (
+                      <ActionDropdown<T>
+                        item={item}
+                        index={dataIndex}
+                        actionTexts={actionTexts}
+                        actionFunctions={actionFunctions}
+                        disableDefaultStyles={disableDefaultStyles}
+                        customClassNames={customClassNames}
+                      />
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+          {paginationComponent && paginationComponent}
         </div>
       </div>
     </div>

@@ -19,16 +19,24 @@ A highly customizable and reusable table component for Next.js applications, bui
 
 ## Features
 
-- **TypeScript Support**: Fully typed with generics for enhanced type safety.
-- **Next.js Optimized**: Designed specifically for Next.js projects.
-- **Customizable Columns and Data**: Easily configure columns and data properties.
-- **Action Dropdowns**: Support for row-specific actions.
-- **Loading Skeleton**: Built-in skeleton loader for loading states.
-- **No Content Component**: Displays a friendly message when there's no data.
-- **Styling Flexibility**: Includes default Tailwind CSS styles with an option to opt-out and apply custom styles.
-- **Search Functionality**: Search through the table data with a search bar.
-- **Handle Data of Different Types**: Safely handles various data types like dates, lists, strings, and URLs.
-- **Latest Technologies**: Uses modern React features and best practices.
+- **TypeScript Support**: Fully typed with generics to ensure type safety and better developer experience.
+- **Next.js Optimized**: Specifically designed for seamless integration with Next.js applications, ensuring performance and compatibility.
+
+- **Customizable Columns and Data**: Easily configure columns and map data properties, making the table versatile for various data structures.
+
+- **Action Dropdowns**: Built-in support for row-specific actions with customizable buttons and functions, enabling interactive tables.
+
+- **Loading Skeleton**: Provides a smooth user experience by showing a skeleton loader during data fetch or loading states.
+
+- **No Content Component**: Displays a friendly message when no data is available, enhancing UX for empty states.
+
+- **Styling Flexibility**: Comes with default Tailwind CSS styles but allows opting out to apply custom styles or completely override the design.
+
+- **Search Functionality**: Integrates a search feature to easily filter and search through table data.
+
+- **Handle Various Data Types**: Effortlessly manages data types like dates, arrays, URLs, and strings, automatically formatting and displaying them in a user-friendly way.
+
+- **Modern Technologies**: Built with the latest React features and follows best practices for efficient, maintainable code.
 
 ## Prerequisites
 
@@ -216,22 +224,29 @@ const MyTablePage: React.FC = () => {
 export default MyTablePage;
 ```
 
+## Pagination
+
+The `TableComponent` does not include a built-in pagination feature. However, you can easily add pagination by passing a custom pagination component as a prop. This allows you to use any pagination library or component of your choice.
+
 ## Props
 
-# TableComponent
+## TableComponent
 
-| Prop                   | Type                       | Required | Description                                                                                   |
-| ---------------------- | -------------------------- | -------- | --------------------------------------------------------------------------------------------- |
-| `columns`              | `string[]`                 | Yes      | An array of column headers to display.                                                        |
-| `data`                 | `T[]`                      | Yes      | An array of data objects to display in the table.                                             |
-| `props`                | `(keyof T)[]`              | Yes      | The keys from data objects corresponding to each column.                                      |
-| `actions`              | `boolean`                  | No       | Whether to display action buttons.                                                            |
-| `actionTexts`          | `string[]`                 | No       | Labels for the action buttons.                                                                |
-| `actionFunctions`      | `Array<(item: T) => void>` | No       | Functions to handle action button clicks.                                                     |
-| `loading`              | `boolean`                  | No       | Displays a skeleton loader when `true`.                                                       |
-| `searchValue`          | `string`                   | No       | Current search query, used in the no content message.                                         |
-| `disableDefaultStyles` | `boolean`                  | No       | When set to `true`, disables the default Tailwind CSS styles applied to the table components. |
-| `customClassNames`     | `object`                   | No       | An object containing custom class names for various elements of the table.                    |
+| Prop                   | Type                                          | Required | Description                                                                                   |
+| ---------------------- | --------------------------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `columns`              | `string[]`                                    | Yes      | An array of column headers to display.                                                        |
+| `data`                 | `T[]`                                         | Yes      | An array of data objects to display in the table.                                             |
+| `props`                | `ReadonlyArray<keyof T>`                      | Yes      | The keys from data objects corresponding to each column.                                      |
+| `actions`              | `boolean`                                     | No       | Whether to display action buttons.                                                            |
+| `actionTexts`          | `string[]`                                    | No       | Labels for the action buttons.                                                                |
+| `actionFunctions`      | `Array<(item: T) => void>`                    | No       | Functions to handle action button clicks.                                                     |
+| `loading`              | `boolean`                                     | No       | Displays a skeleton loader when `true`.                                                       |
+| `searchValue`          | `string`                                      | No       | Current search query, used in the no content message.                                         |
+| `disableDefaultStyles` | `boolean`                                     | No       | When set to `true`, disables the default Tailwind CSS styles applied to the table components. |
+| `customClassNames`     | `object`                                      | No       | An object containing custom class names for various elements of the table.                    |
+| `renderRow`            | `(item: T, index: number) => React.ReactNode` | No       | Custom function to render table rows.                                                         |
+| `rowOnClick`           | `(item: T) => void`                           | No       | Function triggered when a row is clicked.                                                     |
+| `paginationComponent`  | `React.ReactNode`                             | No       | A custom pagination component to display below the table.                                     |
 
 ## `customClassNames` Object Keys
 
@@ -249,7 +264,7 @@ export default MyTablePage;
 | `dropdownMenu` | Class for the dropdown menu container.               |
 | `dropdownItem` | Class for each item in the dropdown menu.            |
 
-# Components
+## Components
 
 ## ActionDropdown
 
@@ -305,7 +320,7 @@ Shows a message when there are no items to display in the table.
 
 | Prop   | Type     | Required | Description                                             |
 | ------ | -------- | -------- | ------------------------------------------------------- |
-| `name` | `string` | Yes      | The name of the content type, e.g., "items" or "users". |
+| `name` | `string` | No       | The name of the content type, e.g., "items" or "users". |
 
 ## Contributing
 
