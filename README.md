@@ -2,6 +2,8 @@
 
 A highly customizable and reusable table component for Next.js applications, built with TypeScript and the latest technologies.
 
+## See the [Examples](https://nextjs-reusables.vercel.app/tables)
+
 ## Table of Contents
 
 - [Features](#features)
