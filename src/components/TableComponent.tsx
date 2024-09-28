@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
