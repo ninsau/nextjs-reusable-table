@@ -40,4 +40,17 @@ export interface ActionDropdownProps<T> {
     dropdownMenu?: string;
     dropdownItem?: string;
   };
+  enableDarkMode?: boolean;
+}
+
+export interface TableSkeletonProps {
+  disableDefaultStyles?: boolean;
+  customClassNames?: {
+    container?: string;
+    table?: string;
+    th?: string;
+    tr?: string;
+    td?: string;
+  };
+  enableDarkMode?: boolean;
 }

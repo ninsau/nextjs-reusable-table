@@ -8,7 +8,6 @@ A highly customizable and reusable table component for Next.js applications, bui
 [![Downloads](https://img.shields.io/npm/dt/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer)
 [![License](https://img.shields.io/npm/l/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer) -->
 
-
 ## Table of Contents
 
 - [Features](#features)
@@ -342,6 +341,7 @@ The `TableComponent` does not include a built-in pagination feature. However, yo
 | `renderRow`            | `(item: T, index: number) => React.ReactNode` | No       | Custom function to render table rows.                                                         |
 | `rowOnClick`           | `(item: T) => void`                           | No       | Function triggered when a row is clicked.                                                     |
 | `paginationComponent`  | `React.ReactNode`                             | No       | A custom pagination component to display below the table.                                     |
+| `enableDarkMode`       | `boolean`                                     | No       | Enables dark mode styles.                                                                     |
 
 ## `customClassNames` Object Keys
 
@@ -375,6 +375,7 @@ A component that renders a dropdown menu with action buttons for each row.
 | `actionFunctions`      | `Array<(item: T) => void>` | Yes      | An array of functions corresponding to each action. |
 | `disableDefaultStyles` | `boolean`                  | No       | Boolean to disable default styles.                  |
 | `customClassNames`     | `object`                   | No       | Custom class names for styling.                     |
+| `enableDarkMode`       | `boolean`                  | No       | Enables dark mode styles.                           |
 
 ### `customClassNames` Object Keys (Optional)
 

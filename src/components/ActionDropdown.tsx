@@ -9,8 +9,10 @@ const ActionDropdown = <T,>({
   actionFunctions,
   disableDefaultStyles = false,
   customClassNames = {},
-}: ActionDropdownProps<T>) => {
+  enableDarkMode = true, 
+}: ActionDropdownProps<T> & { enableDarkMode?: boolean }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false); 
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
@@ -50,38 +52,62 @@ const ActionDropdown = <T,>({
     };
   }, []);
 
+  useEffect(() => {
+    if (enableDarkMode) {
+      const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+      setIsDarkMode(matchMedia.matches);
+      const handleChange = () => setIsDarkMode(matchMedia.matches);
+      matchMedia.addEventListener("change", handleChange);
+      return () => {
+        matchMedia.removeEventListener("change", handleChange);
+      };
+    }
+  }, [enableDarkMode]);
+
   const handleDropdownClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
 
-  const defaultTdClassName =
-    "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3";
-  const defaultButtonClassName = "focus:outline-none";
-  const defaultSvgClassName = "w-6 h-6 text-gray-500 hover:text-gray-700";
-  const defaultDropdownMenuClassName =
-    "absolute z-50 mt-1 w-48 bg-white shadow-md rounded-lg";
-  const defaultDropdownItemClassName =
-    "block w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-100";
+  // Base class names for light and dark modes
+  const baseTdClassName = isDarkMode
+    ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-800 text-gray-300"
+    : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-white text-gray-700";
+
+  const baseButtonClassName = isDarkMode
+    ? "focus:outline-none text-gray-300"
+    : "focus:outline-none text-gray-700";
+
+  const baseSvgClassName = isDarkMode
+    ? "w-6 h-6 text-gray-300 hover:text-gray-400"
+    : "w-6 h-6 text-gray-500 hover:text-gray-700";
+
+  const baseDropdownMenuClassName = isDarkMode
+    ? "absolute z-50 mt-1 w-48 bg-gray-800 shadow-md rounded-lg text-gray-300"
+    : "absolute z-50 mt-1 w-48 bg-white shadow-md rounded-lg text-gray-700";
+
+  const baseDropdownItemClassName = isDarkMode
+    ? "block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+    : "block w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-100";
 
   const tdClassName = disableDefaultStyles
     ? customClassNames.actionTd || ""
-    : `${defaultTdClassName} ${customClassNames.actionTd || ""}`;
+    : `${baseTdClassName} ${customClassNames.actionTd || ""}`;
 
   const buttonClassName = disableDefaultStyles
     ? customClassNames.actionButton || ""
-    : `${defaultButtonClassName} ${customClassNames.actionButton || ""}`;
+    : `${baseButtonClassName} ${customClassNames.actionButton || ""}`;
 
   const svgClassName = disableDefaultStyles
     ? customClassNames.actionSvg || ""
-    : `${defaultSvgClassName} ${customClassNames.actionSvg || ""}`;
+    : `${baseSvgClassName} ${customClassNames.actionSvg || ""}`;
 
   const dropdownMenuClassName = disableDefaultStyles
     ? customClassNames.dropdownMenu || ""
-    : `${defaultDropdownMenuClassName} ${customClassNames.dropdownMenu || ""}`;
+    : `${baseDropdownMenuClassName} ${customClassNames.dropdownMenu || ""}`;
 
   const dropdownItemClassName = disableDefaultStyles
     ? customClassNames.dropdownItem || ""
-    : `${defaultDropdownItemClassName} ${customClassNames.dropdownItem || ""}`;
+    : `${baseDropdownItemClassName} ${customClassNames.dropdownItem || ""}`;
 
   const dropdownMenu = (
     <div
