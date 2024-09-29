@@ -227,6 +227,7 @@ function TableComponent<T>({
                           actionFunctions={actionFunctions}
                           disableDefaultStyles={disableDefaultStyles}
                           customClassNames={customClassNames}
+                          enableDarkMode
                         />
                       </td>
                     )}
