@@ -21,19 +21,21 @@ function TableComponent<T>({
   renderRow,
   rowOnClick,
   paginationComponent,
-}: TableProps<T>) {
+  enableDarkMode = true, 
+}: TableProps<T> & { enableDarkMode?: boolean }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Detect dark mode
   useEffect(() => {
-    const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
-    setIsDarkMode(matchMedia.matches);
-    const handleChange = () => setIsDarkMode(matchMedia.matches);
-    matchMedia.addEventListener("change", handleChange);
-    return () => {
-      matchMedia.removeEventListener("change", handleChange);
-    };
-  }, []);
+    if (enableDarkMode) {
+      const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+      setIsDarkMode(matchMedia.matches);
+      const handleChange = () => setIsDarkMode(matchMedia.matches);
+      matchMedia.addEventListener("change", handleChange);
+      return () => {
+        matchMedia.removeEventListener("change", handleChange);
+      };
+    }
+  }, [enableDarkMode]);
 
   if (!data || loading) {
     return <TableSkeleton />;
@@ -43,32 +45,47 @@ function TableComponent<T>({
     return <NoContentComponent name={searchValue ?? "items"} />;
   }
 
-  // Base class names for light and dark modes
-  const baseContainerClassName = isDarkMode
-    ? "bg-gray-900 text-gray-200 border-gray-700"
-    : "bg-white text-gray-900 border-gray-200";
-  const baseTableClassName = isDarkMode
-    ? "bg-gray-900 text-gray-200"
-    : "bg-white text-gray-900";
-  const baseTheadClassName = isDarkMode
-    ? "bg-gray-700 text-gray-300"
-    : "bg-gray-50 text-gray-500";
-  const baseTrClassName = (index: number) =>
-    index % 2 === 0
-      ? isDarkMode
-        ? "bg-gray-800"
-        : "bg-white"
-      : isDarkMode
-      ? "bg-gray-700"
-      : "bg-gray-50";
-  const baseTdClassName = isDarkMode
-    ? "text-gray-300 border-gray-700"
-    : "text-gray-700 border-gray-200";
-  const baseActionTdClassName = isDarkMode
-    ? "text-gray-300 border-gray-700"
-    : "text-gray-700 border-gray-200";
+  const baseContainerClassName = !disableDefaultStyles && enableDarkMode
+    ? isDarkMode
+      ? "bg-gray-900 text-gray-200 border-gray-700"
+      : "bg-white text-gray-900 border-gray-200"
+    : "";
 
-  // Apply default styles or custom styles
+  const baseTableClassName = !disableDefaultStyles && enableDarkMode
+    ? isDarkMode
+      ? "bg-gray-900 text-gray-200"
+      : "bg-white text-gray-900"
+    : "";
+
+  const baseTheadClassName = !disableDefaultStyles && enableDarkMode
+    ? isDarkMode
+      ? "bg-gray-700 text-gray-300"
+      : "bg-gray-50 text-gray-500"
+    : "";
+
+  const baseTrClassName = (index: number) =>
+    !disableDefaultStyles && enableDarkMode
+      ? index % 2 === 0
+        ? isDarkMode
+          ? "bg-gray-800"
+          : "bg-white"
+        : isDarkMode
+        ? "bg-gray-700"
+        : "bg-gray-50"
+      : "";
+
+  const baseTdClassName = !disableDefaultStyles && enableDarkMode
+    ? isDarkMode
+      ? "text-gray-300 border-gray-700"
+      : "text-gray-700 border-gray-200"
+    : "";
+
+  const baseActionTdClassName = !disableDefaultStyles && enableDarkMode
+    ? isDarkMode
+      ? "text-gray-300 border-gray-700"
+      : "text-gray-700 border-gray-200"
+    : "";
+
   const containerClassName = disableDefaultStyles
     ? customClassNames.container || ""
     : `${baseContainerClassName} my-8 overflow-x-auto ${customClassNames.container || ""}`;

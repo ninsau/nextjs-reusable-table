@@ -24,6 +24,7 @@ export interface TableProps<T> {
   renderRow?: (item: T, index: number) => React.ReactNode;
   rowOnClick?: (item: T) => void;
   paginationComponent?: React.ReactNode;
+  enableDarkMode?: boolean;
 }
 
 export interface ActionDropdownProps<T> {
