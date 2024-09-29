@@ -4,6 +4,11 @@ A highly customizable and reusable table component for Next.js applications, bui
 
 ## See the [Examples](https://nextjs-reusables.vercel.app/tables)
 
+<!-- [![NPM](https://img.shields.io/npm/v/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer)
+[![Downloads](https://img.shields.io/npm/dt/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer)
+[![License](https://img.shields.io/npm/l/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer) -->
+
+
 ## Table of Contents
 
 - [Features](#features)
@@ -37,6 +42,8 @@ A highly customizable and reusable table component for Next.js applications, bui
 - **Search Functionality**: Integrates a search feature to easily filter and search through table data.
 
 - **Handle Various Data Types**: Effortlessly manages data types like dates, arrays, URLs, and strings, automatically formatting and displaying them in a user-friendly way.
+
+- **Dark Mode Compatible**: Supports dark mode themes and can be easily customized to match your application's design.
 
 - **Modern Technologies**: Built with the latest React features and follows best practices for efficient, maintainable code.
 

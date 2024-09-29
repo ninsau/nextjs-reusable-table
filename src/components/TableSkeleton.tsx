@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
@@ -17,35 +17,62 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
   disableDefaultStyles = false,
   customClassNames = {},
 }) => {
-  const defaultContainerClassName = "px-4 sm:px-6 lg:px-8";
-  const defaultTableClassName = "min-w-full divide-y divide-gray-300";
-  const defaultThClassName =
-    "py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3";
-  const defaultTrClassName = (index: number) =>
-    index % 2 === 0 ? "bg-white" : "bg-gray-50";
-  const defaultTdClassName =
-    "whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3";
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // Detect dark mode
+  useEffect(() => {
+    const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    setIsDarkMode(matchMedia.matches);
+    const handleChange = () => setIsDarkMode(matchMedia.matches);
+    matchMedia.addEventListener("change", handleChange);
+    return () => {
+      matchMedia.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  // Base class names for light and dark modes
+  const baseContainerClassName = isDarkMode
+    ? "bg-gray-900 text-gray-200 border-gray-700"
+    : "bg-white text-gray-900 border-gray-200";
+  const baseTableClassName = isDarkMode
+    ? "bg-gray-900 text-gray-200 divide-gray-700"
+    : "bg-white text-gray-900 divide-gray-300";
+  const baseThClassName = isDarkMode
+    ? "text-gray-300"
+    : "text-gray-900";
+  const baseTrClassName = (index: number) =>
+    index % 2 === 0
+      ? isDarkMode
+        ? "bg-gray-800"
+        : "bg-white"
+      : isDarkMode
+      ? "bg-gray-700"
+      : "bg-gray-50";
+  const baseTdClassName = isDarkMode
+    ? "text-gray-300"
+    : "text-gray-900";
+
+  // Apply default styles or custom styles
   const containerClassName = disableDefaultStyles
     ? customClassNames.container || ""
-    : `${defaultContainerClassName} ${customClassNames.container || ""}`;
+    : `${baseContainerClassName} px-4 sm:px-6 lg:px-8 ${customClassNames.container || ""}`;
 
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
-    : `${defaultTableClassName} ${customClassNames.table || ""}`;
+    : `${baseTableClassName} min-w-full divide-y ${customClassNames.table || ""}`;
 
   const thClassName = disableDefaultStyles
     ? customClassNames.th || ""
-    : `${defaultThClassName} ${customClassNames.th || ""}`;
+    : `${baseThClassName} py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-3 ${customClassNames.th || ""}`;
 
   const trClassName = (index: number) =>
     disableDefaultStyles
       ? customClassNames.tr || ""
-      : `${defaultTrClassName(index)} ${customClassNames.tr || ""}`;
+      : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
 
   const tdClassName = disableDefaultStyles
     ? customClassNames.td || ""
-    : `${defaultTdClassName} ${customClassNames.td || ""}`;
+    : `${baseTdClassName} whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-3 ${customClassNames.td || ""}`;
 
   return (
     <div className={containerClassName}>

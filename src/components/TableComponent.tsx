@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
 import ActionDropdown from "./ActionDropdown";
@@ -22,6 +22,19 @@ function TableComponent<T>({
   rowOnClick,
   paginationComponent,
 }: TableProps<T>) {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Detect dark mode
+  useEffect(() => {
+    const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    setIsDarkMode(matchMedia.matches);
+    const handleChange = () => setIsDarkMode(matchMedia.matches);
+    matchMedia.addEventListener("change", handleChange);
+    return () => {
+      matchMedia.removeEventListener("change", handleChange);
+    };
+  }, []);
+
   if (!data || loading) {
     return <TableSkeleton />;
   }
@@ -30,47 +43,67 @@ function TableComponent<T>({
     return <NoContentComponent name={searchValue ?? "items"} />;
   }
 
-  const defaultContainerClassName = "my-8 overflow-x-auto";
-  const defaultTableClassName = "min-w-full divide-y divide-gray-200";
-  const defaultTheadClassName = "bg-gray-50";
-  const defaultThClassName =
-    "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
-  const defaultTrClassName = (index: number) =>
-    index % 2 === 0 ? "bg-white" : "bg-gray-50";
-  const defaultTdClassName =
-    "px-6 py-4 whitespace-nowrap text-sm text-gray-700";
-  const defaultActionTdClassName =
-    "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3";
+  // Base class names for light and dark modes
+  const baseContainerClassName = isDarkMode
+    ? "bg-gray-900 text-gray-200 border-gray-700"
+    : "bg-white text-gray-900 border-gray-200";
+  const baseTableClassName = isDarkMode
+    ? "bg-gray-900 text-gray-200"
+    : "bg-white text-gray-900";
+  const baseTheadClassName = isDarkMode
+    ? "bg-gray-700 text-gray-300"
+    : "bg-gray-50 text-gray-500";
+  const baseTrClassName = (index: number) =>
+    index % 2 === 0
+      ? isDarkMode
+        ? "bg-gray-800"
+        : "bg-white"
+      : isDarkMode
+      ? "bg-gray-700"
+      : "bg-gray-50";
+  const baseTdClassName = isDarkMode
+    ? "text-gray-300 border-gray-700"
+    : "text-gray-700 border-gray-200";
+  const baseActionTdClassName = isDarkMode
+    ? "text-gray-300 border-gray-700"
+    : "text-gray-700 border-gray-200";
 
+  // Apply default styles or custom styles
   const containerClassName = disableDefaultStyles
     ? customClassNames.container || ""
-    : `${defaultContainerClassName} ${customClassNames.container || ""}`;
+    : `${baseContainerClassName} my-8 overflow-x-auto ${customClassNames.container || ""}`;
 
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
-    : `${defaultTableClassName} ${customClassNames.table || ""}`;
+    : `${baseTableClassName} min-w-full divide-y divide-gray-200 ${customClassNames.table || ""}`;
 
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
-    : `${defaultTheadClassName} ${customClassNames.thead || ""}`;
+    : `${baseTheadClassName} ${customClassNames.thead || ""}`;
 
   const thClassName = disableDefaultStyles
     ? customClassNames.th || ""
-    : `${defaultThClassName} ${customClassNames.th || ""}`;
+    : `px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}`;
 
   const trClassName = (index: number) =>
     disableDefaultStyles
       ? customClassNames.tr || ""
-      : `${defaultTrClassName(index)} ${customClassNames.tr || ""}`;
+      : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
 
   const tdClassName = disableDefaultStyles
     ? customClassNames.td || ""
-    : `${defaultTdClassName} ${customClassNames.td || ""}`;
+    : `px-6 py-4 whitespace-nowrap text-sm ${baseTdClassName} ${customClassNames.td || ""}`;
+
+  const actionTdClassName = disableDefaultStyles
+    ? customClassNames.actionTd || ""
+    : `relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 ${baseActionTdClassName} ${
+        customClassNames.actionTd || ""
+      }`;
 
   return (
     <div className={containerClassName}>
       <div className="inline-block min-w-full align-middle">
-        <div className="overflow-hidden border border-gray-200 rounded-lg">
+        <div className={`overflow-hidden border rounded-lg ${baseContainerClassName}`}>
           <table className={tableClassName}>
             <thead className={theadClassName}>
               <tr>
@@ -154,14 +187,16 @@ function TableComponent<T>({
                       );
                     })}
                     {actions && actionTexts && actionFunctions && (
-                      <ActionDropdown<T>
-                        item={item}
-                        index={dataIndex}
-                        actionTexts={actionTexts}
-                        actionFunctions={actionFunctions}
-                        disableDefaultStyles={disableDefaultStyles}
-                        customClassNames={customClassNames}
-                      />
+                      <td className={actionTdClassName}>
+                        <ActionDropdown<T>
+                          item={item}
+                          index={dataIndex}
+                          actionTexts={actionTexts}
+                          actionFunctions={actionFunctions}
+                          disableDefaultStyles={disableDefaultStyles}
+                          customClassNames={customClassNames}
+                        />
+                      </td>
                     )}
                   </tr>
                 );
