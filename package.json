@@ -39,10 +39,10 @@
     "typescript": "^5.6.2"
   },
   "peerDependencies": {
-    "next": ">=12 <=14",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "tailwindcss": "^3.3.0"
+    "next": ">=12",
+    "react": ">=16",
+    "react-dom": ">=16",
+    "tailwindcss": ">=2.0.0"
   },
   "keywords": [
     "nextjs",
