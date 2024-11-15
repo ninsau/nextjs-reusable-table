@@ -327,7 +327,7 @@ The `TableComponent` includes built-in pagination support. You can enable pagina
 | `enablePagination` | `boolean`                | Yes      | Enable pagination.                           |
 | `page`             | `number`                 | Yes      | The current page number.                     |
 | `setPage`          | `(page: number) => void` | Yes      | Function to set the current page.            |
-| `itemsPerPage`     | `number`                 | No       | The number of items per page. Default is 10. |
+| `totalPages`     | `number`                 | No       | The number of items per page. Default is 10. |
 
 ## Props
 

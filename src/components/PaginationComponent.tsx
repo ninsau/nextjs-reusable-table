@@ -37,7 +37,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
 
   const containerClassName = disableDefaultStyles
     ? customClassNames.container || ""
-    : `flex justify-between items-center p-4 ${baseContainerClassName} ${
+    : `flex justify-between items-center ${baseContainerClassName} ${
         customClassNames.container || ""
       }`;
 
@@ -54,10 +54,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
   const handlePrevPage = () => setPage((prevPage) => Math.max(prevPage - 1, 1));
 
   return (
-    <div
-      className={containerClassName}
-      style={{ position: "sticky", bottom: 0, zIndex: 10 }}
-    >
+    <div className={containerClassName}>
       <button
         disabled={page === 1}
         onClick={handlePrevPage}
