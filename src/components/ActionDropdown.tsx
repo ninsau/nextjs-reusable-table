@@ -68,29 +68,28 @@ const ActionDropdown = <T,>({
     event.stopPropagation();
   };
 
-  const baseTdClassName = isDarkMode
-    ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-700 text-gray-300"
-    : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-white text-gray-700";
-
-  const baseButtonClassName = isDarkMode
-    ? "focus:outline-none text-gray-300"
-    : "focus:outline-none text-gray-700";
-
-  const baseSvgClassName = isDarkMode
-    ? "w-6 h-6 text-gray-300 hover:text-gray-400"
-    : "w-6 h-6 text-gray-500 hover:text-gray-700";
-
-  const baseDropdownMenuClassName = isDarkMode
-    ? "absolute z-50 mt-1 w-48 bg-gray-800 shadow-md rounded-lg text-gray-300"
-    : "absolute z-50 mt-1 w-48 bg-white shadow-md rounded-lg text-gray-700";
-
-  const baseDropdownItemClassName = isDarkMode
-    ? "block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
-    : "block w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-100";
+  const baseTdClassName = (index: number) =>
+    index % 2 === 0
+      ? isDarkMode
+        ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-800 text-gray-300"
+        : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-white text-gray-700"
+      : isDarkMode
+      ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-700 text-gray-300"
+      : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-100 text-gray-700";
 
   const tdClassName = disableDefaultStyles
     ? customClassNames.actionTd || ""
-    : `${baseTdClassName} ${customClassNames.actionTd || ""}`;
+    : `${baseTdClassName(index)} ${customClassNames.actionTd || ""}`;
+
+  const baseButtonClassName = "focus:outline-none text-gray-700";
+
+  const baseSvgClassName = "w-6 h-6 text-gray-700 hover:text-gray-900";
+
+  const baseDropdownMenuClassName =
+    "absolute z-50 mt-1 w-48 bg-gray-200 shadow-md rounded-lg text-gray-700";
+
+  const baseDropdownItemClassName =
+    "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-300";
 
   const buttonClassName = disableDefaultStyles
     ? customClassNames.actionButton || ""
@@ -135,7 +134,7 @@ const ActionDropdown = <T,>({
   );
 
   return (
-    <div key={`actions-${index}`} className={tdClassName}>
+    <td key={`actions-${index}`} className={tdClassName}>
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
@@ -157,7 +156,7 @@ const ActionDropdown = <T,>({
         </svg>
       </button>
       {isDropdownOpen && createPortal(dropdownMenu, document.body)}
-    </div>
+    </td>
   );
 };
 

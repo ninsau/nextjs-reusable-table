@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
@@ -85,37 +86,28 @@ function TableComponent<T>({
         : "bg-gray-50 text-gray-500"
       : "";
 
-  const baseTbodyClassName =
-    !disableDefaultStyles && enableDarkMode
-      ? isDarkMode
-        ? "divide-y divide-gray-700"
-        : "divide-y divide-gray-200"
-      : "";
+  const baseTbodyClassName = !disableDefaultStyles
+    ? `divide-y ${
+        enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
+      }`
+    : "";
 
   const baseTrClassName = (index: number) =>
-    !disableDefaultStyles && enableDarkMode
+    !disableDefaultStyles
       ? index % 2 === 0
         ? isDarkMode
           ? "bg-gray-800"
           : "bg-white"
         : isDarkMode
         ? "bg-gray-700"
-        : "bg-gray-50"
+        : "bg-gray-100"
       : "";
 
-  const baseTdClassName =
-    !disableDefaultStyles && enableDarkMode
-      ? isDarkMode
-        ? "text-gray-300 border-gray-700"
-        : "text-gray-700 border-gray-200"
-      : "";
-
-  const baseActionTdClassName =
-    !disableDefaultStyles && enableDarkMode
-      ? isDarkMode
-        ? "text-gray-300 border-gray-700"
-        : "text-gray-700 border-gray-200"
-      : "";
+  const baseTdClassName = !disableDefaultStyles
+    ? isDarkMode
+      ? "text-gray-300"
+      : "text-gray-700"
+    : "";
 
   const containerClassName = disableDefaultStyles
     ? customClassNames.container || ""
@@ -152,11 +144,7 @@ function TableComponent<T>({
         customClassNames.td || ""
       }`;
 
-  const actionTdClassName = disableDefaultStyles
-    ? customClassNames.actionTd || ""
-    : `relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 ${baseActionTdClassName} ${
-        customClassNames.actionTd || ""
-      }`;
+  const actionTdClassName = tdClassName;
 
   return (
     <div className={containerClassName}>
