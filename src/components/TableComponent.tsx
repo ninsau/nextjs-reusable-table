@@ -40,8 +40,12 @@ function TableComponent<T>({
     }
   }, [enableDarkMode]);
 
-  if (!data || loading) {
+  if (loading) {
     return <TableSkeleton enableDarkMode={enableDarkMode} />;
+  }
+
+  if (!data || data.length === 0) {
+    return <NoContentComponent name={searchValue ?? "items"} />;
   }
 
   let filteredData = data;
@@ -80,6 +84,13 @@ function TableComponent<T>({
         : "bg-gray-50 text-gray-500"
       : "";
 
+  const baseTbodyClassName =
+    !disableDefaultStyles && enableDarkMode
+      ? isDarkMode
+        ? "divide-y divide-gray-700"
+        : "divide-y divide-gray-200"
+      : "";
+
   const baseTrClassName = (index: number) =>
     !disableDefaultStyles && enableDarkMode
       ? index % 2 === 0
@@ -113,13 +124,15 @@ function TableComponent<T>({
 
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
-    : `${baseTableClassName} min-w-full divide-y divide-gray-200 ${
-        customClassNames.table || ""
-      }`;
+    : `${baseTableClassName} min-w-full ${customClassNames.table || ""}`;
 
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
     : `${baseTheadClassName} ${customClassNames.thead || ""}`;
+
+  const tbodyClassName = disableDefaultStyles
+    ? customClassNames.tbody || ""
+    : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
 
   const thClassName = disableDefaultStyles
     ? customClassNames.th || ""
@@ -165,7 +178,7 @@ function TableComponent<T>({
                 )}
               </tr>
             </thead>
-            <tbody>
+            <tbody className={tbodyClassName}>
               {filteredData.map((item, dataIndex) => {
                 if (renderRow) {
                   return (

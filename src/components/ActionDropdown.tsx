@@ -136,7 +136,7 @@ const ActionDropdown = <T,>({
   );
 
   return (
-    <td key={`actions-${index}`} className={tdClassName}>
+    <div key={`actions-${index}`} className={tdClassName}>
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
@@ -159,7 +159,7 @@ const ActionDropdown = <T,>({
       </button>
 
       {isDropdownOpen && createPortal(dropdownMenu, document.body)}
-    </td>
+    </div>
   );
 };
 

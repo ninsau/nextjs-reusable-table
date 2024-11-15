@@ -12,6 +12,7 @@ export interface TableProps<T> {
     container?: string;
     table?: string;
     thead?: string;
+    tbody?: string;
     th?: string;
     tr?: string;
     td?: string;
