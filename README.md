@@ -388,6 +388,21 @@ A component that renders a dropdown menu with action buttons for each row.
 
 ---
 
+<!-- pagination -->
+
+## Pagination
+
+A simple pagination component to navigate through table pages.
+
+### Props
+
+| Prop               | Type                     | Required | Description                                  |
+| ------------------ | ------------------------ | -------- | -------------------------------------------- |
+| `enablePagination` | `boolean`                | Yes      | Enable pagination.                           |
+| `page`             | `number`                 | Yes      | The current page number.                     |
+| `setPage`          | `(page: number) => void` | Yes      | Function to set the current page.            |
+| `itemsPerPage`     | `number`                 | No       | The number of items per page. Default is 10. |
+
 ## TableSkeleton
 
 Displays a skeleton loader while the table data is loading.
