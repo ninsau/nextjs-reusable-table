@@ -1,11 +1,12 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
 import ActionDropdown from "./ActionDropdown";
 import Link from "next/link";
 import { TableProps } from "../types";
-import { formatDate, isDateString } from "../utils/helpers";
+import { formatDate, isDateString, trimText } from "../utils/helpers";
 
 function TableComponent<T>({
   columns,
@@ -24,6 +25,9 @@ function TableComponent<T>({
   enableDarkMode = true,
 }: TableProps<T> & { enableDarkMode?: boolean }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [expandedCells, setExpandedCells] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     if (enableDarkMode) {
@@ -41,17 +45,14 @@ function TableComponent<T>({
     return <TableSkeleton enableDarkMode />;
   }
 
-  if (data.length === 0) {
-    return <NoContentComponent name={searchValue ?? "items"} />;
-  }
-
   let filteredData = data;
 
   if (searchValue) {
     filteredData = data.filter((item) => {
-      return Object.values(item as Record<string, unknown>).some((value) =>
-        String(value).toLowerCase().includes(searchValue.toLowerCase())
-      );
+      return props.some((prop) => {
+        const value = item[prop as keyof T];
+        return String(value).toLowerCase().includes(searchValue.toLowerCase());
+      });
     });
   }
 
@@ -134,11 +135,13 @@ function TableComponent<T>({
 
   const tdClassName = disableDefaultStyles
     ? customClassNames.td || ""
-    : `px-6 py-4 text-sm ${baseTdClassName} ${customClassNames.td || ""}`;
+    : `px-6 py-4 whitespace-nowrap text-sm ${baseTdClassName} ${
+        customClassNames.td || ""
+      }`;
 
   const actionTdClassName = disableDefaultStyles
     ? customClassNames.actionTd || ""
-    : `relative py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 ${baseActionTdClassName} ${
+    : `relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 ${baseActionTdClassName} ${
         customClassNames.actionTd || ""
       }`;
 
@@ -189,19 +192,24 @@ function TableComponent<T>({
                   >
                     {props.map((prop) => {
                       const value = item[prop as keyof T];
+                      const cellKey = `${dataIndex}-${String(prop)}`;
+                      const isExpanded = expandedCells[cellKey];
                       let displayValue: React.ReactNode;
 
                       if (typeof value === "string" && isDateString(value)) {
                         displayValue = formatDate(new Date(value), true);
                       } else if (Array.isArray(value)) {
+                        const displayArray = isExpanded
+                          ? value
+                          : value.map((v) => trimText(String(v), 20));
                         displayValue = (
                           <div className="flex flex-wrap gap-1">
-                            {value.map((chip, idx) => (
+                            {displayArray.map((chip, idx) => (
                               <span
                                 key={idx}
-                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs break-words max-w-xs"
                               >
-                                {String(chip)}
+                                {chip}
                               </span>
                             ))}
                           </div>
@@ -216,17 +224,29 @@ function TableComponent<T>({
                               className="text-blue-500 hover:underline"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {value}
+                              {isExpanded ? value : trimText(value, 30)}
                             </span>
                           </Link>
                         );
                       } else {
-                        displayValue = String(value);
+                        displayValue = isExpanded
+                          ? String(value)
+                          : trimText(String(value), 30);
                       }
 
                       return (
                         <td key={String(prop)} className={tdClassName}>
-                          {displayValue}
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedCells((prev) => ({
+                                ...prev,
+                                [cellKey]: !prev[cellKey],
+                              }));
+                            }}
+                          >
+                            {displayValue}
+                          </div>
                         </td>
                       );
                     })}
