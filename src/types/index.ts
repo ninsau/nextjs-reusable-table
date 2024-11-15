@@ -21,11 +21,20 @@ export interface TableProps<T> {
     actionSvg?: string;
     dropdownMenu?: string;
     dropdownItem?: string;
+    pagination?: {
+      container?: string;
+      button?: string;
+      buttonDisabled?: string;
+      pageInfo?: string;
+    };
   };
   renderRow?: (item: T, index: number) => React.ReactNode;
   rowOnClick?: (item: T) => void;
-  paginationComponent?: React.ReactNode;
   enableDarkMode?: boolean;
+  enablePagination?: boolean;
+  page?: number;
+  setPage?: React.Dispatch<React.SetStateAction<number>>;
+  itemsPerPage?: number;
 }
 
 export interface ActionDropdownProps<T> {
@@ -52,6 +61,20 @@ export interface TableSkeletonProps {
     th?: string;
     tr?: string;
     td?: string;
+  };
+  enableDarkMode?: boolean;
+}
+
+export interface PaginationComponentProps {
+  page: number;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
+  totalPages: number;
+  disableDefaultStyles?: boolean;
+  customClassNames?: {
+    container?: string;
+    button?: string;
+    buttonDisabled?: string;
+    pageInfo?: string;
   };
   enableDarkMode?: boolean;
 }

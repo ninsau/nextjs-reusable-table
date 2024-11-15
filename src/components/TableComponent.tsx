@@ -7,6 +7,7 @@ import ActionDropdown from "./ActionDropdown";
 import Link from "next/link";
 import { TableProps } from "../types";
 import { formatDate, isDateString, trimText } from "../utils/helpers";
+import PaginationComponent from "./PaginationComponent";
 
 function TableComponent<T>({
   columns,
@@ -21,9 +22,12 @@ function TableComponent<T>({
   customClassNames = {},
   renderRow,
   rowOnClick,
-  paginationComponent,
   enableDarkMode = true,
-}: TableProps<T> & { enableDarkMode?: boolean }) {
+  enablePagination = false,
+  page = 1,
+  setPage,
+  itemsPerPage = 10,
+}: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
     [key: string]: boolean;
@@ -62,6 +66,21 @@ function TableComponent<T>({
 
   if (filteredData.length === 0) {
     return <NoContentComponent name={searchValue ?? "items"} />;
+  }
+
+  let paginatedData = filteredData;
+  let calculatedTotalPages = 1;
+
+  if (enablePagination && setPage) {
+    const totalItemsCount = filteredData.length;
+    calculatedTotalPages = Math.ceil(totalItemsCount / itemsPerPage);
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    paginatedData = filteredData.slice(startIndex, endIndex);
+
+    if (page > calculatedTotalPages) {
+      setPage(calculatedTotalPages);
+    }
   }
 
   const baseContainerClassName =
@@ -111,7 +130,7 @@ function TableComponent<T>({
 
   const containerClassName = disableDefaultStyles
     ? customClassNames.container || ""
-    : `${baseContainerClassName} my-8 overflow-x-auto ${
+    : `${baseContainerClassName} overflow-x-auto ${
         customClassNames.container || ""
       }`;
 
@@ -144,32 +163,44 @@ function TableComponent<T>({
         customClassNames.td || ""
       }`;
 
-  const actionTdClassName = tdClassName;
-
   return (
-    <div className={containerClassName}>
-      <div className="inline-block min-w-full align-middle">
-        <div
-          className={`overflow-hidden border rounded-lg ${baseContainerClassName}`}
-        >
-          <table className={tableClassName}>
-            <thead className={theadClassName}>
-              <tr>
-                {columns.map((column) => (
-                  <th key={column} scope="col" className={thClassName}>
-                    {column}
-                  </th>
-                ))}
-                {actions && actionTexts && (
-                  <th scope="col" className={thClassName}>
-                    <span className="sr-only">{actionTexts.join(", ")}</span>
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className={tbodyClassName}>
-              {filteredData.map((item, dataIndex) => {
-                if (renderRow) {
+    <>
+      <div className={containerClassName}>
+        <div className="inline-block min-w-full align-middle">
+          <div
+            className={`overflow-hidden border rounded-lg ${baseContainerClassName}`}
+          >
+            <table className={tableClassName}>
+              <thead className={theadClassName}>
+                <tr>
+                  {columns.map((column) => (
+                    <th key={column} scope="col" className={thClassName}>
+                      {column}
+                    </th>
+                  ))}
+                  {actions && actionTexts && (
+                    <th scope="col" className={thClassName}>
+                      <span className="sr-only">{actionTexts.join(", ")}</span>
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className={tbodyClassName}>
+                {paginatedData.map((item, dataIndex) => {
+                  if (renderRow) {
+                    return (
+                      <tr
+                        key={dataIndex}
+                        onClick={() => rowOnClick && rowOnClick(item)}
+                        className={`${trClassName(dataIndex)} ${
+                          rowOnClick ? "cursor-pointer" : ""
+                        }`}
+                      >
+                        {renderRow(item, dataIndex)}
+                      </tr>
+                    );
+                  }
+
                   return (
                     <tr
                       key={dataIndex}
@@ -178,117 +209,116 @@ function TableComponent<T>({
                         rowOnClick ? "cursor-pointer" : ""
                       }`}
                     >
-                      {renderRow(item, dataIndex)}
+                      {props.map((prop) => {
+                        const value = item[prop as keyof T];
+                        const cellKey = `${dataIndex}-${String(prop)}`;
+                        const isExpanded = expandedCells[cellKey];
+                        let displayValue: React.ReactNode;
+
+                        if (typeof value === "string" && isDateString(value)) {
+                          displayValue = formatDate(new Date(value), true);
+                        } else if (Array.isArray(value)) {
+                          let displayArray: any[] = value as any[];
+                          if (!isExpanded && displayArray.length > 5) {
+                            displayArray = displayArray.slice(0, 5);
+                          }
+                          displayValue = (
+                            <div
+                              className="flex flex-wrap gap-1"
+                              style={{ maxWidth: "200px", overflowX: "auto" }}
+                            >
+                              {displayArray.map((chip, idx) => (
+                                <span
+                                  key={idx}
+                                  className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                                >
+                                  {trimText(String(chip), 20)}
+                                </span>
+                              ))}
+                              {!isExpanded && (value as any[]).length > 5 && (
+                                <span
+                                  className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedCells((prev) => ({
+                                      ...prev,
+                                      [cellKey]: true,
+                                    }));
+                                  }}
+                                >
+                                  +{(value as any[]).length - 5} more
+                                </span>
+                              )}
+                            </div>
+                          );
+                        } else if (
+                          typeof value === "string" &&
+                          value.startsWith("http")
+                        ) {
+                          displayValue = (
+                            <Link href={value}>
+                              <span
+                                className="text-blue-500 hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {isExpanded ? value : trimText(value, 30)}
+                              </span>
+                            </Link>
+                          );
+                        } else {
+                          displayValue = isExpanded
+                            ? String(value)
+                            : trimText(String(value), 30);
+                        }
+
+                        return (
+                          <td
+                            key={String(prop)}
+                            className={tdClassName}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedCells((prev) => ({
+                                ...prev,
+                                [cellKey]: !prev[cellKey],
+                              }));
+                            }}
+                          >
+                            {displayValue}
+                          </td>
+                        );
+                      })}
+                      {actions && actionTexts && actionFunctions && (
+                        <ActionDropdown<T>
+                          item={item}
+                          index={dataIndex}
+                          actionTexts={actionTexts}
+                          actionFunctions={actionFunctions}
+                          disableDefaultStyles={disableDefaultStyles}
+                          customClassNames={customClassNames}
+                          enableDarkMode={enableDarkMode}
+                        />
+                      )}
                     </tr>
                   );
-                }
-
-                return (
-                  <tr
-                    key={dataIndex}
-                    onClick={() => rowOnClick && rowOnClick(item)}
-                    className={`${trClassName(dataIndex)} ${
-                      rowOnClick ? "cursor-pointer" : ""
-                    }`}
-                  >
-                    {props.map((prop) => {
-                      const value = item[prop as keyof T];
-                      const cellKey = `${dataIndex}-${String(prop)}`;
-                      const isExpanded = expandedCells[cellKey];
-                      let displayValue: React.ReactNode;
-
-                      if (typeof value === "string" && isDateString(value)) {
-                        displayValue = formatDate(new Date(value), true);
-                      } else if (Array.isArray(value)) {
-                        let displayArray: any[] = value as any[];
-                        if (!isExpanded && displayArray.length > 5) {
-                          displayArray = displayArray.slice(0, 5);
-                        }
-                        displayValue = (
-                          <div
-                            className="flex flex-wrap gap-1"
-                            style={{ maxWidth: "200px", overflowX: "auto" }}
-                          >
-                            {displayArray.map((chip, idx) => (
-                              <span
-                                key={idx}
-                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
-                              >
-                                {trimText(String(chip), 20)}
-                              </span>
-                            ))}
-                            {!isExpanded && (value as any[]).length > 5 && (
-                              <span
-                                className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setExpandedCells((prev) => ({
-                                    ...prev,
-                                    [cellKey]: true,
-                                  }));
-                                }}
-                              >
-                                +{(value as any[]).length - 5} more
-                              </span>
-                            )}
-                          </div>
-                        );
-                      } else if (
-                        typeof value === "string" &&
-                        value.startsWith("http")
-                      ) {
-                        displayValue = (
-                          <Link href={value}>
-                            <span
-                              className="text-blue-500 hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {isExpanded ? value : trimText(value, 30)}
-                            </span>
-                          </Link>
-                        );
-                      } else {
-                        displayValue = isExpanded
-                          ? String(value)
-                          : trimText(String(value), 30);
-                      }
-
-                      return (
-                        <td
-                          key={String(prop)}
-                          className={tdClassName}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedCells((prev) => ({
-                              ...prev,
-                              [cellKey]: !prev[cellKey],
-                            }));
-                          }}
-                        >
-                          {displayValue}
-                        </td>
-                      );
-                    })}
-                    {actions && actionTexts && actionFunctions && (
-                      <ActionDropdown<T>
-                        item={item}
-                        index={dataIndex}
-                        actionTexts={actionTexts}
-                        actionFunctions={actionFunctions}
-                        disableDefaultStyles={disableDefaultStyles}
-                        customClassNames={customClassNames}
-                        enableDarkMode={enableDarkMode}
-                      />
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {paginationComponent && paginationComponent}
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+      {enablePagination && page !== undefined && setPage && (
+        <div className="flex justify-center">
+          <PaginationComponent
+            page={page}
+            setPage={setPage}
+            totalPages={calculatedTotalPages}
+            disableDefaultStyles={disableDefaultStyles}
+            customClassNames={customClassNames.pagination}
+            enableDarkMode={enableDarkMode}
+          />
+        </div>
+      )}
+    </>
   );
 }
 
