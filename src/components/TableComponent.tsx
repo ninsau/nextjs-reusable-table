@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
@@ -42,7 +41,7 @@ function TableComponent<T>({
   }, [enableDarkMode]);
 
   if (!data || loading) {
-    return <TableSkeleton enableDarkMode />;
+    return <TableSkeleton enableDarkMode={enableDarkMode} />;
   }
 
   let filteredData = data;
@@ -199,19 +198,37 @@ function TableComponent<T>({
                       if (typeof value === "string" && isDateString(value)) {
                         displayValue = formatDate(new Date(value), true);
                       } else if (Array.isArray(value)) {
-                        const displayArray = isExpanded
-                          ? value
-                          : value.map((v) => trimText(String(v), 20));
+                        let displayArray: any[] = value as any[];
+                        if (!isExpanded && displayArray.length > 5) {
+                          displayArray = displayArray.slice(0, 5);
+                        }
                         displayValue = (
-                          <div className="flex flex-wrap gap-1">
+                          <div
+                            className="flex flex-wrap gap-1"
+                            style={{ maxWidth: "200px", overflowX: "auto" }}
+                          >
                             {displayArray.map((chip, idx) => (
                               <span
                                 key={idx}
-                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs break-words max-w-xs"
+                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
                               >
-                                {chip}
+                                {trimText(String(chip), 20)}
                               </span>
                             ))}
+                            {!isExpanded && (value as any[]).length > 5 && (
+                              <span
+                                className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedCells((prev) => ({
+                                    ...prev,
+                                    [cellKey]: true,
+                                  }));
+                                }}
+                              >
+                                +{(value as any[]).length - 5} more
+                              </span>
+                            )}
                           </div>
                         );
                       } else if (
@@ -235,18 +252,18 @@ function TableComponent<T>({
                       }
 
                       return (
-                        <td key={String(prop)} className={tdClassName}>
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setExpandedCells((prev) => ({
-                                ...prev,
-                                [cellKey]: !prev[cellKey],
-                              }));
-                            }}
-                          >
-                            {displayValue}
-                          </div>
+                        <td
+                          key={String(prop)}
+                          className={tdClassName}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedCells((prev) => ({
+                              ...prev,
+                              [cellKey]: !prev[cellKey],
+                            }));
+                          }}
+                        >
+                          {displayValue}
                         </td>
                       );
                     })}
@@ -259,7 +276,7 @@ function TableComponent<T>({
                           actionFunctions={actionFunctions}
                           disableDefaultStyles={disableDefaultStyles}
                           customClassNames={customClassNames}
-                          enableDarkMode
+                          enableDarkMode={enableDarkMode}
                         />
                       </td>
                     )}

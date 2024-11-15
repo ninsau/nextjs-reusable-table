@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -22,7 +24,6 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
     }
   }, [enableDarkMode]);
 
-  // Base class names for light and dark modes
   const baseContainerClassName =
     enableDarkMode && isDarkMode
       ? "bg-gray-900 text-gray-200 border-gray-700"
@@ -48,7 +49,6 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
   const baseTdClassName =
     enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
 
-  // Apply default styles or custom styles
   const containerClassName = disableDefaultStyles
     ? customClassNames.container || ""
     : `${baseContainerClassName} px-4 sm:px-6 lg:px-8 ${
