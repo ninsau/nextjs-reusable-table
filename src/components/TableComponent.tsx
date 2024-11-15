@@ -5,7 +5,7 @@ import TableSkeleton from "./TableSkeleton";
 import ActionDropdown from "./ActionDropdown";
 import Link from "next/link";
 import { TableProps } from "../types";
-import { formatDate, isDateString, trimText } from "../utils/helpers";
+import { formatDate, isDateString } from "../utils/helpers";
 
 function TableComponent<T>({
   columns,
@@ -42,6 +42,20 @@ function TableComponent<T>({
   }
 
   if (data.length === 0) {
+    return <NoContentComponent name={searchValue ?? "items"} />;
+  }
+
+  let filteredData = data;
+
+  if (searchValue) {
+    filteredData = data.filter((item) => {
+      return Object.values(item as Record<string, unknown>).some((value) =>
+        String(value).toLowerCase().includes(searchValue.toLowerCase())
+      );
+    });
+  }
+
+  if (filteredData.length === 0) {
     return <NoContentComponent name={searchValue ?? "items"} />;
   }
 
@@ -120,13 +134,11 @@ function TableComponent<T>({
 
   const tdClassName = disableDefaultStyles
     ? customClassNames.td || ""
-    : `px-6 py-4 whitespace-nowrap text-sm ${baseTdClassName} ${
-        customClassNames.td || ""
-      }`;
+    : `px-6 py-4 text-sm ${baseTdClassName} ${customClassNames.td || ""}`;
 
   const actionTdClassName = disableDefaultStyles
     ? customClassNames.actionTd || ""
-    : `relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 ${baseActionTdClassName} ${
+    : `relative py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 ${baseActionTdClassName} ${
         customClassNames.actionTd || ""
       }`;
 
@@ -152,7 +164,7 @@ function TableComponent<T>({
               </tr>
             </thead>
             <tbody>
-              {data.map((item, dataIndex) => {
+              {filteredData.map((item, dataIndex) => {
                 if (renderRow) {
                   return (
                     <tr
@@ -189,7 +201,7 @@ function TableComponent<T>({
                                 key={idx}
                                 className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
                               >
-                                {trimText(String(chip), 20)}
+                                {String(chip)}
                               </span>
                             ))}
                           </div>
@@ -204,12 +216,12 @@ function TableComponent<T>({
                               className="text-blue-500 hover:underline"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {trimText(value, 30)}
+                              {value}
                             </span>
                           </Link>
                         );
                       } else {
-                        displayValue = trimText(String(value), 30);
+                        displayValue = String(value);
                       }
 
                       return (
