@@ -70,12 +70,13 @@ function TableComponent<T>({
         : "bg-white text-gray-900 border-gray-200"
       : "";
 
-  const baseTableClassName =
-    !disableDefaultStyles && enableDarkMode
-      ? isDarkMode
-        ? "bg-gray-900 text-gray-200"
-        : "bg-white text-gray-900"
-      : "";
+  const baseTableClassName = !disableDefaultStyles
+    ? `min-w-full divide-y ${
+        enableDarkMode && isDarkMode
+          ? "bg-gray-900 text-gray-200 divide-gray-700"
+          : "bg-white text-gray-900 divide-gray-200"
+      }`
+    : "";
 
   const baseTheadClassName =
     !disableDefaultStyles && enableDarkMode
@@ -124,7 +125,7 @@ function TableComponent<T>({
 
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
-    : `${baseTableClassName} min-w-full ${customClassNames.table || ""}`;
+    : `${baseTableClassName} ${customClassNames.table || ""}`;
 
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
@@ -281,17 +282,15 @@ function TableComponent<T>({
                       );
                     })}
                     {actions && actionTexts && actionFunctions && (
-                      <td className={actionTdClassName}>
-                        <ActionDropdown<T>
-                          item={item}
-                          index={dataIndex}
-                          actionTexts={actionTexts}
-                          actionFunctions={actionFunctions}
-                          disableDefaultStyles={disableDefaultStyles}
-                          customClassNames={customClassNames}
-                          enableDarkMode={enableDarkMode}
-                        />
-                      </td>
+                      <ActionDropdown<T>
+                        item={item}
+                        index={dataIndex}
+                        actionTexts={actionTexts}
+                        actionFunctions={actionFunctions}
+                        disableDefaultStyles={disableDefaultStyles}
+                        customClassNames={customClassNames}
+                        enableDarkMode={enableDarkMode}
+                      />
                     )}
                   </tr>
                 );

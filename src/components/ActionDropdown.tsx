@@ -9,10 +9,10 @@ const ActionDropdown = <T,>({
   actionFunctions,
   disableDefaultStyles = false,
   customClassNames = {},
-  enableDarkMode = true, 
+  enableDarkMode = true,
 }: ActionDropdownProps<T> & { enableDarkMode?: boolean }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false); 
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
@@ -68,9 +68,8 @@ const ActionDropdown = <T,>({
     event.stopPropagation();
   };
 
-  // Base class names for light and dark modes
   const baseTdClassName = isDarkMode
-    ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-800 text-gray-300"
+    ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-700 text-gray-300"
     : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-white text-gray-700";
 
   const baseButtonClassName = isDarkMode
@@ -157,7 +156,6 @@ const ActionDropdown = <T,>({
           />
         </svg>
       </button>
-
       {isDropdownOpen && createPortal(dropdownMenu, document.body)}
     </div>
   );
