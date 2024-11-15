@@ -320,7 +320,14 @@ export default MyTablePage;
 
 ## Pagination
 
-The `TableComponent` does not include a built-in pagination feature. However, you can easily add pagination by passing a custom pagination component as a prop. This allows you to use any pagination library or component of your choice.
+The `TableComponent` includes built-in pagination support. You can enable pagination by setting the enablePagination prop to true and providing the current page, a setPage function, and optionally the number of items per page via itemsPerPage.
+
+| Prop               | Type                     | Required | Description                                  |
+| ------------------ | ------------------------ | -------- | -------------------------------------------- |
+| `enablePagination` | `boolean`                | Yes      | Enable pagination.                           |
+| `page`             | `number`                 | Yes      | The current page number.                     |
+| `setPage`          | `(page: number) => void` | Yes      | Function to set the current page.            |
+| `itemsPerPage`     | `number`                 | No       | The number of items per page. Default is 10. |
 
 ## Props
 
@@ -387,21 +394,6 @@ A component that renders a dropdown menu with action buttons for each row.
 | `actionSvg`    | Class for the SVG icon in the action button. |
 
 ---
-
-<!-- pagination -->
-
-## Pagination
-
-A simple pagination component to navigate through table pages.
-
-### Props
-
-| Prop               | Type                     | Required | Description                                  |
-| ------------------ | ------------------------ | -------- | -------------------------------------------- |
-| `enablePagination` | `boolean`                | Yes      | Enable pagination.                           |
-| `page`             | `number`                 | Yes      | The current page number.                     |
-| `setPage`          | `(page: number) => void` | Yes      | Function to set the current page.            |
-| `itemsPerPage`     | `number`                 | No       | The number of items per page. Default is 10. |
 
 ## TableSkeleton
 
