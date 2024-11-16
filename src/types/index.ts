@@ -33,7 +33,7 @@ export interface TableProps<T> {
   enableDarkMode?: boolean;
   enablePagination?: boolean;
   page?: number;
-  setPage?: React.Dispatch<React.SetStateAction<number>>;
+  setPage?: (page: number) => void;
   itemsPerPage?: number;
   totalPages?: number;
 }
