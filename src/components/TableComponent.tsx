@@ -26,7 +26,6 @@ function TableComponent<T>({
   enablePagination = false,
   page = 1,
   setPage,
-  itemsPerPage = 10,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
@@ -69,13 +68,11 @@ function TableComponent<T>({
   }
 
   let paginatedData = filteredData;
-  let calculatedTotalPages = 1;
+  const calculatedTotalPages = Math.ceil(filteredData.length / 10); 
 
   if (enablePagination && setPage) {
-    const totalItemsCount = filteredData.length;
-    calculatedTotalPages = Math.ceil(totalItemsCount / itemsPerPage);
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+    const startIndex = (page - 1) * 10;
+    const endIndex = startIndex + 10;
     paginatedData = filteredData.slice(startIndex, endIndex);
 
     if (page > calculatedTotalPages) {
