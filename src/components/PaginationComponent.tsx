@@ -60,7 +60,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
       </button>
       <button
         disabled={page === 1}
-        onClick={() => setPage((prevPage) => Math.max(prevPage - 1, 1))}
+        onClick={() => setPage(page - 1)}
         className={page === 1 ? disabledButtonClassName : baseButtonClassName}
       >
         Previous
@@ -70,9 +70,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
       </span>
       <button
         disabled={page === totalPages}
-        onClick={() =>
-          setPage((prevPage) => Math.min(prevPage + 1, totalPages))
-        }
+        onClick={() => setPage(page + 1)}
         className={
           page === totalPages ? disabledButtonClassName : baseButtonClassName
         }

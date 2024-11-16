@@ -68,14 +68,9 @@ export interface TableSkeletonProps {
 
 export interface PaginationComponentProps {
   page: number;
-  setPage: React.Dispatch<React.SetStateAction<number>>;
+  setPage: (page: number) => void;
   totalPages: number;
   disableDefaultStyles?: boolean;
-  customClassNames?: {
-    container?: string;
-    button?: string;
-    buttonDisabled?: string;
-    pageInfo?: string;
-  };
+  customClassNames?: any;
   enableDarkMode?: boolean;
 }
