@@ -26,6 +26,8 @@ function TableComponent<T>({
   enablePagination = false,
   page = 1,
   setPage,
+  itemsPerPage = 10,
+  totalPages,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
@@ -68,14 +70,21 @@ function TableComponent<T>({
   }
 
   let paginatedData = filteredData;
-  const calculatedTotalPages = Math.ceil(filteredData.length / 10); 
+  let calculatedTotalPages =
+    totalPages ?? Math.ceil(filteredData.length / itemsPerPage);
 
-  if (enablePagination && setPage) {
-    const startIndex = (page - 1) * 10;
-    const endIndex = startIndex + 10;
-    paginatedData = filteredData.slice(startIndex, endIndex);
+  if (enablePagination) {
+    if (totalPages !== undefined) {
+      // Data is already paginated externally
+      paginatedData = filteredData; // Use data as is
+    } else {
+      // Data is not paginated, we need to paginate it
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      paginatedData = filteredData.slice(startIndex, endIndex);
+    }
 
-    if (page > calculatedTotalPages) {
+    if (page > calculatedTotalPages && setPage) {
       setPage(calculatedTotalPages);
     }
   }

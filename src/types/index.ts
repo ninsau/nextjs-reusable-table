@@ -35,6 +35,7 @@ export interface TableProps<T> {
   page?: number;
   setPage?: React.Dispatch<React.SetStateAction<number>>;
   itemsPerPage?: number;
+  totalPages?: number;
 }
 
 export interface ActionDropdownProps<T> {
