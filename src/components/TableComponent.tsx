@@ -75,10 +75,8 @@ function TableComponent<T>({
 
   if (enablePagination) {
     if (totalPages !== undefined) {
-      // Data is already paginated externally
-      paginatedData = filteredData; // Use data as is
+      paginatedData = filteredData;
     } else {
-      // Data is not paginated, we need to paginate it
       const startIndex = (page - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       paginatedData = filteredData.slice(startIndex, endIndex);
@@ -152,7 +150,7 @@ function TableComponent<T>({
 
   const thClassName = disableDefaultStyles
     ? customClassNames.th || ""
-    : `px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+    : `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
         customClassNames.th || ""
       }`;
 
@@ -163,15 +161,15 @@ function TableComponent<T>({
 
   const tdClassName = disableDefaultStyles
     ? customClassNames.td || ""
-    : `px-6 py-4 whitespace-nowrap text-sm ${baseTdClassName} ${
+    : `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
         customClassNames.td || ""
       }`;
 
   return (
     <>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto w-full">
         <div className={containerClassName}>
-          <div className="inline-block min-w-full align-middle">
+          <div className="w-full align-middle">
             <div
               className={`overflow-hidden border rounded-lg ${baseContainerClassName}`}
             >
@@ -321,7 +319,7 @@ function TableComponent<T>({
         </div>
       </div>
       {enablePagination && page !== undefined && setPage && (
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center mt-2 md:mt-4">
           <PaginationComponent
             page={page}
             setPage={setPage}
