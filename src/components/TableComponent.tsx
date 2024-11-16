@@ -95,7 +95,7 @@ function TableComponent<T>({
       : "";
 
   const baseTableClassName = !disableDefaultStyles
-    ? `min-w-full divide-y ${
+    ? `w-full divide-y ${
         enableDarkMode && isDarkMode
           ? "bg-gray-900 text-gray-200 divide-gray-700"
           : "bg-white text-gray-900 divide-gray-200"
@@ -169,7 +169,7 @@ function TableComponent<T>({
     <>
       <div className="overflow-x-auto w-full">
         <div className={containerClassName}>
-          <div className="w-full align-middle">
+          <div className="align-middle">
             <div
               className={`overflow-hidden border rounded-lg ${baseContainerClassName}`}
             >
