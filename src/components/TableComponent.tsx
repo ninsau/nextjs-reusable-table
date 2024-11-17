@@ -198,89 +198,20 @@ function TableComponent<T>({
                     let value = item[prop as keyof T];
                     if (value === null || value === undefined || value === "") {
                       value = "-" as T[keyof T];
+                    } else if (typeof value === "boolean") {
+                      value = (value ? "Yes" : "No") as T[keyof T];
+                    } else if (
+                      typeof value === "string" &&
+                      !isNaN(Number(value))
+                    ) {
+                      value = String(value) as unknown as T[keyof T];
+                    } else if (typeof value === "number") {
+                      value = Number.isInteger(value)
+                        ? value
+                        : (parseFloat(value.toFixed(2)) as T[keyof T]);
                     }
                     const cellKey = `${dataIndex}-${String(prop)}`;
                     const isExpanded = expandedCells[cellKey];
-                    let displayValue: React.ReactNode;
-
-                    if (typeof value === "string" && isDateString(value)) {
-                      displayValue = formatDate(new Date(value), true);
-                    } else if (Array.isArray(value)) {
-                      let displayArray: any[] = value as any[];
-                      if (!isExpanded && displayArray.length > 5) {
-                        displayArray = displayArray.slice(0, 5);
-                      }
-                      displayValue = (
-                        <div
-                          className="flex flex-wrap gap-1"
-                          style={{
-                            maxWidth: "200px",
-                            overflowX: "auto",
-                          }}
-                        >
-                          {displayArray.map((chip, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
-                            >
-                              {trimText(String(chip), 20)}
-                            </span>
-                          ))}
-                          {!isExpanded && (value as any[]).length > 5 && (
-                            <span
-                              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedCells((prev) => ({
-                                  ...prev,
-                                  [cellKey]: true,
-                                }));
-                              }}
-                            >
-                              +{(value as any[]).length - 5} more
-                            </span>
-                          )}
-                        </div>
-                      );
-                    } else if (
-                      typeof value === "string" &&
-                      value.startsWith("http")
-                    ) {
-                      displayValue = (
-                        <Link href={value}>
-                          <span
-                            className="text-blue-500 hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {isExpanded ? value : trimText(value, 30)}
-                          </span>
-                        </Link>
-                      );
-                    } else if (
-                      (typeof value === "number" ||
-                        (typeof value === "string" && !isNaN(Number(value)))) &&
-                      !isDateString(String(value))
-                    ) {
-                      let valueNum = Number(value);
-                      if (isNaN(valueNum)) {
-                        valueNum = 0;
-                      }
-                      // Round the number to two decimal places
-                      valueNum = Math.round(valueNum * 100) / 100;
-
-                      if (isExpanded) {
-                        displayValue = valueNum.toString();
-                      } else {
-                        displayValue = Number.isInteger(valueNum)
-                          ? valueNum.toString()
-                          : valueNum.toFixed(2);
-                      }
-                    } else {
-                      displayValue = isExpanded
-                        ? String(value)
-                        : trimText(String(value), 30);
-                    }
-
                     return (
                       <td
                         key={String(prop)}
@@ -293,7 +224,7 @@ function TableComponent<T>({
                           }));
                         }}
                       >
-                        {displayValue}
+                        {String(value)}
                       </td>
                     );
                   })}
@@ -315,7 +246,15 @@ function TableComponent<T>({
         </table>
       </div>
       {enablePagination && page !== undefined && setPage && (
-        <div className="w-full flex justify-center mt-2 md:mt-4">
+        <div
+          className="w-full flex justify-center mt-2 md:mt-4"
+          style={{
+            position: "sticky",
+            bottom: 0,
+            backgroundColor: enableDarkMode && isDarkMode ? "#1a202c" : "#fff",
+            zIndex: 10,
+          }}
+        >
           <PaginationComponent
             page={page}
             setPage={setPage}
