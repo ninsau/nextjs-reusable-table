@@ -11,8 +11,11 @@ export const formatDate = (date: Date, includeTime = false): string => {
   return date.toLocaleDateString(undefined, options);
 };
 
-export const isDateString = (value: string): boolean =>
-  !isNaN(Date.parse(value));
+export const isDateString = (str: string): boolean => {
+  if (str.length < 10) return false;
+  const parsedDate = Date.parse(str);
+  return !isNaN(parsedDate) && !isNaN(new Date(parsedDate).getTime());
+};
 
 export const trimText = (text: string, maxLength: number): string =>
   text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
