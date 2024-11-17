@@ -154,24 +154,38 @@ function TableComponent<T>({
 
   return (
     <>
-      <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
-        <thead className={theadClassName}>
-          <tr>
-            {columns.map((column) => (
-              <th key={column} scope="col" className={thClassName}>
-                {column}
-              </th>
-            ))}
-            {actions && actionTexts && (
-              <th scope="col" className={thClassName}>
-                <span className="sr-only">{actionTexts.join(", ")}</span>
-              </th>
-            )}
-          </tr>
-        </thead>
-        <tbody className={tbodyClassName}>
-          {paginatedData.map((item, dataIndex) => {
-            if (renderRow) {
+      <div style={{ overflowX: "auto" }}>
+        <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
+          <thead className={theadClassName}>
+            <tr>
+              {columns.map((column) => (
+                <th key={column} scope="col" className={thClassName}>
+                  {column}
+                </th>
+              ))}
+              {actions && actionTexts && (
+                <th scope="col" className={thClassName}>
+                  <span className="sr-only">{actionTexts.join(", ")}</span>
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody className={tbodyClassName}>
+            {paginatedData.map((item, dataIndex) => {
+              if (renderRow) {
+                return (
+                  <tr
+                    key={dataIndex}
+                    onClick={() => rowOnClick && rowOnClick(item)}
+                    className={`${trClassName(dataIndex)} ${
+                      rowOnClick ? "cursor-pointer" : ""
+                    }`}
+                  >
+                    {renderRow(item, dataIndex)}
+                  </tr>
+                );
+              }
+
               return (
                 <tr
                   key={dataIndex}
@@ -180,135 +194,126 @@ function TableComponent<T>({
                     rowOnClick ? "cursor-pointer" : ""
                   }`}
                 >
-                  {renderRow(item, dataIndex)}
-                </tr>
-              );
-            }
-
-            return (
-              <tr
-                key={dataIndex}
-                onClick={() => rowOnClick && rowOnClick(item)}
-                className={`${trClassName(dataIndex)} ${
-                  rowOnClick ? "cursor-pointer" : ""
-                }`}
-              >
-                {props.map((prop) => {
-                  let value = item[prop as keyof T];
-                  if (value === null || value === undefined || value === "") {
-                    value = "-" as T[keyof T];
-                  }
-                  const cellKey = `${dataIndex}-${String(prop)}`;
-                  const isExpanded = expandedCells[cellKey];
-                  let displayValue: React.ReactNode;
-
-                  if (typeof value === "string" && isDateString(value)) {
-                    displayValue = formatDate(new Date(value), true);
-                  } else if (Array.isArray(value)) {
-                    let displayArray: any[] = value as any[];
-                    if (!isExpanded && displayArray.length > 5) {
-                      displayArray = displayArray.slice(0, 5);
+                  {props.map((prop) => {
+                    let value = item[prop as keyof T];
+                    if (value === null || value === undefined || value === "") {
+                      value = "-" as T[keyof T];
                     }
-                    displayValue = (
-                      <div
-                        className="flex flex-wrap gap-1"
-                        style={{
-                          maxWidth: "200px",
-                          overflowX: "auto",
+                    const cellKey = `${dataIndex}-${String(prop)}`;
+                    const isExpanded = expandedCells[cellKey];
+                    let displayValue: React.ReactNode;
+
+                    if (typeof value === "string" && isDateString(value)) {
+                      displayValue = formatDate(new Date(value), true);
+                    } else if (Array.isArray(value)) {
+                      let displayArray: any[] = value as any[];
+                      if (!isExpanded && displayArray.length > 5) {
+                        displayArray = displayArray.slice(0, 5);
+                      }
+                      displayValue = (
+                        <div
+                          className="flex flex-wrap gap-1"
+                          style={{
+                            maxWidth: "200px",
+                            overflowX: "auto",
+                          }}
+                        >
+                          {displayArray.map((chip, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                            >
+                              {trimText(String(chip), 20)}
+                            </span>
+                          ))}
+                          {!isExpanded && (value as any[]).length > 5 && (
+                            <span
+                              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedCells((prev) => ({
+                                  ...prev,
+                                  [cellKey]: true,
+                                }));
+                              }}
+                            >
+                              +{(value as any[]).length - 5} more
+                            </span>
+                          )}
+                        </div>
+                      );
+                    } else if (
+                      typeof value === "string" &&
+                      value.startsWith("http")
+                    ) {
+                      displayValue = (
+                        <Link href={value}>
+                          <span
+                            className="text-blue-500 hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {isExpanded ? value : trimText(value, 30)}
+                          </span>
+                        </Link>
+                      );
+                    } else if (
+                      (typeof value === "number" ||
+                        (typeof value === "string" && !isNaN(Number(value)))) &&
+                      !isDateString(String(value))
+                    ) {
+                      let valueNum = Number(value);
+                      if (isNaN(valueNum)) {
+                        valueNum = 0;
+                      }
+                      // Round the number to two decimal places
+                      valueNum = Math.round(valueNum * 100) / 100;
+
+                      if (isExpanded) {
+                        displayValue = valueNum.toString();
+                      } else {
+                        displayValue = Number.isInteger(valueNum)
+                          ? valueNum.toString()
+                          : valueNum.toFixed(2);
+                      }
+                    } else {
+                      displayValue = isExpanded
+                        ? String(value)
+                        : trimText(String(value), 30);
+                    }
+
+                    return (
+                      <td
+                        key={String(prop)}
+                        className={tdClassName}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExpandedCells((prev) => ({
+                            ...prev,
+                            [cellKey]: !prev[cellKey],
+                          }));
                         }}
                       >
-                        {displayArray.map((chip, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
-                          >
-                            {trimText(String(chip), 20)}
-                          </span>
-                        ))}
-                        {!isExpanded && (value as any[]).length > 5 && (
-                          <span
-                            className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setExpandedCells((prev) => ({
-                                ...prev,
-                                [cellKey]: true,
-                              }));
-                            }}
-                          >
-                            +{(value as any[]).length - 5} more
-                          </span>
-                        )}
-                      </div>
+                        {displayValue}
+                      </td>
                     );
-                  } else if (
-                    typeof value === "string" &&
-                    value.startsWith("http")
-                  ) {
-                    displayValue = (
-                      <Link href={value}>
-                        <span
-                          className="text-blue-500 hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {isExpanded ? value : trimText(value, 30)}
-                        </span>
-                      </Link>
-                    );
-                  } else if (
-                    (typeof value === "number" ||
-                      (typeof value === "string" && !isNaN(Number(value)))) &&
-                    !isDateString(String(value))
-                  ) {
-                    let valueNum = Number(value);
-                    if (isNaN(valueNum)) {
-                      valueNum = 0;
-                    }
-                    const roundedValue =
-                      Math.round((valueNum + Number.EPSILON) * 100) / 100;
-                    if (isExpanded) {
-                      displayValue = valueNum.toString();
-                    } else {
-                      displayValue = roundedValue.toFixed(2);
-                    }
-                  } else {
-                    displayValue = isExpanded
-                      ? String(value)
-                      : trimText(String(value), 30);
-                  }
-
-                  return (
-                    <td
-                      key={String(prop)}
-                      className={tdClassName}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExpandedCells((prev) => ({
-                          ...prev,
-                          [cellKey]: !prev[cellKey],
-                        }));
-                      }}
-                    >
-                      {displayValue}
-                    </td>
-                  );
-                })}
-                {actions && actionTexts && actionFunctions && (
-                  <ActionDropdown<T>
-                    item={item}
-                    index={dataIndex}
-                    actionTexts={actionTexts}
-                    actionFunctions={actionFunctions}
-                    disableDefaultStyles={disableDefaultStyles}
-                    customClassNames={customClassNames}
-                    enableDarkMode={enableDarkMode}
-                  />
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  })}
+                  {actions && actionTexts && actionFunctions && (
+                    <ActionDropdown<T>
+                      item={item}
+                      index={dataIndex}
+                      actionTexts={actionTexts}
+                      actionFunctions={actionFunctions}
+                      disableDefaultStyles={disableDefaultStyles}
+                      customClassNames={customClassNames}
+                      enableDarkMode={enableDarkMode}
+                    />
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       {enablePagination && page !== undefined && setPage && (
         <div className="w-full flex justify-center mt-2 md:mt-4">
           <PaginationComponent
