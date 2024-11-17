@@ -334,22 +334,22 @@ The `TableComponent` includes built-in pagination support. You can enable pagina
 
 ## TableComponent
 
-| Prop                   | Type                                          | Required | Description                                                                                   |
-| ---------------------- | --------------------------------------------- | -------- | --------------------------------------------------------------------------------------------- |
-| `columns`              | `string[]`                                    | Yes      | An array of column headers to display.                                                        |
-| `data`                 | `T[]`                                         | Yes      | An array of data objects to display in the table.                                             |
-| `props`                | `ReadonlyArray<keyof T>`                      | Yes      | The keys from data objects corresponding to each column.                                      |
-| `actions`              | `boolean`                                     | No       | Whether to display action buttons.                                                            |
-| `actionTexts`          | `string[]`                                    | No       | Labels for the action buttons.                                                                |
-| `actionFunctions`      | `Array<(item: T) => void>`                    | No       | Functions to handle action button clicks.                                                     |
-| `loading`              | `boolean`                                     | No       | Displays a skeleton loader when `true`.                                                       |
-| `searchValue`          | `string`                                      | No       | Current search query, used in the no content message.                                         |
-| `disableDefaultStyles` | `boolean`                                     | No       | When set to `true`, disables the default Tailwind CSS styles applied to the table components. |
-| `customClassNames`     | `object`                                      | No       | An object containing custom class names for various elements of the table.                    |
-| `renderRow`            | `(item: T, index: number) => React.ReactNode` | No       | Custom function to render table rows.                                                         |
-| `rowOnClick`           | `(item: T) => void`                           | No       | Function triggered when a row is clicked.                                                     |
-| `paginationComponent`  | `React.ReactNode`                             | No       | A custom pagination component to display below the table.                                     |
-| `enableDarkMode`       | `boolean`                                     | No       | Enables dark mode styles.                                                                     |
+| Prop                   | Type                                          | Required | Description                                                                                                              |
+| ---------------------- | --------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `columns`              | `string[]`                                    | Yes      | An array of column headers to display.                                                                                   |
+| `data`                 | `T[]`                                         | Yes      | An array of data objects to display in the table.                                                                        |
+| `props`                | `ReadonlyArray<keyof T>`                      | Yes      | The keys from data objects corresponding to each column.                                                                 |
+| `actions`              | `boolean`                                     | No       | Whether to display action buttons.                                                                                       |
+| `actionTexts`          | `string[]`                                    | No       | Labels for the action buttons.                                                                                           |
+| `actionFunctions`      | `Array<(item: T) => void>`                    | No       | Functions to handle action button clicks.                                                                                |
+| `loading`              | `boolean`                                     | No       | Displays a skeleton loader when `true`.                                                                                  |
+| `searchValue`          | `string`                                      | No       | Filters the table data based on the search query. Only rows containing the query in specified `props` will be displayed. |
+| `disableDefaultStyles` | `boolean`                                     | No       | When set to `true`, disables the default Tailwind CSS styles applied to the table components.                            |
+| `customClassNames`     | `object`                                      | No       | An object containing custom class names for various elements of the table.                                               |
+| `renderRow`            | `(item: T, index: number) => React.ReactNode` | No       | Custom function to render table rows.                                                                                    |
+| `rowOnClick`           | `(item: T) => void`                           | No       | Function triggered when a row is clicked.                                                                                |
+| `paginationComponent`  | `React.ReactNode`                             | No       | A custom pagination component to display below the table.                                                                |
+| `enableDarkMode`       | `boolean`                                     | No       | Enables dark mode styles.                                                                                                |
 
 ## `customClassNames` Object Keys
 
@@ -425,6 +425,94 @@ Shows a message when there are no items to display in the table.
 | Prop   | Type     | Required | Description                                             |
 | ------ | -------- | -------- | ------------------------------------------------------- |
 | `name` | `string` | No       | The name of the content type, e.g., "items" or "users". |
+
+## Updates to Documentation
+
+Based on recent updates to the `TableComponent`, here are some additions and changes to the documentation:
+
+### Search Functionality
+
+The `searchValue` prop not only updates the no content message but also filters the table data based on the search query. It displays only the rows where any of the specified `props` contain the search value.
+
+**Updated Prop Description:**
+
+| Prop          | Type     | Required | Description                                                                                                             |
+| ------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `searchValue` | `string` | No       | Filters the table data based on the search query. Only rows containing the query in the specified `props` will display. |
+
+### Handling Null or Undefined Data
+
+The `TableComponent` automatically handles `null`, `undefined`, or empty string values in your data by displaying a hyphen `"-"` in place of missing data. This ensures a consistent and user-friendly display without requiring additional data preprocessing.
+
+### Cell Content Expansion on Click
+
+Cells containing long text or numbers are truncated by default to maintain a clean and readable table layout. Users can click on any cell to toggle between the truncated and full content. This feature enhances the user experience when dealing with large or detailed data.
+
+### Number Formatting
+
+Numeric values are displayed with up to two decimal places by default. If a number has more than two decimal places or is a very precise floating-point number (e.g., `43.00000000000001`), it is rounded for display purposes. Clicking on the cell shows the full precision value. This provides a balance between readability and data precision.
+
+### Data Type Handling
+
+The `TableComponent` intelligently formats various data types to enhance readability:
+
+- **Dates**: Recognizes date strings and formats them in a user-friendly way using the `formatDate` function.
+- **Arrays**: Displays arrays with a limited number of items (up to 5 by default) and provides an option to expand and view more by clicking.
+- **URLs**: Detects strings starting with "http" and renders them as clickable links using the `Link` component.
+- **Strings and Other Types**: Truncates long strings for a cleaner display, with the option to expand on click.
+
+### Custom Class Names
+
+Below is an updated list of keys for the `customClassNames` object, along with descriptions:
+
+| Key            | Description                                                   |
+| -------------- | ------------------------------------------------------------- |
+| `container`    | Class for the outer container `<div>`.                        |
+| `table`        | Class for the `<table>` element.                              |
+| `thead`        | Class for the `<thead>` element.                              |
+| `tbody`        | Class for the `<tbody>` element.                              |
+| `th`           | Class for the `<th>` elements.                                |
+| `tr`           | Class for the `<tr>` elements.                                |
+| `td`           | Class for the `<td>` elements.                                |
+| `actionTd`     | Class for the `<td>` containing the action dropdown.          |
+| `actionButton` | Class for the action button in the action dropdown.           |
+| `actionSvg`    | Class for the SVG icon in the action button.                  |
+| `dropdownMenu` | Class for the dropdown menu container in the action dropdown. |
+| `dropdownItem` | Class for each item in the dropdown menu.                     |
+| `pagination`   | Class for the pagination component container.                 |
+
+### Pagination Component
+
+The `TableComponent` uses an internal `PaginationComponent` when pagination is enabled. Currently, there is no `paginationComponent` prop to pass a custom pagination component. Future updates may include this feature.
+
+### Default Values for Optional Props
+
+Here are the default values for some optional props:
+
+- `enableDarkMode`: Defaults to `true`.
+- `itemsPerPage`: Defaults to `10`.
+- `disableDefaultStyles`: Defaults to `false`.
+
+### Consistency in Prop Names
+
+Ensure that you use the exact prop names as specified in the documentation and the code to avoid any discrepancies. For example, use `enableDarkMode` consistently.
+
+### Error Handling and Edge Cases
+
+The `TableComponent` handles unexpected data gracefully:
+
+- **Invalid Dates**: If a date string is invalid or not a proper date, it will display the original string or a hyphen `"-"` if the value is `null` or `undefined`.
+- **Malformed URLs**: Strings that start with "http" are treated as URLs; ensure they are valid to avoid broken links.
+- **Non-Array Objects**: If a non-array object is encountered where an array is expected, it will display the object's string representation.
+- **Numbers with High Precision**: Numbers like `43.00000000000001` are rounded to two decimal places by default but can be expanded to view full precision.
+
+### Note on `disableDefaultStyles` Prop
+
+When `disableDefaultStyles` is set to `true`, the component will not apply any of its default styles, allowing you to fully customize the appearance using the `customClassNames` prop or your own CSS.
+
+---
+
+These updates reflect the latest behaviors and capabilities of the `TableComponent` and ensure that the documentation is accurate and helpful for users integrating the component into their projects.
 
 ## Contributing
 

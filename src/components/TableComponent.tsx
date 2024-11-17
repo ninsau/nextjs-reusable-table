@@ -154,7 +154,7 @@ function TableComponent<T>({
 
   return (
     <>
-      <table className={tableClassName}>
+      <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
         <thead className={theadClassName}>
           <tr>
             {columns.map((column) => (
@@ -194,7 +194,10 @@ function TableComponent<T>({
                 }`}
               >
                 {props.map((prop) => {
-                  const value = item[prop as keyof T];
+                  let value = item[prop as keyof T];
+                  if (value === null || value === undefined || value === "") {
+                    value = "-" as T[keyof T];
+                  }
                   const cellKey = `${dataIndex}-${String(prop)}`;
                   const isExpanded = expandedCells[cellKey];
                   let displayValue: React.ReactNode;
@@ -257,14 +260,16 @@ function TableComponent<T>({
                       (typeof value === "string" && !isNaN(Number(value)))) &&
                     !isDateString(String(value))
                   ) {
-                    const valueNum = Number(value);
-                    const decimalPart = valueNum.toString().split(".")[1];
-                    if (decimalPart && decimalPart.length > 2) {
-                      displayValue = isExpanded
-                        ? valueNum.toString()
-                        : valueNum.toFixed(2);
-                    } else {
+                    let valueNum = Number(value);
+                    if (isNaN(valueNum)) {
+                      valueNum = 0;
+                    }
+                    const roundedValue =
+                      Math.round((valueNum + Number.EPSILON) * 100) / 100;
+                    if (isExpanded) {
                       displayValue = valueNum.toString();
+                    } else {
+                      displayValue = roundedValue.toFixed(2);
                     }
                   } else {
                     displayValue = isExpanded
