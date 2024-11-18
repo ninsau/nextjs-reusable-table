@@ -246,15 +246,7 @@ function TableComponent<T>({
         </table>
       </div>
       {enablePagination && page !== undefined && setPage && (
-        <div
-          className="w-full flex justify-center mt-2 md:mt-4"
-          style={{
-            position: "sticky",
-            bottom: 0,
-            backgroundColor: enableDarkMode && isDarkMode ? "#1a202c" : "#fff",
-            zIndex: 10,
-          }}
-        >
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
           <PaginationComponent
             page={page}
             setPage={setPage}
