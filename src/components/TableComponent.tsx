@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
@@ -26,6 +28,12 @@ function TableComponent<T>({
   setPage,
   itemsPerPage = 10,
   totalPages,
+  itemsPerPageOptions,
+  setItemsPerPage,
+  noContentProps = {},
+  valueFormatter,
+  enableServerSidePagination = false,
+  onPageChange,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
@@ -48,42 +56,54 @@ function TableComponent<T>({
     return <TableSkeleton enableDarkMode={enableDarkMode} />;
   }
 
-  if (!data || data.length === 0) {
-    return <NoContentComponent name={searchValue ?? "items"} />;
-  }
-
   let filteredData = data;
 
   if (searchValue) {
     filteredData = data.filter((item) => {
       return props.some((prop) => {
-        const value = item[prop as keyof T];
+        const value = item[prop];
         return String(value).toLowerCase().includes(searchValue.toLowerCase());
       });
     });
   }
 
-  if (filteredData.length === 0) {
-    return <NoContentComponent name={searchValue ?? "items"} />;
+  if (!filteredData || filteredData.length === 0) {
+    return (
+      <NoContentComponent
+        name={searchValue ?? "items"}
+        text={noContentProps.text}
+        icon={noContentProps.icon}
+        component={noContentProps.component}
+      />
+    );
   }
 
   let paginatedData = filteredData;
   let calculatedTotalPages =
     totalPages ?? Math.ceil(filteredData.length / itemsPerPage);
 
-  if (enablePagination) {
-    if (totalPages !== undefined) {
-      paginatedData = filteredData;
-    } else {
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      paginatedData = filteredData.slice(startIndex, endIndex);
-    }
-
+  if (enablePagination && !enableServerSidePagination) {
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    paginatedData = filteredData.slice(startIndex, endIndex);
     if (page > calculatedTotalPages && setPage) {
       setPage(calculatedTotalPages);
     }
   }
+
+  const handleRowClick = (item: T) => {
+    if (rowOnClick) rowOnClick(item);
+  };
+
+  const handleRowKeyDown = (
+    e: React.KeyboardEvent<HTMLTableRowElement>,
+    item: T
+  ) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleRowClick(item);
+    }
+  };
 
   const baseTableClassName = !disableDefaultStyles
     ? `w-full divide-y ${
@@ -152,10 +172,86 @@ function TableComponent<T>({
         customClassNames.td || ""
       }`;
 
+  const getDisplayValue = (
+    value: any,
+    cellKey: string,
+    item: T,
+    prop: keyof T
+  ): React.ReactNode => {
+    if (valueFormatter) return valueFormatter(value, prop, item);
+    const isExpanded = expandedCells[cellKey];
+    if (typeof value === "string" && isDateString(value)) {
+      return formatDate(new Date(value), true);
+    } else if (Array.isArray(value)) {
+      let displayArray: any[] = value;
+      if (!isExpanded && displayArray.length > 5) {
+        displayArray = displayArray.slice(0, 5);
+      }
+      return (
+        <div
+          className="flex flex-wrap gap-1"
+          style={{ maxWidth: "200px", overflowX: "auto" }}
+        >
+          {displayArray.map((chip, idx) => (
+            <span
+              key={idx}
+              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+            >
+              {trimText(String(chip), 20)}
+            </span>
+          ))}
+          {!isExpanded && (value as any[]).length > 5 && (
+            <span
+              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpandedCells((prev) => ({ ...prev, [cellKey]: true }));
+              }}
+            >
+              +{(value as any[]).length - 5} more
+            </span>
+          )}
+        </div>
+      );
+    } else if (typeof value === "string" && value.startsWith("http")) {
+      return (
+        <Link href={value}>
+          <span
+            className="text-blue-500 hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {isExpanded ? value : trimText(value, 30)}
+          </span>
+        </Link>
+      );
+    } else if (
+      (typeof value === "number" ||
+        (typeof value === "string" && !isNaN(Number(value)))) &&
+      !isDateString(String(value))
+    ) {
+      let valueNum = Number(value);
+      if (isNaN(valueNum)) {
+        valueNum = 0;
+      }
+      valueNum = Math.round(valueNum * 100) / 100;
+      return isExpanded
+        ? valueNum.toString()
+        : Number.isInteger(valueNum)
+        ? valueNum.toString()
+        : valueNum.toFixed(2);
+    } else {
+      return isExpanded ? String(value) : trimText(String(value), 30);
+    }
+  };
+
   return (
     <>
       <div style={{ overflowX: "auto" }} className="pb-6">
-        <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
+        <table
+          className={tableClassName}
+          style={{ margin: 0, padding: 0 }}
+          role="table"
+        >
           <thead className={theadClassName}>
             <tr>
               {columns.map((column) => (
@@ -176,10 +272,15 @@ function TableComponent<T>({
                 return (
                   <tr
                     key={dataIndex}
-                    onClick={() => rowOnClick && rowOnClick(item)}
+                    onClick={() => handleRowClick(item)}
+                    onKeyDown={(e) => handleRowKeyDown(e, item)}
                     className={`${trClassName(dataIndex)} ${
-                      rowOnClick ? "cursor-pointer" : ""
+                      rowOnClick
+                        ? "cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        : ""
                     }`}
+                    tabIndex={rowOnClick ? 0 : -1}
+                    role="row"
                   >
                     {renderRow(item, dataIndex)}
                   </tr>
@@ -189,96 +290,28 @@ function TableComponent<T>({
               return (
                 <tr
                   key={dataIndex}
-                  onClick={() => rowOnClick && rowOnClick(item)}
+                  onClick={() => handleRowClick(item)}
+                  onKeyDown={(e) => handleRowKeyDown(e, item)}
                   className={`${trClassName(dataIndex)} ${
-                    rowOnClick ? "cursor-pointer" : ""
+                    rowOnClick
+                      ? "cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      : ""
                   }`}
+                  tabIndex={rowOnClick ? 0 : -1}
+                  role="row"
                 >
                   {props.map((prop) => {
-                    let value = item[prop as keyof T];
+                    let value = item[prop];
                     if (value === null || value === undefined || value === "") {
                       value = "-" as T[keyof T];
                     }
                     const cellKey = `${dataIndex}-${String(prop)}`;
-                    const isExpanded = expandedCells[cellKey];
-                    let displayValue: React.ReactNode;
-
-                    if (typeof value === "string" && isDateString(value)) {
-                      displayValue = formatDate(new Date(value), true);
-                    } else if (Array.isArray(value)) {
-                      let displayArray: any[] = value as any[];
-                      if (!isExpanded && displayArray.length > 5) {
-                        displayArray = displayArray.slice(0, 5);
-                      }
-                      displayValue = (
-                        <div
-                          className="flex flex-wrap gap-1"
-                          style={{
-                            maxWidth: "200px",
-                            overflowX: "auto",
-                          }}
-                        >
-                          {displayArray.map((chip, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
-                            >
-                              {trimText(String(chip), 20)}
-                            </span>
-                          ))}
-                          {!isExpanded && (value as any[]).length > 5 && (
-                            <span
-                              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedCells((prev) => ({
-                                  ...prev,
-                                  [cellKey]: true,
-                                }));
-                              }}
-                            >
-                              +{(value as any[]).length - 5} more
-                            </span>
-                          )}
-                        </div>
-                      );
-                    } else if (
-                      typeof value === "string" &&
-                      value.startsWith("http")
-                    ) {
-                      displayValue = (
-                        <Link href={value}>
-                          <span
-                            className="text-blue-500 hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {isExpanded ? value : trimText(value, 30)}
-                          </span>
-                        </Link>
-                      );
-                    } else if (
-                      (typeof value === "number" ||
-                        (typeof value === "string" && !isNaN(Number(value)))) &&
-                      !isDateString(String(value))
-                    ) {
-                      let valueNum = Number(value);
-                      if (isNaN(valueNum)) {
-                        valueNum = 0;
-                      }
-                      valueNum = Math.round(valueNum * 100) / 100;
-
-                      if (isExpanded) {
-                        displayValue = valueNum.toString();
-                      } else {
-                        displayValue = Number.isInteger(valueNum)
-                          ? valueNum.toString()
-                          : valueNum.toFixed(2);
-                      }
-                    } else {
-                      displayValue = isExpanded
-                        ? String(value)
-                        : trimText(String(value), 30);
-                    }
+                    const displayValue = getDisplayValue(
+                      value,
+                      cellKey,
+                      item,
+                      prop
+                    );
 
                     return (
                       <td
@@ -291,6 +324,7 @@ function TableComponent<T>({
                             [cellKey]: !prev[cellKey],
                           }));
                         }}
+                        role="cell"
                       >
                         {displayValue}
                       </td>
@@ -322,6 +356,10 @@ function TableComponent<T>({
             disableDefaultStyles={disableDefaultStyles}
             customClassNames={customClassNames.pagination}
             enableDarkMode={enableDarkMode}
+            itemsPerPage={itemsPerPage}
+            itemsPerPageOptions={itemsPerPageOptions}
+            setItemsPerPage={setItemsPerPage}
+            onPageChange={onPageChange}
           />
         </div>
       )}

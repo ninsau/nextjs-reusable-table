@@ -1,20 +1,8 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-
-export interface TableSkeletonProps {
-  disableDefaultStyles?: boolean;
-  customClassNames?: {
-    container?: string;
-    table?: string;
-    th?: string;
-    tr?: string;
-    td?: string;
-  };
-  enableDarkMode?: boolean;
-}
+import { TableSkeletonProps } from "../types";
 
 const TableSkeleton: React.FC<TableSkeletonProps> = ({
   disableDefaultStyles = false,
@@ -27,11 +15,9 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
       setIsDarkMode(matchMedia.matches);
-
       const handleChange = () => {
         setIsDarkMode(matchMedia.matches);
       };
-
       matchMedia.addEventListener("change", handleChange);
       return () => {
         matchMedia.removeEventListener("change", handleChange);
@@ -43,18 +29,14 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
     enableDarkMode && isDarkMode
       ? "bg-gray-900 text-gray-200 border-gray-700"
       : "bg-white text-gray-900 border-gray-200";
-
   const baseTableClassName =
     enableDarkMode && isDarkMode
       ? "bg-gray-900 text-gray-200 divide-gray-700"
       : "bg-white text-gray-900 divide-gray-300";
-
   const baseThClassName =
     enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
-
   const baseTdClassName =
     enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
-
   const baseTrClassName = (index: number) =>
     index % 2 === 0
       ? enableDarkMode && isDarkMode

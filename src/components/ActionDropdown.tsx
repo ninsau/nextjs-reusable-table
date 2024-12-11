@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { ActionDropdownProps } from "../types";
@@ -82,12 +84,9 @@ const ActionDropdown = <T,>({
     : `${baseTdClassName(index)} ${customClassNames.actionTd || ""}`;
 
   const baseButtonClassName = "focus:outline-none text-gray-700";
-
   const baseSvgClassName = "w-6 h-6 text-gray-700 hover:text-gray-900";
-
   const baseDropdownMenuClassName =
     "absolute z-50 mt-1 w-48 bg-gray-200 shadow-md rounded-lg text-gray-700";
-
   const baseDropdownItemClassName =
     "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-300";
 

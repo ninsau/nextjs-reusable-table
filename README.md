@@ -1,518 +1,420 @@
-# Next.js Reusable Table
+# Nextjs Reusable Table
 
-A highly customizable and reusable table component for Next.js applications, built with TypeScript and the latest technologies.
+A highly customizable and reusable table component for Next.js and React applications, built with TypeScript and Tailwind CSS. It includes features like dynamic columns, pagination, dark mode, custom styling, search filtering, and more. It also supports accessibility improvements such as keyboard navigation and custom formatting for data values.
 
-## See the [Examples](https://nextjs-reusables.vercel.app/tables)
+<!-- ## See the [Examples](https://nextjs-reusables.vercel.app/tables) -->
 
-<!-- [![NPM](https://img.shields.io/npm/v/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer)
-[![Downloads](https://img.shields.io/npm/dt/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer)
-[![License](https://img.shields.io/npm/l/react-coderenderer.svg)](https://www.npmjs.com/package/react-coderenderer) -->
+## Key Features
 
-## Table of Contents
-
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Basic Example](#basic-example)
-  - [Props](#props)
-- [Components](#components)
-- [Contributing](#contributing)
-- [Versioning](#versioning)
-- [License](#license)
-- [Code of Conduct](#code-of-conduct)
-- [Acknowledgments](#acknowledgments)
-
-## Features
-
-- **TypeScript Support**: Fully typed with generics to ensure type safety and better developer experience.
-- **Next.js Optimized**: Specifically designed for seamless integration with Next.js applications, ensuring performance and compatibility.
-
-- **Customizable Columns and Data**: Easily configure columns and map data properties, making the table versatile for various data structures.
-
-- **Action Dropdowns**: Built-in support for row-specific actions with customizable buttons and functions, enabling interactive tables.
-
-- **Loading Skeleton**: Provides a smooth user experience by showing a skeleton loader during data fetch or loading states.
-
-- **No Content Component**: Displays a friendly message when no data is available, enhancing UX for empty states.
-
-- **Styling Flexibility**: Comes with default Tailwind CSS styles but allows opting out to apply custom styles or completely override the design.
-
-- **Search Functionality**: Integrates a search feature to easily filter and search through table data.
-
-- **Handle Various Data Types**: Effortlessly manages data types like dates, arrays, URLs, and strings, automatically formatting and displaying them in a user-friendly way.
-
-- **Dark Mode Compatible**: Supports dark mode themes and can be easily customized to match your application's design.
-
-- **Modern Technologies**: Built with the latest React features and follows best practices for efficient, maintainable code.
-
-## Prerequisites
-
-This package uses [Tailwind CSS](https://tailwindcss.com/) for styling. Ensure you have Tailwind CSS installed and configured in your Next.js project. If you haven't set it up yet, follow the official [Tailwind CSS Next.js Installation Guide](https://tailwindcss.com/docs/guides/nextjs).
-
-`Note:` If you prefer not to use `Tailwind CSS` or want to apply your own styling, you can opt-out of the default styles provided by this package. See the Opting Out of Default Styles section for details.
+- **Dynamic columns**: Easily pass columns and props to control what data is displayed.
+- **Automatic pagination**: Enable pagination, control page, and items per page. Includes a dropdown to select items per page.
+- **Search filtering**: Pass a `searchValue` to filter rows by any property.
+- **Dark mode support**: Automatically detects system preference and adjusts styling.
+- **Customizable styles**: Use Tailwind classes or disable default styles and pass your own custom classes.
+- **Action dropdowns**: Add action buttons to each row, enabling operations like "Delete" or "View" inline.
+- **Skeleton loading states**: Show a skeleton when loading data.
+- **No-content state handling**: Displays a customizable message or component when there's no data.
+- **Accessibility improvements**: Navigate rows using the keyboard, improved focus states.
+- **Server-side pagination support**: Trigger fetching logic on page changes.
+- **Custom value formatting**: Provide a `valueFormatter` for custom display logic of cell data.
 
 ## Installation
-
-Install the package via npm:
 
 ```bash
 npm install nextjs-reusable-table
 ```
 
-Or via yarn:
+or
 
 ```bash
 yarn add nextjs-reusable-table
 ```
 
-## Usage
-
-Import the `TableComponent` into your Next.js page or component:
+## BASIC USAGE
 
 ```tsx
 import React from "react";
 import { TableComponent } from "nextjs-reusable-table";
-import "nextjs-reusable-table/dist/index.css"; // Import default styles
-```
+import "nextjs-reusable-table/dist/index.css";
 
-Pass the required props to the `TableComponent`:
-
-```tsx
-<TableComponent
-  columns={columns}
-  data={data}
-  props={props}
-  actions={true}
-  actionTexts={["Edit", "Delete"]}
-  actionFunctions={[handleEdit, handleDelete]}
-  loading={false}
-  searchValue=""
-/>
-```
-
-### Basic Example
-
-```tsx
-"use client";
-import React from "react";
-import { TableComponent } from "nextjs-reusable-table";
-import "nextjs-reusable-table/dist/index.css"; // Import default styles
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
-
-const data: User[] = [
-  { id: 1, name: "John Doe", email: "john@example.com", role: "Admin" },
-  // ... more data
+const columns = ["Name", "Email", "Created"];
+const data = [
+  {
+    name: "John Doe",
+    email: "john@example.com",
+    createdAt: "2024-12-10T10:00:00Z",
+  },
+  {
+    name: "Jane Smith",
+    email: "jane@example.com",
+    createdAt: "2024-12-11T12:30:00Z",
+  },
 ];
 
-const columns = ["Name", "Email", "Role"];
-const props = ["name", "email", "role"] as const;
-
-const MyTablePage: React.FC = () => {
-  const handleEdit = (item: User) => {
-    console.log("Edit", item);
-  };
-
-  const handleDelete = (item: User) => {
-    console.log("Delete", item);
-  };
-
+export default function MyTablePage() {
   return (
-    <TableComponent<User>
+    <TableComponent
       columns={columns}
       data={data}
-      props={props}
-      actions={true}
-      actionTexts={["Edit", "Delete"]}
-      actionFunctions={[handleEdit, handleDelete]}
-      loading={false}
-      searchValue=""
+      props={["name", "email", "createdAt"]}
     />
   );
-};
-
-export default MyTablePage;
-```
-
-### Opting Out of Default Styles
-
-If you prefer to use your own styling or are not using Tailwind CSS in your project, you can opt-out of the default styles provided by the package. Here's how:
-
-- Do Not `Import` the Default CSS
-
-```tsx
-// import "nextjs-reusable-table/dist/index.css"; // Do not import this
-```
-
-- Set `disableDefaultStyles` to true
-
-  Pass the `disableDefaultStyles` prop to the TableComponent:
-
-```tsx
-<TableComponent
-  // ... your props
-  disableDefaultStyles={true}
-  customClassNames={{
-    container: "my-custom-container",
-    table: "my-custom-table",
-    th: "my-custom-th",
-    // ... other custom classes
-  }}
-/>
-```
-
-- Provide Custom Class Names (Optional)
-
-  If you want to apply your own styles, you can pass custom class names via the customClassNames prop. This allows you to fully customize the appearance of the table.
-
-```tsx
-"use client";
-import React from "react";
-import { TableComponent } from "nextjs-reusable-table";
-// Do not import the default CSS
-import "./my-custom-styles.css"; // Your custom styles
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
 }
+```
 
-const data: User[] = [
-  { id: 1, name: "John Doe", email: "john@example.com", role: "Admin" },
-  // ... more data
+## SEARCHING
+
+```tsx
+import React, { useState } from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+const columns = ["Name", "Email", "Created"];
+const data = [
+  {
+    name: "John Doe",
+    email: "john@example.com",
+    createdAt: "2024-12-10T10:00:00Z",
+  },
+  {
+    name: "Jane Smith",
+    email: "jane@example.com",
+    createdAt: "2024-12-11T12:30:00Z",
+  },
 ];
 
-const columns = ["Name", "Email", "Role"];
-const props = ["name", "email", "role"] as const;
-
-const MyTablePage: React.FC = () => {
-  const handleEdit = (item: User) => {
-    console.log("Edit", item);
-  };
-
-  const handleDelete = (item: User) => {
-    console.log("Delete", item);
-  };
+export default function SearchableTable() {
+  const [searchValue, setSearchValue] = useState("");
 
   return (
-    <TableComponent<User>
+    <>
+      <input
+        type="text"
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
+      />
+      <TableComponent
+        columns={columns}
+        data={data}
+        props={["name", "email", "createdAt"]}
+        searchValue={searchValue}
+      />
+    </>
+  );
+}
+```
+
+## PAGINATION
+
+```tsx
+import React, { useState } from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+const columns = ["Name", "Email", "Created"];
+const data = [
+  {
+    name: "John Doe",
+    email: "john@example.com",
+    createdAt: "2024-12-10T10:00:00Z",
+  },
+  {
+    name: "Jane Smith",
+    email: "jane@example.com",
+    createdAt: "2024-12-11T12:30:00Z",
+  },
+  {
+    name: "Bob Lee",
+    email: "bob@example.com",
+    createdAt: "2024-12-12T14:00:00Z",
+  },
+  {
+    name: "Alice Johnson",
+    email: "alice@example.com",
+    createdAt: "2024-12-13T16:45:00Z",
+  },
+];
+
+export default function PaginatedTable() {
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(2);
+
+  return (
+    <TableComponent
       columns={columns}
       data={data}
-      props={props}
+      props={["name", "email", "createdAt"]}
+      enablePagination={true}
+      page={page}
+      setPage={setPage}
+      itemsPerPage={itemsPerPage}
+      setItemsPerPage={setItemsPerPage}
+      itemsPerPageOptions={[2, 5, 10]}
+    />
+  );
+}
+```
+
+## ACTION DROPDOWNS
+
+```tsx
+import React from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+const columns = ["Name", "Email", "Actions"];
+const data = [
+  { name: "John Doe", email: "john@example.com" },
+  { name: "Jane Smith", email: "jane@example.com" },
+];
+
+function deleteUser(item) {
+  console.log("Delete", item);
+}
+
+function viewProfile(item) {
+  console.log("View Profile", item);
+}
+
+export default function ActionTable() {
+  return (
+    <TableComponent
+      columns={columns}
+      data={data}
+      props={["name", "email"]}
       actions={true}
-      actionTexts={["Edit", "Delete"]}
-      actionFunctions={[handleEdit, handleDelete]}
-      loading={false}
-      searchValue=""
+      actionTexts={["Delete", "View"]}
+      actionFunctions={[deleteUser, viewProfile]}
+    />
+  );
+}
+```
+
+## DARK MODE
+
+Dark mode is automatically detected if enableDarkMode is set to true.
+
+```tsx
+import React from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+const columns = ["Name", "Email", "Created"];
+const data = [
+  {
+    name: "John Doe",
+    email: "john@example.com",
+    createdAt: "2024-12-10T10:00:00Z",
+  },
+  {
+    name: "Jane Smith",
+    email: "jane@example.com",
+    createdAt: "2024-12-11T12:30:00Z",
+  },
+];
+
+export default function DarkModeTable() {
+  return (
+    <TableComponent
+      columns={columns}
+      data={data}
+      props={["name", "email", "createdAt"]}
+      enableDarkMode={true}
+    />
+  );
+}
+```
+
+## CUSTOM STYLES
+
+Disable default Tailwind styles and provide your own classes by setting disableDefaultStyles to true and passing customClassNames.
+
+```tsx
+import React from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+const columns = ["Name", "Email", "Created"];
+const data = [
+  {
+    name: "John Doe",
+    email: "john@example.com",
+    createdAt: "2024-12-10T10:00:00Z",
+  },
+  {
+    name: "Jane Smith",
+    email: "jane@example.com",
+    createdAt: "2024-12-11T12:30:00Z",
+  },
+];
+
+export default function CustomStyledTable() {
+  return (
+    <TableComponent
+      columns={columns}
+      data={data}
+      props={["name", "email", "createdAt"]}
       disableDefaultStyles={true}
       customClassNames={{
-        container: "my-custom-container",
         table: "my-custom-table",
         th: "my-custom-th",
-        tr: "my-custom-tr",
         td: "my-custom-td",
-        actionTd: "my-custom-action-td",
-        actionButton: "my-custom-action-button",
-        actionSvg: "my-custom-action-svg",
-        dropdownMenu: "my-custom-dropdown-menu",
-        dropdownItem: "my-custom-dropdown-item",
       }}
     />
   );
-};
-
-export default MyTablePage;
+}
 ```
 
-- Use Custom Rows
+## LOADING STATES
 
-  If you want to customize the appearance of the table rows, you can pass a custom renderRow function to the TableComponent. This allows you to fully control the rendering of each row.
+Show a skeleton when loading = true:
 
 ```tsx
-"use client";
 import React from "react";
 import { TableComponent } from "nextjs-reusable-table";
-import "nextjs-reusable-table/dist/index.css"; // Import default styles
+import "nextjs-reusable-table/dist/index.css";
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
+export default function LoadingTable() {
+  return (
+    <TableComponent
+      columns={["Name", "Email", "Created"]}
+      data={[]}
+      props={["name", "email", "createdAt"]}
+      loading={true}
+    />
+  );
 }
+```
 
-const data: User[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john@example.com",
-    role: "Admin",
-    status: "Active",
-  },
-  // ... more data
+## NO-CONTENT STATE
+
+Customize the no-content message or replace it with a custom component:
+
+```tsx
+import React from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+export default function EmptyTable() {
+  return (
+    <TableComponent
+      columns={["Name", "Email", "Created"]}
+      data={[]}
+      props={["name", "email", "createdAt"]}
+      noContentProps={{
+        text: "No users available at the moment.",
+        icon: <span>No Data Icon</span>,
+      }}
+    />
+  );
+}
+```
+
+## VALUE FORMATTING
+
+Use valueFormatter to format cell data (e.g., currency formatting, date formatting, etc.):
+
+```tsx
+import React from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+const columns = ["Name", "Balance"];
+const data = [
+  { name: "John Doe", balance: 1234.56 },
+  { name: "Jane Smith", balance: 890.12 },
 ];
 
-const columns = ["Name", "Email", "Role", "Status"];
+function formatValue(value, prop, item) {
+  if (prop === "balance") {
+    return `$${parseFloat(value).toFixed(2)}`;
+  }
+  return value;
+}
 
-const MyTablePage: React.FC = () => {
-  const handleEdit = (item: User) => {
-    console.log("Edit", item);
-  };
+export default function FormattedTable() {
+  return (
+    <TableComponent
+      columns={columns}
+      data={data}
+      props={["name", "balance"]}
+      valueFormatter={formatValue}
+    />
+  );
+}
+```
 
-  const handleDelete = (item: User) => {
-    console.log("Delete", item);
-  };
+## SERVER-SIDE PAGINATION
 
-  const renderCustomRow = (item: User, index: number) => {
-    return (
-      <>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-          {item.name}
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-          <a
-            href={`mailto:${item.email}`}
-            className="text-blue-500 hover:underline"
-          >
-            {item.email}
-          </a>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-          {item.role}
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap text-sm">
-          <span
-            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-              item.status === "Active"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {item.status}
-          </span>
-        </td>
-      </>
+If you want full control of data fetching on page changes, set enableServerSidePagination = true and use onPageChange to trigger data fetching:
+
+```tsx
+import React, { useState } from "react";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+const columns = ["Name", "Email"];
+// Initially empty, fetched externally
+const initialData = [];
+
+export default function ServerSideTable() {
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState(initialData);
+
+  // Fetch data whenever page changes
+  const onPageChange = async (newPage) => {
+    // Fetch from your API
+    const newData = await fetch(`/api/users?page=${newPage}`).then((res) =>
+      res.json()
     );
+    setData(newData.items);
   };
 
   return (
-    <TableComponent<User>
+    <TableComponent
       columns={columns}
       data={data}
-      props={["name", "email", "role", "status"] as const}
-      loading={false}
-      renderRow={renderCustomRow}
+      props={["name", "email"]}
+      enablePagination={true}
+      enableServerSidePagination={true}
+      page={page}
+      setPage={setPage}
+      onPageChange={onPageChange}
     />
   );
-};
-
-export default MyTablePage;
+}
 ```
-
-## Pagination
-
-The `TableComponent` includes built-in pagination support. You can enable pagination by setting the enablePagination prop to true and providing the current page, a setPage function, and optionally the number of items per page via itemsPerPage.
-
-| Prop               | Type                     | Required | Description                                  |
-| ------------------ | ------------------------ | -------- | -------------------------------------------- |
-| `enablePagination` | `boolean`                | Yes      | Enable pagination.                           |
-| `page`             | `number`                 | Yes      | The current page number.                     |
-| `setPage`          | `(page: number) => void` | Yes      | Function to set the current page.            |
-| `totalPages`       | `number`                 | No       | The total number of pages.                   |
-| `itemsPerPage`     | `number`                 | No       | The number of items per page. Default is 10. |
 
 ## Props
 
-## TableComponent
+## Props
 
-| Prop                   | Type                                          | Required | Description                                                                                                              |
-| ---------------------- | --------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `columns`              | `string[]`                                    | Yes      | An array of column headers to display.                                                                                   |
-| `data`                 | `T[]`                                         | Yes      | An array of data objects to display in the table.                                                                        |
-| `props`                | `ReadonlyArray<keyof T>`                      | Yes      | The keys from data objects corresponding to each column.                                                                 |
-| `actions`              | `boolean`                                     | No       | Whether to display action buttons.                                                                                       |
-| `actionTexts`          | `string[]`                                    | No       | Labels for the action buttons.                                                                                           |
-| `actionFunctions`      | `Array<(item: T) => void>`                    | No       | Functions to handle action button clicks.                                                                                |
-| `loading`              | `boolean`                                     | No       | Displays a skeleton loader when `true`.                                                                                  |
-| `searchValue`          | `string`                                      | No       | Filters the table data based on the search query. Only rows containing the query in specified `props` will be displayed. |
-| `disableDefaultStyles` | `boolean`                                     | No       | When set to `true`, disables the default Tailwind CSS styles applied to the table components.                            |
-| `customClassNames`     | `object`                                      | No       | An object containing custom class names for various elements of the table.                                               |
-| `renderRow`            | `(item: T, index: number) => React.ReactNode` | No       | Custom function to render table rows.                                                                                    |
-| `rowOnClick`           | `(item: T) => void`                           | No       | Function triggered when a row is clicked.                                                                                |
-| `paginationComponent`  | `React.ReactNode`                             | No       | A custom pagination component to display below the table.                                                                |
-| `enableDarkMode`       | `boolean`                                     | No       | Enables dark mode styles.                                                                                                |
-
-## `customClassNames` Object Keys
-
-| Key            | Description                                          |
-| -------------- | ---------------------------------------------------- |
-| `container`    | Class for the outer container `<div>`.               |
-| `table`        | Class for the `<table>` element.                     |
-| `thead`        | Class for the `<thead>` element.                     |
-| `th`           | Class for the `<th>` elements.                       |
-| `tr`           | Class for the `<tr>` elements.                       |
-| `td`           | Class for the `<td>` elements.                       |
-| `actionTd`     | Class for the `<td>` containing the action dropdown. |
-| `actionButton` | Class for the action button.                         |
-| `actionSvg`    | Class for the SVG icon in the action button.         |
-| `dropdownMenu` | Class for the dropdown menu container.               |
-| `dropdownItem` | Class for each item in the dropdown menu.            |
-
-## Components
-
-## ActionDropdown
-
-A component that renders a dropdown menu with action buttons for each row.
-
-### Props
-
-| Prop                   | Type                       | Required | Description                                         |
-| ---------------------- | -------------------------- | -------- | --------------------------------------------------- |
-| `item`                 | `T`                        | Yes      | The data item associated with the row.              |
-| `index`                | `number`                   | Yes      | The index of the row.                               |
-| `actionTexts`          | `string[]`                 | Yes      | An array of labels for the action buttons.          |
-| `actionFunctions`      | `Array<(item: T) => void>` | Yes      | An array of functions corresponding to each action. |
-| `disableDefaultStyles` | `boolean`                  | No       | Boolean to disable default styles.                  |
-| `customClassNames`     | `object`                   | No       | Custom class names for styling.                     |
-| `enableDarkMode`       | `boolean`                  | No       | Enables dark mode styles.                           |
-
-### `customClassNames` Object Keys (Optional)
-
-| Key            | Description                                  |
-| -------------- | -------------------------------------------- |
-| `actionButton` | Class for the action button.                 |
-| `dropdownMenu` | Class for the dropdown menu container.       |
-| `dropdownItem` | Class for each item in the dropdown menu.    |
-| `actionSvg`    | Class for the SVG icon in the action button. |
-
----
-
-## TableSkeleton
-
-Displays a skeleton loader while the table data is loading.
-
-### Props
-
-| Prop                   | Type      | Required | Description                        |
-| ---------------------- | --------- | -------- | ---------------------------------- |
-| `disableDefaultStyles` | `boolean` | No       | Boolean to disable default styles. |
-| `customClassNames`     | `object`  | No       | Custom class names for styling.    |
-
-### `customClassNames` Object Keys (Optional)
-
-| Key         | Description                              |
-| ----------- | ---------------------------------------- |
-| `container` | Class for the skeleton loader container. |
-| `row`       | Class for the individual skeleton rows.  |
-
----
-
-## NoContentComponent
-
-Shows a message when there are no items to display in the table.
-
-### Props
-
-| Prop   | Type     | Required | Description                                             |
-| ------ | -------- | -------- | ------------------------------------------------------- |
-| `name` | `string` | No       | The name of the content type, e.g., "items" or "users". |
-
-## Updates to Documentation
-
-Based on recent updates to the `TableComponent`, here are some additions and changes to the documentation:
-
-### Search Functionality
-
-The `searchValue` prop not only updates the no content message but also filters the table data based on the search query. It displays only the rows where any of the specified `props` contain the search value.
-
-**Updated Prop Description:**
-
-| Prop          | Type     | Required | Description                                                                                                             |
-| ------------- | -------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `searchValue` | `string` | No       | Filters the table data based on the search query. Only rows containing the query in the specified `props` will display. |
-
-### Handling Null or Undefined Data
-
-The `TableComponent` automatically handles `null`, `undefined`, or empty string values in your data by displaying a hyphen `"-"` in place of missing data. This ensures a consistent and user-friendly display without requiring additional data preprocessing.
-
-### Cell Content Expansion on Click
-
-Cells containing long text or numbers are truncated by default to maintain a clean and readable table layout. Users can click on any cell to toggle between the truncated and full content. This feature enhances the user experience when dealing with large or detailed data.
-
-### Number Formatting
-
-Numeric values are displayed with up to two decimal places by default. If a number has more than two decimal places or is a very precise floating-point number (e.g., `43.00000000000001`), it is rounded for display purposes. Clicking on the cell shows the full precision value. This provides a balance between readability and data precision.
-
-### Data Type Handling
-
-The `TableComponent` intelligently formats various data types to enhance readability:
-
-- **Dates**: Recognizes date strings and formats them in a user-friendly way using the `formatDate` function.
-- **Arrays**: Displays arrays with a limited number of items (up to 5 by default) and provides an option to expand and view more by clicking.
-- **URLs**: Detects strings starting with "http" and renders them as clickable links using the `Link` component.
-- **Strings and Other Types**: Truncates long strings for a cleaner display, with the option to expand on click.
-
-### Custom Class Names
-
-Below is an updated list of keys for the `customClassNames` object, along with descriptions:
-
-| Key            | Description                                                   |
-| -------------- | ------------------------------------------------------------- |
-| `container`    | Class for the outer container `<div>`.                        |
-| `table`        | Class for the `<table>` element.                              |
-| `thead`        | Class for the `<thead>` element.                              |
-| `tbody`        | Class for the `<tbody>` element.                              |
-| `th`           | Class for the `<th>` elements.                                |
-| `tr`           | Class for the `<tr>` elements.                                |
-| `td`           | Class for the `<td>` elements.                                |
-| `actionTd`     | Class for the `<td>` containing the action dropdown.          |
-| `actionButton` | Class for the action button in the action dropdown.           |
-| `actionSvg`    | Class for the SVG icon in the action button.                  |
-| `dropdownMenu` | Class for the dropdown menu container in the action dropdown. |
-| `dropdownItem` | Class for each item in the dropdown menu.                     |
-| `pagination`   | Class for the pagination component container.                 |
-
-### Pagination Component
-
-The `TableComponent` uses an internal `PaginationComponent` when pagination is enabled. Currently, there is no `paginationComponent` prop to pass a custom pagination component. Future updates may include this feature.
-
-### Default Values for Optional Props
-
-Here are the default values for some optional props:
-
-- `enableDarkMode`: Defaults to `true`.
-- `itemsPerPage`: Defaults to `10`.
-- `disableDefaultStyles`: Defaults to `false`.
-
-### Consistency in Prop Names
-
-Ensure that you use the exact prop names as specified in the documentation and the code to avoid any discrepancies. For example, use `enableDarkMode` consistently.
-
-### Error Handling and Edge Cases
-
-The `TableComponent` handles unexpected data gracefully:
-
-- **Invalid Dates**: If a date string is invalid or not a proper date, it will display the original string or a hyphen `"-"` if the value is `null` or `undefined`.
-- **Malformed URLs**: Strings that start with "http" are treated as URLs; ensure they are valid to avoid broken links.
-- **Non-Array Objects**: If a non-array object is encountered where an array is expected, it will display the object's string representation.
-- **Numbers with High Precision**: Numbers like `43.00000000000001` are rounded to two decimal places by default but can be expanded to view full precision.
-
-### Note on `disableDefaultStyles` Prop
-
-When `disableDefaultStyles` is set to `true`, the component will not apply any of its default styles, allowing you to fully customize the appearance using the `customClassNames` prop or your own CSS.
-
----
-
-These updates reflect the latest behaviors and capabilities of the `TableComponent` and ensure that the documentation is accurate and helpful for users integrating the component into their projects.
+| Prop                           | Type                                                                      | Default             | Description                                                                                                                                                             |
+| ------------------------------ | ------------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **columns**                    | `string[]`                                                                | -                   | An array of column headers to display.                                                                                                                                  |
+| **data**                       | `T[]`                                                                     | -                   | The data array that feeds the table. Each item corresponds to one row in the table.                                                                                     |
+| **props**                      | `ReadonlyArray<keyof T>`                                                  | -                   | An array of property keys that determine which data values to display in each row. Must correspond to fields on each data item.                                         |
+| **actions**                    | `boolean`                                                                 | `false`             | When true, adds an actions column and renders action buttons (defined by `actionTexts` and `actionFunctions`) in each row.                                              |
+| **actionTexts**                | `string[]`                                                                | -                   | An array of text labels for the actions. Used in the actions dropdown. Must be used with `actions` set to true.                                                         |
+| **actionFunctions**            | `Array<(item: T) => void>`                                                | -                   | An array of functions, each corresponding to an action in `actionTexts`. Each function is called with the row item when the action is selected.                         |
+| **loading**                    | `boolean`                                                                 | `false`             | If true, displays a skeleton loading state instead of table data.                                                                                                       |
+| **searchValue**                | `string`                                                                  | `""`                | Filter rows by matching this string against their specified props.                                                                                                      |
+| **disableDefaultStyles**       | `boolean`                                                                 | `false`             | If true, disables the default Tailwind-based styling. Use in conjunction with `customClassNames` for full control.                                                      |
+| **customClassNames**           | `object` (see types)                                                      | `{}`                | An object containing class names to override default styling. You can define classes for table elements (thead, tbody, th, tr, td), actions, dropdowns, and pagination. |
+| **renderRow**                  | `(item: T, index: number) => React.ReactNode`                             | -                   | A custom row rendering function. If provided, the row is rendered entirely by this function instead of using the default `props` mapping.                               |
+| **rowOnClick**                 | `(item: T) => void`                                                       | -                   | A function that is called when a row is clicked. Makes rows clickable and accessible by keyboard (Enter/Space triggers this as well).                                   |
+| **enableDarkMode**             | `boolean`                                                                 | `true`              | If true, attempts to detect dark mode preference and adjust styling accordingly.                                                                                        |
+| **enablePagination**           | `boolean`                                                                 | `false`             | If true, enables pagination controls below the table. Requires `page` and `setPage` to function, and optionally `itemsPerPage`, `totalPages`, etc.                      |
+| **page**                       | `number`                                                                  | `1`                 | The current page number (1-indexed). Required if `enablePagination` is true.                                                                                            |
+| **setPage**                    | `(page: number) => void`                                                  | -                   | A function to update the current page. Required if `enablePagination` is true.                                                                                          |
+| **itemsPerPage**               | `number`                                                                  | `10`                | How many items to show per page. If `enablePagination` is true, this controls pagination slicing.                                                                       |
+| **totalPages**                 | `number`                                                                  | Computed internally | The total number of pages. If not provided, it's computed from `data.length / itemsPerPage`. If provided, it can be used to handle server-side pagination.              |
+| **itemsPerPageOptions**        | `number[]`                                                                | -                   | An array of options for items per page. Displays a dropdown in pagination controls to change `itemsPerPage`.                                                            |
+| **setItemsPerPage**            | `(itemsPerPage: number) => void`                                          | -                   | A function that updates the items per page selection. Used together with `itemsPerPageOptions`.                                                                         |
+| **noContentProps**             | `{ text?: string; icon?: React.ReactNode; component?: React.ReactNode; }` | `{}`                | Customize the no-content state. `text` overrides the default message, `icon` sets a custom icon, and `component` can fully replace the entire no-content component.     |
+| **valueFormatter**             | `(value: any, prop: keyof T, item: T) => React.ReactNode`                 | -                   | A custom formatter for cell values. Use this to format dates, numbers, currency, or other data before rendering.                                                        |
+| **enableServerSidePagination** | `boolean`                                                                 | `false`             | If true, pagination does not slice data locally. Instead, `onPageChange` is called so you can fetch new data from a server or external source.                          |
+| **onPageChange**               | `(page: number) => void`                                                  | -                   | A callback that is triggered whenever the page changes, allowing you to fetch new data when `enableServerSidePagination` is true.                                       |
 
 ## Contributing
 

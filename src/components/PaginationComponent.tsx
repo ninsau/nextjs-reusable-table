@@ -10,6 +10,10 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
   disableDefaultStyles = false,
   customClassNames = {},
   enableDarkMode = true,
+  itemsPerPage,
+  itemsPerPageOptions,
+  setItemsPerPage,
+  onPageChange,
 }) => {
   const [isDarkMode, setIsDarkModeState] = useState(false);
 
@@ -43,24 +47,47 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         isDarkMode ? "text-gray-300" : "text-gray-700"
       }`;
 
+  const containerClassName = disableDefaultStyles
+    ? customClassNames.container || ""
+    : "flex items-center mt-4 gap-2";
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    if (onPageChange) onPageChange(newPage);
+  };
+
+  const handleItemsPerPageChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newItems = Number(e.target.value);
+    if (setItemsPerPage) setItemsPerPage(newItems);
+  };
+
   return (
-    <div
-      className={
-        disableDefaultStyles
-          ? customClassNames.container || ""
-          : "flex justify-center items-center mt-4"
-      }
-    >
+    <div className={containerClassName}>
+      {itemsPerPageOptions && setItemsPerPage && (
+        <select
+          value={itemsPerPage}
+          onChange={handleItemsPerPageChange}
+          className={disableDefaultStyles ? "" : "px-2 py-1 rounded-md"}
+        >
+          {itemsPerPageOptions.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt} per page
+            </option>
+          ))}
+        </select>
+      )}
       <button
         disabled={page === 1}
-        onClick={() => setPage(1)}
+        onClick={() => handlePageChange(1)}
         className={page === 1 ? disabledButtonClassName : baseButtonClassName}
       >
         First
       </button>
       <button
         disabled={page === 1}
-        onClick={() => setPage(page - 1)}
+        onClick={() => handlePageChange(page - 1)}
         className={page === 1 ? disabledButtonClassName : baseButtonClassName}
       >
         Previous
@@ -70,7 +97,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
       </span>
       <button
         disabled={page === totalPages}
-        onClick={() => setPage(page + 1)}
+        onClick={() => handlePageChange(page + 1)}
         className={
           page === totalPages ? disabledButtonClassName : baseButtonClassName
         }
@@ -79,7 +106,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
       </button>
       <button
         disabled={page === totalPages}
-        onClick={() => setPage(totalPages)}
+        onClick={() => handlePageChange(totalPages)}
         className={
           page === totalPages ? disabledButtonClassName : baseButtonClassName
         }

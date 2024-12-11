@@ -36,6 +36,16 @@ export interface TableProps<T> {
   setPage?: (page: number) => void;
   itemsPerPage?: number;
   totalPages?: number;
+  itemsPerPageOptions?: number[];
+  setItemsPerPage?: (itemsPerPage: number) => void;
+  noContentProps?: {
+    text?: string;
+    icon?: React.ReactNode;
+    component?: React.ReactNode;
+  };
+  valueFormatter?: (value: any, prop: keyof T, item: T) => React.ReactNode;
+  enableServerSidePagination?: boolean;
+  onPageChange?: (page: number) => void;
 }
 
 export interface ActionDropdownProps<T> {
@@ -73,4 +83,8 @@ export interface PaginationComponentProps {
   disableDefaultStyles?: boolean;
   customClassNames?: any;
   enableDarkMode?: boolean;
+  itemsPerPage?: number;
+  itemsPerPageOptions?: number[];
+  setItemsPerPage?: (itemsPerPage: number) => void;
+  onPageChange?: (page: number) => void;
 }
