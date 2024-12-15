@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { ActionDropdownProps } from "../types";
@@ -19,7 +20,6 @@ const ActionDropdown = <T,>({
   }>({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const toggleDropdown = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
@@ -33,7 +33,6 @@ const ActionDropdown = <T,>({
     }
     setIsDropdownOpen((prev) => !prev);
   };
-
   const handleClickOutside = (event: MouseEvent) => {
     if (
       dropdownRef.current &&
@@ -44,14 +43,12 @@ const ActionDropdown = <T,>({
       setIsDropdownOpen(false);
     }
   };
-
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
   useEffect(() => {
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -63,50 +60,38 @@ const ActionDropdown = <T,>({
       };
     }
   }, [enableDarkMode]);
-
   const handleDropdownClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
   };
-
-  const baseTdClassName = (index: number) =>
-    index % 2 === 0
+  const baseTdClassName = (i: number) =>
+    i % 2 === 0
       ? isDarkMode
         ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-800 text-gray-300"
         : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-white text-gray-700"
       : isDarkMode
       ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-700 text-gray-300"
       : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-100 text-gray-700";
-
   const tdClassName = disableDefaultStyles
     ? customClassNames.actionTd || ""
     : `${baseTdClassName(index)} ${customClassNames.actionTd || ""}`;
-
   const baseButtonClassName = "focus:outline-none text-gray-700";
-
   const baseSvgClassName = "w-6 h-6 text-gray-700 hover:text-gray-900";
-
   const baseDropdownMenuClassName =
     "absolute z-50 mt-1 w-48 bg-gray-200 shadow-md rounded-lg text-gray-700";
-
   const baseDropdownItemClassName =
     "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-300";
-
   const buttonClassName = disableDefaultStyles
     ? customClassNames.actionButton || ""
     : `${baseButtonClassName} ${customClassNames.actionButton || ""}`;
-
   const svgClassName = disableDefaultStyles
     ? customClassNames.actionSvg || ""
     : `${baseSvgClassName} ${customClassNames.actionSvg || ""}`;
-
   const dropdownMenuClassName = disableDefaultStyles
     ? customClassNames.dropdownMenu || ""
     : `${baseDropdownMenuClassName} ${customClassNames.dropdownMenu || ""}`;
-
   const dropdownItemClassName = disableDefaultStyles
     ? customClassNames.dropdownItem || ""
     : `${baseDropdownItemClassName} ${customClassNames.dropdownItem || ""}`;
-
   const dropdownMenu = (
     <div
       ref={dropdownRef}
@@ -132,7 +117,6 @@ const ActionDropdown = <T,>({
       ))}
     </div>
   );
-
   return (
     <td key={`actions-${index}`} className={tdClassName}>
       <button
@@ -159,5 +143,4 @@ const ActionDropdown = <T,>({
     </td>
   );
 };
-
 export default ActionDropdown;

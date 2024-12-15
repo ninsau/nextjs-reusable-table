@@ -36,6 +36,47 @@ export interface TableProps<T> {
   setPage?: (page: number) => void;
   itemsPerPage?: number;
   totalPages?: number;
+  sortableProps?: Array<keyof T>;
+  formatValue?: (value: string, prop: string, item: T) => React.ReactNode;
+  noContentProps?: {
+    text?: string;
+    icon?: React.ReactNode;
+    name?: string;
+  };
+}
+export interface ActionDropdownProps<T> {
+  item: T;
+  index: number;
+  actionTexts: string[];
+  actionFunctions: Array<(item: T) => void>;
+  disableDefaultStyles?: boolean;
+  customClassNames?: {
+    actionTd?: string;
+    actionButton?: string;
+    actionSvg?: string;
+    dropdownMenu?: string;
+    dropdownItem?: string;
+  };
+  enableDarkMode?: boolean;
+}
+export interface TableSkeletonProps {
+  disableDefaultStyles?: boolean;
+  customClassNames?: {
+    container?: string;
+    table?: string;
+    th?: string;
+    tr?: string;
+    td?: string;
+  };
+  enableDarkMode?: boolean;
+}
+export interface PaginationComponentProps {
+  page: number;
+  setPage: (page: number) => void;
+  totalPages: number;
+  disableDefaultStyles?: boolean;
+  customClassNames?: any;
+  enableDarkMode?: boolean;
 }
 
 export interface ActionDropdownProps<T> {
@@ -73,4 +114,22 @@ export interface PaginationComponentProps {
   disableDefaultStyles?: boolean;
   customClassNames?: any;
   enableDarkMode?: boolean;
+}
+
+export interface TableSkeletonProps {
+  disableDefaultStyles?: boolean;
+  customClassNames?: {
+    container?: string;
+    table?: string;
+    th?: string;
+    tr?: string;
+    td?: string;
+  };
+  enableDarkMode?: boolean;
+}
+
+export interface NoContentProps {
+  text?: string;
+  icon?: React.ReactNode;
+  name?: string;
 }

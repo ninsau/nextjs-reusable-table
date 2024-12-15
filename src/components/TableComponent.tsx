@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
@@ -6,7 +7,6 @@ import Link from "next/link";
 import { TableProps } from "../types";
 import { formatDate, isDateString, trimText } from "../utils/helpers";
 import PaginationComponent from "./PaginationComponent";
-
 function TableComponent<T>({
   columns,
   data,
@@ -26,12 +26,16 @@ function TableComponent<T>({
   setPage,
   itemsPerPage = 10,
   totalPages,
+  sortableProps = [],
+  formatValue,
+  noContentProps,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
     [key: string]: boolean;
   }>({});
-
+  const [sortProp, setSortProp] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
   useEffect(() => {
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -43,17 +47,13 @@ function TableComponent<T>({
       };
     }
   }, [enableDarkMode]);
-
   if (loading) {
     return <TableSkeleton enableDarkMode={enableDarkMode} />;
   }
-
   if (!data || data.length === 0) {
-    return <NoContentComponent name={searchValue ?? "items"} />;
+    return <NoContentComponent {...noContentProps} />;
   }
-
   let filteredData = data;
-
   if (searchValue) {
     filteredData = data.filter((item) => {
       return props.some((prop) => {
@@ -62,29 +62,51 @@ function TableComponent<T>({
       });
     });
   }
-
   if (filteredData.length === 0) {
-    return <NoContentComponent name={searchValue ?? "items"} />;
+    return <NoContentComponent {...noContentProps} />;
   }
-
-  let paginatedData = filteredData;
+  const handleSort = (col: string) => {
+    if (!sortableProps.includes(col as keyof T)) return;
+    if (sortProp === col) {
+      if (sortOrder === "none") {
+        setSortOrder("asc");
+      } else if (sortOrder === "asc") {
+        setSortOrder("desc");
+      } else {
+        setSortOrder("none");
+      }
+    } else {
+      setSortProp(col);
+      setSortOrder("asc");
+    }
+  };
+  let sortedData = [...filteredData];
+  if (sortProp && sortOrder !== "none") {
+    sortedData.sort((a, b) => {
+      const aVal = a[sortProp as keyof T];
+      const bVal = b[sortProp as keyof T];
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+      if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
+      if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+  let paginatedData = sortedData;
   let calculatedTotalPages =
-    totalPages ?? Math.ceil(filteredData.length / itemsPerPage);
-
+    totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
   if (enablePagination) {
     if (totalPages !== undefined) {
-      paginatedData = filteredData;
+      paginatedData = sortedData;
     } else {
       const startIndex = (page - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
-      paginatedData = filteredData.slice(startIndex, endIndex);
+      paginatedData = sortedData.slice(startIndex, endIndex);
     }
-
     if (page > calculatedTotalPages && setPage) {
       setPage(calculatedTotalPages);
     }
   }
-
   const baseTableClassName = !disableDefaultStyles
     ? `w-full divide-y ${
         enableDarkMode && isDarkMode
@@ -92,20 +114,17 @@ function TableComponent<T>({
           : "bg-white text-gray-900 divide-gray-200"
       }`
     : "";
-
   const baseTheadClassName =
     !disableDefaultStyles && enableDarkMode
       ? isDarkMode
         ? "bg-gray-700 text-gray-300"
         : "bg-gray-50 text-gray-500"
       : "";
-
   const baseTbodyClassName = !disableDefaultStyles
     ? `divide-y ${
         enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
       }`
     : "";
-
   const baseTrClassName = (index: number) =>
     !disableDefaultStyles
       ? index % 2 === 0
@@ -116,51 +135,66 @@ function TableComponent<T>({
         ? "bg-gray-700"
         : "bg-gray-100"
       : "";
-
   const baseTdClassName = !disableDefaultStyles
     ? isDarkMode
       ? "text-gray-300"
       : "text-gray-700"
     : "";
-
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
     : `${baseTableClassName} ${customClassNames.table || ""}`;
-
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
     : `${baseTheadClassName} ${customClassNames.thead || ""}`;
-
   const tbodyClassName = disableDefaultStyles
     ? customClassNames.tbody || ""
     : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
-
   const thClassName = disableDefaultStyles
     ? customClassNames.th || ""
     : `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
         customClassNames.th || ""
       }`;
-
   const trClassName = (index: number) =>
     disableDefaultStyles
       ? customClassNames.tr || ""
       : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
-
   const tdClassName = disableDefaultStyles
     ? customClassNames.td || ""
     : `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
         customClassNames.td || ""
       }`;
-
+  const displayedColumns = columns.map((col, i) => {
+    let indicator = "";
+    if (sortableProps.includes(props[i])) {
+      if (props[i] === sortProp) {
+        if (sortOrder === "asc") {
+          indicator = "▲";
+        } else if (sortOrder === "desc") {
+          indicator = "▼";
+        }
+      }
+    }
+    return { col, indicator, prop: props[i] };
+  });
   return (
     <>
       <div style={{ overflowX: "auto" }} className="pb-6">
         <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
           <thead className={theadClassName}>
             <tr>
-              {columns.map((column) => (
-                <th key={column} scope="col" className={thClassName}>
-                  {column}
+              {displayedColumns.map(({ col, indicator, prop }) => (
+                <th
+                  key={col}
+                  scope="col"
+                  className={thClassName}
+                  onClick={() => handleSort(String(prop))}
+                  style={{
+                    cursor: sortableProps.includes(prop)
+                      ? "pointer"
+                      : "default",
+                  }}
+                >
+                  {col} {indicator}
                 </th>
               ))}
               {actions && actionTexts && (
@@ -185,7 +219,6 @@ function TableComponent<T>({
                   </tr>
                 );
               }
-
               return (
                 <tr
                   key={dataIndex}
@@ -195,16 +228,16 @@ function TableComponent<T>({
                   }`}
                 >
                   {props.map((prop) => {
-                    let value = item[prop as keyof T];
+                    let value = item[prop];
                     if (value === null || value === undefined || value === "") {
                       value = "-" as T[keyof T];
                     }
                     const cellKey = `${dataIndex}-${String(prop)}`;
                     const isExpanded = expandedCells[cellKey];
                     let displayValue: React.ReactNode;
-
+                    let valToFormat = String(value);
                     if (typeof value === "string" && isDateString(value)) {
-                      displayValue = formatDate(new Date(value), true);
+                      valToFormat = formatDate(new Date(value), true);
                     } else if (Array.isArray(value)) {
                       let displayArray: any[] = value as any[];
                       if (!isExpanded && displayArray.length > 5) {
@@ -256,30 +289,25 @@ function TableComponent<T>({
                           </span>
                         </Link>
                       );
-                    } else if (
-                      (typeof value === "number" ||
-                        (typeof value === "string" && !isNaN(Number(value)))) &&
-                      !isDateString(String(value))
-                    ) {
-                      let valueNum = Number(value);
-                      if (isNaN(valueNum)) {
-                        valueNum = 0;
-                      }
-                      valueNum = Math.round(valueNum * 100) / 100;
-
-                      if (isExpanded) {
-                        displayValue = valueNum.toString();
-                      } else {
-                        displayValue = Number.isInteger(valueNum)
-                          ? valueNum.toString()
-                          : valueNum.toFixed(2);
-                      }
                     } else {
-                      displayValue = isExpanded
-                        ? String(value)
-                        : trimText(String(value), 30);
+                      if (!Array.isArray(value)) {
+                        if (!isExpanded) {
+                          valToFormat = trimText(valToFormat, 30);
+                        }
+                      }
+                      if (formatValue) {
+                        displayValue = formatValue(
+                          valToFormat,
+                          String(prop),
+                          item
+                        );
+                      } else {
+                        displayValue = valToFormat;
+                      }
                     }
-
+                    if (!displayValue && !Array.isArray(value)) {
+                      displayValue = valToFormat;
+                    }
                     return (
                       <td
                         key={String(prop)}
@@ -328,5 +356,4 @@ function TableComponent<T>({
     </>
   );
 }
-
 export default TableComponent;

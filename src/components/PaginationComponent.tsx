@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { PaginationComponentProps } from "../types";
 
@@ -12,7 +11,6 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
   enableDarkMode = true,
 }) => {
   const [isDarkMode, setIsDarkModeState] = useState(false);
-
   useEffect(() => {
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -24,7 +22,6 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
       };
     }
   }, [enableDarkMode]);
-
   const baseButtonClassName = disableDefaultStyles
     ? customClassNames.button || ""
     : `px-3 py-1 mx-1 rounded-md ${
@@ -32,17 +29,14 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
           ? "bg-gray-800 text-white hover:bg-gray-700"
           : "bg-gray-200 text-gray-800 hover:bg-gray-300"
       }`;
-
   const disabledButtonClassName = disableDefaultStyles
     ? customClassNames.buttonDisabled || ""
     : `opacity-50 cursor-not-allowed ${baseButtonClassName}`;
-
   const pageInfoClassName = disableDefaultStyles
     ? customClassNames.pageInfo || ""
     : `px-3 py-1 mx-1 text-sm ${
         isDarkMode ? "text-gray-300" : "text-gray-700"
       }`;
-
   return (
     <div
       className={
@@ -89,5 +83,4 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
     </div>
   );
 };
-
 export default PaginationComponent;
