@@ -1,78 +1,10 @@
-# Next.js Reusable Table
+# nextjs-reusable-table
 
-## Introduction
+A highly customizable, TypeScript-ready, and production-grade table component for Next.js applications. Built with performance, flexibility, and developer experience in mind.
 
-The Next.js Reusable Table component is a highly customizable, TypeScript-ready, and production-grade solution for displaying tabular data within Next.js applications. It is designed to handle diverse data structures, integrate smoothly with your styling preferences, and provide a feature set that streamlines data visualization, user interaction, and responsive design.
-
-By adhering to industry standards and best practices, this component ensures maintainability, performance, and ease of integration into both small and large-scale Next.js projects. You can leverage its built-in search, pagination, sorting, formatting, and action dropdown features while maintaining full control over styling and rendering.
-
-Use this documentation as a comprehensive guide to seamlessly integrate the Next.js Reusable Table into your workflow, enhance your frontend data management capabilities, and offer end-users a polished, intuitive interface for exploring tabular information.
-
-## Key Features
-
-- **TypeScript Support**: Strong typing throughout ensures predictable and bug-free integrations.
-- **Next.js Compatibility**: Built explicitly with Next.js in mind, ensuring optimal SSR/ISR compatibility and performance.
-- **Customizable Columns and Data Mapping**: Easily define which properties of your data objects map to which columns, empowering flexible table structures.
-- **Integrated Sorting**: Enable sorting for specific columns, offering ascending and descending order toggling with minimal overhead.
-- **Built-in Search**: Filter rows by query strings without external dependencies, streamlining data exploration for end-users.
-- **Pagination**: Control data pagination out-of-the-box, complete with a customizable pagination component for large datasets.
-- **User-Friendly Styling Options**: Leverage default Tailwind CSS styles, opt out entirely, or apply custom class names to maintain your unique design language.
-- **Robust Data Formatting**: Automatically handle dates, arrays, URLs, numeric values, and truncated text, or plug in custom `formatValue` logic for domain-specific formatting.
-- **Action Dropdowns**: Add context-specific row actions (e.g., “Edit,” “Delete”) via a built-in dropdown, enabling interactive and stateful table operations.
-- **Empty State Handling**: Present informative empty states for when no data matches the filters or queries, customizable to fit any brand tone.
-- **Dark Mode Compatibility**: Seamless theme adaption to both light and dark modes, respecting user preferences and boosting accessibility.
-- **Performance and Scalability**: Crafted to handle large datasets efficiently with minimal performance overhead, even under SSR or incremental static generation.
-
-These features work cohesively to simplify and elevate the process of presenting and interacting with tabular data in a Next.js environment, ensuring a top-tier developer and end-user experience.
-
-## Prerequisites
-
-Before integrating the Next.js Reusable Table into your project, ensure that your environment meets the following conditions:
-
-- **Next.js Application**: This component is designed for Next.js (version 12 or later). It should function properly in all Next.js environments, including SSR, ISR, and static deployments.
-- **React and React-DOM**: Ensure you are using React and React-DOM (version 16 or newer), as these are peer dependencies.
-- **Tailwind CSS (Optional)**: The component ships with Tailwind CSS-based default styles. For seamless styling out-of-the-box, have Tailwind CSS configured in your Next.js project. If you prefer alternative styling solutions, you may disable these defaults and apply your own CSS, utility classes, or custom frameworks.
-- **TypeScript (Recommended)**: While not mandatory, TypeScript usage is highly recommended to fully leverage the strict typing and generic support built into this component.
-
-Having these prerequisites in place ensures a smooth setup and integration experience, minimizing friction and streamlining your development workflow.
-
-## Installation
-
-### Step 1: Install the Package
-
-Use your preferred package manager to install the `nextjs-reusable-table` package:
-
-```bash
-npm install nextjs-reusable-table
-```
-
-or
-
-```bash
-yarn add nextjs-reusable-table
-```
-
-### Step 2: Include Default Styles (Optional)
-
-If you want to leverage the default Tailwind CSS styles, ensure Tailwind is set up in your Next.js project. Then import the stylesheet:
+## Basic Example
 
 ```tsx
-import "nextjs-reusable-table/dist/index.css";
-```
-
-To customize the table’s appearance or use a different styling approach, skip this import and configure your own styles via `disableDefaultStyles` and `customClassNames`.
-
-### Step 3: Validate Peer Dependencies
-
-Make sure `react`, `react-dom`, and `next` are present and up-to-date in your project.
-
-## Usage
-
-### Basic Example
-
-```tsx
-"use client";
-import React from "react";
 import { TableComponent } from "nextjs-reusable-table";
 import "nextjs-reusable-table/dist/index.css";
 
@@ -83,178 +15,283 @@ interface User {
   balance: string;
 }
 
-const data: User[] = [
-  { id: 1, name: "Alice", email: "alice@example.com", balance: "1200.4567" },
-  { id: 2, name: "Bob", email: "bob@example.com", balance: "300" },
-];
+const MyTable = () => {
+  const data: User[] = [
+    { id: 1, name: "Alice", email: "alice@example.com", balance: "1200.45" },
+    { id: 2, name: "Bob", email: "bob@example.com", balance: "300.00" },
+  ];
 
-const columns = ["Name", "Email", "Balance"];
-const props = ["name", "email", "balance"] as const;
+  const formatValue = (value: string, prop: string) => {
+    if (prop === "balance") return `$${Number(value).toFixed(2)}`;
+    return value;
+  };
 
-const formatValue = (value: string, prop: string, item: User) => {
-  if (prop === "balance") {
-    return `$${parseFloat(value).toFixed(2)}`;
-  }
-  return value;
-};
-
-export default function MyPage() {
   return (
     <TableComponent<User>
-      columns={columns}
+      columns={["ID", "Name", "Email", "Balance"]}
       data={data}
-      props={props}
+      props={["id", "name", "email", "balance"]}
       formatValue={formatValue}
       sortableProps={["name", "balance"]}
-      noContentProps={{ text: "No users available at the moment." }}
     />
   );
-}
+};
 ```
 
-This example displays a table of users with sortable columns (name and balance) and formatted currency values. By providing `formatValue`, you control how the balance is displayed.
+## Installation
 
-### Props Reference
+```bash
+npm install nextjs-reusable-table
+# or
+yarn add nextjs-reusable-table
+# or
+pnpm add nextjs-reusable-table
+```
 
-#### TableComponent Props
+## Prerequisites
 
-| Prop                 | Type                                                        | Required | Description                                                                  |
-| -------------------- | ----------------------------------------------------------- | -------- | ---------------------------------------------------------------------------- |
-| columns              | `string[]`                                                  | Yes      | Column headers to display.                                                   |
-| data                 | `T[]`                                                       | Yes      | An array of data objects representing each row.                              |
-| props                | `ReadonlyArray<keyof T>`                                    | Yes      | Keys from data objects that map to each column.                              |
-| actions              | `boolean`                                                   | No       | Whether to display an action dropdown for each row.                          |
-| actionTexts          | `string[]`                                                  | No       | Labels for action buttons (e.g., `["Edit", "Delete"]`).                      |
-| actionFunctions      | `Array<(item: T) => void>`                                  | No       | Functions invoked when action buttons are clicked.                           |
-| loading              | `boolean`                                                   | No       | If true, shows a skeleton loader instead of the table.                       |
-| searchValue          | `string`                                                    | No       | Filters rows based on this string, checking all specified props for matches. |
-| disableDefaultStyles | `boolean`                                                   | No       | When true, disables built-in Tailwind styles.                                |
-| customClassNames     | `Object`                                                    | No       | Provides custom classes for various table elements.                          |
-| renderRow            | `(item: T, index: number) => React.ReactNode`               | No       | Custom rendering function for each table row.                                |
-| rowOnClick           | `(item: T) => void`                                         | No       | Callback for when a row is clicked.                                          |
-| enableDarkMode       | `boolean`                                                   | No       | Enables dark mode styling.                                                   |
-| enablePagination     | `boolean`                                                   | No       | Enables pagination controls.                                                 |
-| page                 | `number`                                                    | No       | Current page number (used with pagination).                                  |
-| setPage              | `(page: number) => void`                                    | No       | Callback to update the page number.                                          |
-| itemsPerPage         | `number`                                                    | No       | Items per page (defaults to 10) for pagination.                              |
-| totalPages           | `number`                                                    | No       | Total number of pages (if known).                                            |
-| sortableProps        | `Array<keyof T>`                                            | No       | List of props that should be sortable.                                       |
-| formatValue          | `(value: string, prop: string, item: T) => React.ReactNode` | No       | Custom formatting function for cell values.                                  |
-| noContentProps       | `{ text?: string; icon?: React.ReactNode; name?: string; }` | No       | Custom text/icon for when no data is available.                              |
+- Next.js 12 or later
+- React 16 or later
+- React DOM 16 or later
+- Tailwind CSS (optional, for default styling)
+- TypeScript (recommended)
 
-#### Custom Class Names Object
+## Key Features
 
-| Key                        | Description                                                                               |
-| -------------------------- | ----------------------------------------------------------------------------------------- |
-| container                  | Class for the outer container `<div>`.                                                    |
-| table                      | Class for the `<table>` element.                                                          |
-| thead                      | Class for the `<thead>` element.                                                          |
-| tbody                      | Class for the `<tbody>` element.                                                          |
-| th                         | Class for the `<th>` elements.                                                            |
-| tr                         | Class for the `<tr>` elements.                                                            |
-| td                         | Class for the `<td>` elements.                                                            |
-| actionTd                   | Class for the `<td>` containing the action dropdown.                                      |
-| actionButton               | Class for the action button in the action dropdown.                                       |
-| actionSvg                  | Class for the SVG                                                                         |
-| icon in the action button. |
-| dropdownMenu               | Class for the dropdown menu container in the action dropdown.                             |
-| dropdownItem               | Class for each item in the dropdown menu.                                                 |
-| pagination                 | Class object for pagination styles (`container`, `button`, `buttonDisabled`, `pageInfo`). |
+- 🎯 **TypeScript First**: Built with TypeScript for robust type safety and developer experience
+- 🌐 **Next.js Ready**: Optimized for Next.js with SSR/ISR compatibility
+- 🎨 **Fully Customizable**: Override any styling using Tailwind CSS or your own classes
+- 🌓 **Dark Mode Support**: Automatic dark mode detection and styling
+- 📱 **Responsive**: Works seamlessly across all device sizes
+- 🔍 **Search & Filter**: Built-in search functionality with custom filtering
+- ⚡ **Performance Optimized**: Efficient rendering even with large datasets
+- 📊 **Data Export**: Export to CSV, Excel, or PDF formats
+- 🎯 **Action Dropdowns**: Customizable action menus for each row
+- 🔄 **Sorting**: Sort by any column with custom sort functions
+- 📑 **Pagination**: Built-in pagination with customizable controls
+- 🎯 **Multi-select**: Select multiple rows with checkboxes
+- 📌 **Sticky Headers & Columns**: Keep important information visible
+- 📐 **Resizable Columns**: Adjust column widths dynamically
+- 📊 **Aggregates**: Calculate totals, averages, and custom aggregations
+- ✏️ **Cell Editing**: Edit cell contents inline with validation
+- 🎨 **Custom Styling**: Override default styles with your own
+- 💀 **Loading Skeletons**: Beautiful loading states
+- 🚫 **No Content States**: Customizable empty states
+- 📏 **Column Resizing**: Resize columns dynamically
+- 📎 **Row Groups**: Group rows with custom headers
+- 🎚️ **Column Visibility**: Toggle column visibility
+- 🔒 **Fixed Layout**: Option for fixed-width columns
+- 🖱️ **Row Click Handling**: Custom click handlers for rows
+- 📋 **Copy to Clipboard**: Easy data copying functionality
 
-### Advanced Usage
+## Props API
 
-#### Opting Out of Default Styles
+### Core Props
 
-If you choose not to use the built-in Tailwind styles, simply omit the stylesheet import and set `disableDefaultStyles` to `true`. Then supply your own CSS classes through `customClassNames`:
+| Prop        | Type                   | Required | Default | Description            |
+| ----------- | ---------------------- | -------- | ------- | ---------------------- |
+| columns     | string[]               | Yes      | -       | Column headers         |
+| data        | T[]                    | Yes      | -       | Array of data objects  |
+| props       | ReadonlyArray<keyof T> | Yes      | -       | Object keys to display |
+| loading     | boolean                | No       | false   | Show loading state     |
+| searchValue | string                 | No       | -       | Filter value for rows  |
+| maxHeight   | string \| number       | No       | "100vh" | Maximum table height   |
+
+### Styling Props
+
+| Prop                 | Type             | Default | Description                      |
+| -------------------- | ---------------- | ------- | -------------------------------- |
+| disableDefaultStyles | boolean          | false   | Disable built-in Tailwind styles |
+| customClassNames     | CustomClassNames | {}      | Custom class names object        |
+| enableDarkMode       | boolean          | true    | Enable dark mode support         |
+| stickyHeader         | boolean          | false   | Make header stick to top         |
+| stickyColumns        | StickyColumns    | -       | Make columns stick to sides      |
+
+### Feature Props
+
+| Prop             | Type           | Default | Description            |
+| ---------------- | -------------- | ------- | ---------------------- |
+| enablePagination | boolean        | false   | Enable pagination      |
+| page             | number         | 1       | Current page number    |
+| itemsPerPage     | number         | 10      | Items per page         |
+| sortableProps    | Array<keyof T> | []      | Sortable columns       |
+| multiSelect      | boolean        | false   | Enable row selection   |
+| columnResizable  | boolean        | false   | Enable column resizing |
+| cellEditable     | boolean        | false   | Enable cell editing    |
+| groupBy          | keyof T        | -       | Group rows by property |
+
+### Action Props
+
+| Prop            | Type                     | Required        | Description          |
+| --------------- | ------------------------ | --------------- | -------------------- |
+| actions         | boolean                  | No              | Show action dropdown |
+| actionTexts     | string[]                 | If actions=true | Action button texts  |
+| actionFunctions | Array<(item: T) => void> | If actions=true | Action handlers      |
+
+### Export Props
+
+| Prop          | Type                | Default | Description                 |
+| ------------- | ------------------- | ------- | --------------------------- |
+| exportOptions | ExportOptions       | -       | Configure export options    |
+| aggregates    | AggregateOptions<T> | -       | Configure column aggregates |
+
+### Formatting Props
+
+| Prop        | Type                                                                | Description            |
+| ----------- | ------------------------------------------------------------------- | ---------------------- |
+| formatValue | (value: string, prop: string, item: T) => React.ReactNode           | Format cell values     |
+| formatCell  | (value: string, prop: string, item: T, index: number) => CellFormat | Custom cell formatting |
+
+## Advanced Usage Examples
+
+### With Actions and Custom Formatting
 
 ```tsx
-<TableComponent
+const MyTableWithActions = () => {
+  const handleEdit = (item: User) => {
+    console.log("Edit:", item);
+  };
+
+  const handleDelete = (item: User) => {
+    console.log("Delete:", item);
+  };
+
+  const formatValue = (value: string, prop: string) => {
+    switch (prop) {
+      case "balance":
+        return `$${Number(value).toFixed(2)}`;
+      case "email":
+        return <a href={`mailto:${value}`}>{value}</a>;
+      default:
+        return value;
+    }
+  };
+
+  return (
+    <TableComponent<User>
+      columns={["Name", "Email", "Balance", "Actions"]}
+      data={data}
+      props={["name", "email", "balance"]}
+      actions={true}
+      actionTexts={["Edit", "Delete"]}
+      actionFunctions={[handleEdit, handleDelete]}
+      formatValue={formatValue}
+      sortableProps={["name", "balance"]}
+    />
+  );
+};
+```
+
+### With Custom Styling
+
+```tsx
+<TableComponent<User>
   columns={columns}
   data={data}
   props={props}
-  disableDefaultStyles={true}
   customClassNames={{
-    container: "my-container",
-    table: "my-table",
-    th: "my-th",
-    // ...
+    table: "shadow-lg border-2 border-gray-200",
+    th: "bg-blue-50 text-blue-900 font-semibold",
+    td: "px-4 py-2 border-b",
+    actionButton: "text-blue-600 hover:text-blue-800",
+    pagination: {
+      container: "mt-4 flex justify-center",
+      button: "px-3 py-1 rounded-md bg-blue-500 text-white",
+      buttonDisabled: "opacity-50 cursor-not-allowed",
+    },
   }}
 />
 ```
 
-#### Custom Row Rendering
-
-For fine-grained control over row appearance, provide a `renderRow` function:
+### With Aggregates
 
 ```tsx
-const renderRow = (item: User, index: number) => (
-  <>
-    <td>{item.name}</td>
-    <td>{item.email}</td>
-    <td>{item.balance}</td>
-  </>
-);
-
-<TableComponent
-  columns={["Name", "Email", "Balance"]}
-  data={data}
-  props={["name", "email", "balance"] as const}
-  renderRow={renderRow}
-/>;
-```
-
-This approach gives you complete freedom to structure cell content, apply conditional styling, or integrate external components.
-
-#### Pagination
-
-Enable pagination and control the current page:
-
-```tsx
-const [page, setPage] = useState(1);
-<TableComponent
-  columns={columns}
-  data={largeDataSet}
-  props={props}
-  enablePagination={true}
-  page={page}
-  setPage={setPage}
-  itemsPerPage={20}
-/>;
-```
-
-If you know the total number of pages, pass `totalPages` for precise pagination controls.
-
-#### Sorting
-
-Declare sortable columns via `sortableProps`, and the table handles sorting logic internally:
-
-```tsx
-<TableComponent
-  columns={["Name", "Balance"]}
-  data={data}
-  props={["name", "balance"] as const}
-  sortableProps={["name", "balance"]}
+<TableComponent<Transaction>
+  columns={["Date", "Description", "Amount"]}
+  data={transactions}
+  props={["date", "description", "amount"]}
+  aggregates={{
+    amount: {
+      type: "sum",
+      customFn: (values) => values.reduce((sum, val) => sum + Number(val), 0),
+    },
+  }}
+  formatValue={(value, prop) =>
+    prop === "amount" ? `$${Number(value).toFixed(2)}` : value
+  }
 />
 ```
 
-Columns specified in `sortableProps` will toggle between none, asc, and desc states when clicked.
-
-#### Format Values
-
-For domain-specific formatting, provide a `formatValue` function that receives the raw value, the property name, and the entire item. This allows you to format currency, truncate text differently, or linkify URLs:
+### With Row Grouping
 
 ```tsx
-const formatValue = (value: string, prop: string, item: User) => {
-  if (prop === "balance") return `$${Number(value).toFixed(2)}`;
-  return value;
-};
+<TableComponent<Invoice>
+  columns={["Date", "Amount", "Status"]}
+  data={invoices}
+  props={["date", "amount", "status"]}
+  groupBy="status"
+  groupRenderer={(status, items) => (
+    <div className="font-bold bg-gray-100 p-2">
+      {status} ({items.length} invoices)
+    </div>
+  )}
+/>
+```
 
-<TableComponent
+### With Multi-select and Batch Actions
+
+```tsx
+const MyTableWithMultiSelect = () => {
+  const [selectedRows, setSelectedRows] = useState<User[]>([]);
+
+  const handleSelectionChange = (selected: User[]) => {
+    setSelectedRows(selected);
+  };
+
+  return (
+    <div>
+      {selectedRows.length > 0 && (
+        <div className="mb-4">
+          Selected: {selectedRows.length} users
+          <button onClick={() => handleBatchAction(selectedRows)}>
+            Batch Action
+          </button>
+        </div>
+      )}
+      <TableComponent<User>
+        columns={columns}
+        data={data}
+        props={props}
+        multiSelect={true}
+        selectedRows={selectedRows}
+        onSelectionChange={handleSelectionChange}
+      />
+    </div>
+  );
+};
+```
+
+## Performance Optimization
+
+The table component is optimized for performance in several ways:
+
+1. Virtual scrolling for large datasets
+2. Memoized row rendering
+3. Efficient sorting and filtering algorithms
+4. Lazy loading of action dropdowns
+5. Optimized re-renders using React.memo
+
+For best performance with large datasets:
+
+```tsx
+<TableComponent<User>
   columns={columns}
-  data={data}
+  data={largeDataset}
   props={props}
-  formatValue={formatValue}
-/>;
+  maxHeight="600px"
+  itemsPerPage={50}
+  enablePagination={true}
+/>
 ```
 
 ## Contributing
