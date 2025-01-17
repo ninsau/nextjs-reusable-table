@@ -19,7 +19,7 @@ export interface TableProps<T> {
     actionTd?: string;
     actionButton?: string;
     actionSvg?: string;
-    dropdownMenu?: string;
+    dropdownMenu?: string
     dropdownItem?: string;
     pagination?: {
       container?: string;
@@ -60,9 +60,7 @@ export interface TableProps<T> {
   selectedRows?: T[];
   onSelectionChange?: (selectedItems: T[]) => void;
   columnVisibility?: { [key in keyof T]?: boolean };
-  onColumnVisibilityChange?: (visibility: {
-    [key in keyof T]?: boolean;
-  }) => void;
+
   exportOptions?: {
     csv?: boolean;
     excel?: boolean;

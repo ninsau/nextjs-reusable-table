@@ -8,6 +8,28 @@ import Link from "next/link";
 import { formatDate, isDateString, trimText } from "../utils/helpers";
 import PaginationComponent from "./PaginationComponent";
 
+// Sticky styles with proper z-index and backgrounds
+const stickyStyles = {
+  left: `
+    position: sticky;
+    background: inherit;
+    z-index: 20;
+    box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.15);
+  `,
+  right: `
+    position: sticky;
+    background: inherit;
+    z-index: 20;
+    box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.15);
+  `,
+  header: `
+    position: sticky;
+    background: inherit;
+    z-index: 30;
+    top: 0;
+  `,
+};
+
 function TableComponent<T>({
   columns,
   data,
@@ -39,9 +61,6 @@ function TableComponent<T>({
   selectedRows = [],
   onSelectionChange,
   columnVisibility,
-  onColumnVisibilityChange,
-  exportOptions,
-  aggregates,
   cellEditable = false,
   onCellEdit,
   maxHeight = "100vh",
@@ -62,6 +81,7 @@ function TableComponent<T>({
   const startWidth = useRef<number>(0);
   const tableRef = useRef<HTMLDivElement>(null);
 
+  // Column resize handling
   const handleColumnResize = useCallback(
     (e: MouseEvent) => {
       if (!isResizing || !resizingColumn.current) return;
@@ -95,6 +115,7 @@ function TableComponent<T>({
     [columnWidths, handleColumnResize, handleResizeEnd]
   );
 
+  // Dark mode detection
   useEffect(() => {
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -115,6 +136,7 @@ function TableComponent<T>({
     return <NoContentComponent {...noContentProps} />;
   }
 
+  // Search handling
   let filteredData = data;
   if (searchValue) {
     filteredData = data.filter((item) => {
@@ -134,6 +156,7 @@ function TableComponent<T>({
     return <NoContentComponent {...noContentProps} />;
   }
 
+  // Sort handling
   const handleSort = (col: string) => {
     if (!sortableProps.includes(col as keyof T)) return;
     if (sortProp === col) {
@@ -163,6 +186,7 @@ function TableComponent<T>({
     });
   }
 
+  // Group handling
   let groupedData = sortedData;
   if (groupBy) {
     const groups = new Map<any, T[]>();
@@ -183,6 +207,7 @@ function TableComponent<T>({
     ) as T[];
   }
 
+  // Pagination handling
   let paginatedData = groupedData;
   let calculatedTotalPages =
     totalPages ?? Math.ceil(groupedData.length / itemsPerPage);
@@ -200,6 +225,7 @@ function TableComponent<T>({
     }
   }
 
+  // Cell editing
   const handleCellEdit = (
     newValue: any,
     prop: keyof T,
@@ -211,16 +237,28 @@ function TableComponent<T>({
     }
   };
 
+  // Selection handling with proper comparison
   const handleSelectionChange = (item: T) => {
     if (multiSelect && onSelectionChange) {
-      const isSelected = selectedRows.includes(item);
+      const isSelected = selectedRows.some(
+        (row) => JSON.stringify(row) === JSON.stringify(item)
+      );
       const newSelection = isSelected
-        ? selectedRows.filter((row) => row !== item)
+        ? selectedRows.filter(
+            (row) => JSON.stringify(row) !== JSON.stringify(item)
+          )
         : [...selectedRows, item];
       onSelectionChange(newSelection);
     }
   };
 
+  const allSelected =
+    paginatedData.length > 0 &&
+    paginatedData.every((item) =>
+      selectedRows.some((row) => JSON.stringify(row) === JSON.stringify(item))
+    );
+
+  // Cell rendering with sticky support
   const renderCell = (
     item: T,
     prop: keyof T,
@@ -249,13 +287,17 @@ function TableComponent<T>({
           <td
             key={String(prop)}
             className={`${tdClassName} ${formattedCell.className || ""} ${
-              isSticky ? "sticky" : ""
+              isSticky
+                ? `${stickyStyles.left} ${
+                    isDarkMode ? "bg-gray-800" : "bg-white"
+                  }`
+                : ""
             }`}
             style={{
               ...formattedCell.style,
-              left: isSticky
-                ? `${columnWidths[String(prop)] || 0}px`
-                : undefined,
+              width: columnWidths[String(prop)] || "auto",
+              left: isSticky ? `${multiSelect ? 40 : 0}px` : undefined,
+              right: isSticky ? "0px" : undefined,
             }}
           >
             {formattedCell.content || displayValue}
@@ -328,10 +370,15 @@ function TableComponent<T>({
     return (
       <td
         key={String(prop)}
-        className={`${tdClassName} ${isSticky ? "sticky" : ""}`}
+        className={`${tdClassName} ${
+          isSticky
+            ? `${stickyStyles.left} ${isDarkMode ? "bg-gray-800" : "bg-white"}`
+            : ""
+        }`}
         style={{
           width: columnWidths[String(prop)] || "auto",
-          left: isSticky ? `${columnWidths[String(prop)] || 0}px` : undefined,
+          left: isSticky ? `${multiSelect ? 40 : 0}px` : undefined,
+          right: isSticky ? "0px" : undefined,
         }}
         onClick={(e) => {
           e.stopPropagation();
@@ -353,6 +400,7 @@ function TableComponent<T>({
     );
   };
 
+  // Class name handling
   const baseTableClassName = !disableDefaultStyles
     ? `w-full divide-y ${
         enableDarkMode && isDarkMode
@@ -376,13 +424,15 @@ function TableComponent<T>({
 
   const baseTrClassName = (index: number) =>
     !disableDefaultStyles
-      ? index % 2 === 0
-        ? isDarkMode
-          ? "bg-gray-800"
-          : "bg-white"
-        : isDarkMode
-        ? "bg-gray-700"
-        : "bg-gray-100"
+      ? `${
+          index % 2 === 0
+            ? isDarkMode
+              ? "bg-gray-800"
+              : "bg-white"
+            : isDarkMode
+            ? "bg-gray-700"
+            : "bg-gray-100"
+        } hover:bg-gray-50 dark:hover:bg-gray-700`
       : "";
 
   const baseTdClassName = !disableDefaultStyles
@@ -397,7 +447,9 @@ function TableComponent<T>({
 
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
-    : `${baseTheadClassName} ${customClassNames.thead || ""}`;
+    : `${baseTheadClassName} ${customClassNames.thead || ""} ${
+        stickyHeader ? stickyStyles.header : ""
+      }`;
 
   const tbodyClassName = disableDefaultStyles
     ? customClassNames.tbody || ""
@@ -420,49 +472,10 @@ function TableComponent<T>({
         customClassNames.td || ""
       }`;
 
-  const exportData = (type: "csv" | "excel" | "pdf") => {
-    const visibleProps = props.filter(
-      (prop) => !columnVisibility || columnVisibility[prop]
-    );
-    const visibleColumns = columns.filter((_, i) =>
-      visibleProps.includes(props[i])
-    );
-
-    const exportRows = paginatedData.map((item) =>
-      visibleProps.reduce(
-        (acc, prop) => ({
-          ...acc,
-          [String(prop)]: item[prop],
-        }),
-        {}
-      )
-    );
-
-    switch (type) {
-      case "csv":
-        const csvContent =
-          "data:text/csv;charset=utf-8," +
-          [
-            visibleColumns.join(","),
-            ...exportRows.map((row) =>
-              Object.values(row)
-                .map((val) => `"${String(val).replace(/"/g, '""')}"`)
-                .join(",")
-            ),
-          ].join("\n");
-        const encodedUri = encodeURI(csvContent);
-        window.open(encodedUri);
-        break;
-      case "excel":
-        break;
-      case "pdf":
-        break;
-    }
-  };
-
   const visibleProps = props.filter(
     (prop) => !columnVisibility || columnVisibility[prop]
   );
+
   const displayedColumns = columns
     .filter((_, i) => visibleProps.includes(props[i]))
     .map((col, i) => {
@@ -479,109 +492,56 @@ function TableComponent<T>({
       return { col, indicator, prop: props[i] };
     });
 
-  const aggregateRow = aggregates
-    ? Object.entries(aggregates).map(([prop, config]) => {
-        const values = paginatedData.map((item) => item[prop as keyof T]);
-        let result;
-        switch (
-          (
-            config as {
-              type: "sum" | "average" | "count" | "min" | "max" | "custom";
-            }
-          ).type
-        ) {
-          case "sum":
-            result = values.reduce((sum: any, val: any) => sum + (val || 0), 0);
-            break;
-          case "average":
-            result =
-              values.reduce((sum: any, val: any) => sum + (val || 0), 0) /
-              values.length;
-            break;
-          case "count":
-            result = values.length;
-            break;
-          case "min":
-            result = Math.min(...(values as number[]));
-            break;
-          case "max":
-            result = Math.max(...(values as number[]));
-            break;
-          case "custom":
-            result = (config as { customFn: (values: any[]) => any }).customFn(
-              values
-            );
-            break;
-        }
-        return { prop, result };
-      })
-    : null;
-
   return (
     <>
       <div className="relative">
-        {exportOptions && (
-          <div className="absolute top-0 right-0 flex gap-2 mb-2">
-            {exportOptions.csv && (
-              <button
-                onClick={() => exportData("csv")}
-                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Export CSV
-              </button>
-            )}
-            {exportOptions.excel && (
-              <button
-                onClick={() => exportData("excel")}
-                className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-              >
-                Export Excel
-              </button>
-            )}
-            {exportOptions.pdf && (
-              <button
-                onClick={() => exportData("pdf")}
-                className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Export PDF
-              </button>
-            )}
-          </div>
-        )}
-
-        <div className="overflow-auto" style={{ maxHeight: maxHeight }}>
+        <div
+          className="overflow-auto table-scroll-container"
+          style={{
+            maxHeight: maxHeight,
+            position: "relative",
+            isolation: "isolate",
+          }}
+        >
           <div
             ref={tableRef}
-            style={{ overflowX: "auto", position: "relative" }}
+            style={{
+              overflowX: "auto",
+              position: "relative",
+              isolation: "isolate",
+            }}
             className="pb-6"
           >
             <table
               className={tableClassName}
-              style={{ margin: 0, padding: 0, position: "relative" }}
+              style={{
+                margin: 0,
+                padding: 0,
+                position: "relative",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
             >
-              <thead
-                className={`${theadClassName} ${
-                  stickyHeader ? "sticky top-0 z-10" : ""
-                }`}
-              >
+              <thead className={theadClassName}>
                 <tr>
                   {multiSelect && (
-                    <th className={thClassName}>
+                    <th
+                      className={`${thClassName} sticky left-0 z-30 ${
+                        isDarkMode ? "bg-gray-700" : "bg-gray-50"
+                      }`}
+                    >
                       <input
                         type="checkbox"
-                        checked={
-                          selectedRows.length === paginatedData.length &&
-                          paginatedData.length > 0
-                        }
-                        onChange={() => {
+                        checked={allSelected}
+                        onChange={(e) => {
+                          e.stopPropagation();
                           if (onSelectionChange) {
                             onSelectionChange(
-                              selectedRows.length === paginatedData.length
-                                ? []
-                                : [...paginatedData]
+                              allSelected ? [] : [...paginatedData]
                             );
                           }
                         }}
+                        className="cursor-pointer"
                       />
                     </th>
                   )}
@@ -598,20 +558,22 @@ function TableComponent<T>({
                         key={col}
                         scope="col"
                         className={`${thClassName} ${
-                          isLeftSticky || isRightSticky ? "sticky" : ""
+                          isLeftSticky
+                            ? `${stickyStyles.left} ${
+                                isDarkMode ? "bg-gray-700" : "bg-gray-50"
+                              }`
+                            : isRightSticky
+                            ? `${stickyStyles.right} ${
+                                isDarkMode ? "bg-gray-700" : "bg-gray-50"
+                              }`
+                            : ""
                         }`}
                         style={{
                           width: columnWidths[String(prop)] || "auto",
                           left: isLeftSticky
-                            ? `${
-                                multiSelect
-                                  ? 40
-                                  : 0 + columnWidths[String(prop)] || 0
-                              }px`
+                            ? `${multiSelect ? 40 : 0}px`
                             : undefined,
-                          right: isRightSticky
-                            ? `${columnWidths[String(prop)] || 0}px`
-                            : undefined,
+                          right: isRightSticky ? "0px" : undefined,
                         }}
                       >
                         <div
@@ -641,8 +603,15 @@ function TableComponent<T>({
                     <th
                       scope="col"
                       className={`${thClassName} ${
-                        stickyColumns?.right ? "sticky right-0" : ""
+                        stickyColumns?.right
+                          ? `${stickyStyles.right} ${
+                              isDarkMode ? "bg-gray-700" : "bg-gray-50"
+                            }`
+                          : ""
                       }`}
+                      style={{
+                        right: "0px",
+                      }}
                     >
                       <span className="sr-only">{actionTexts.join(", ")}</span>
                     </th>
@@ -674,12 +643,23 @@ function TableComponent<T>({
                       }`}
                     >
                       {multiSelect && (
-                        <td className={tdClassName}>
+                        <td
+                          className={`${tdClassName} sticky left-0 z-20 ${
+                            isDarkMode ? "bg-gray-800" : "bg-white"
+                          }`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
-                            checked={selectedRows.includes(item)}
-                            onChange={() => handleSelectionChange(item)}
-                            onClick={(e) => e.stopPropagation()}
+                            checked={selectedRows.some(
+                              (row) =>
+                                JSON.stringify(row) === JSON.stringify(item)
+                            )}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleSelectionChange(item);
+                            }}
+                            className="cursor-pointer"
                           />
                         </td>
                       )}
@@ -709,22 +689,6 @@ function TableComponent<T>({
                     </tr>
                   );
                 })}
-                {aggregateRow && (
-                  <tr className={`${trClassName(-1)} font-semibold`}>
-                    {multiSelect && <td className={tdClassName} />}
-                    {visibleProps.map((prop) => {
-                      const aggregate = aggregateRow.find(
-                        (agg) => agg.prop === prop
-                      );
-                      return (
-                        <td key={String(prop)} className={tdClassName}>
-                          {aggregate ? aggregate.result : ""}
-                        </td>
-                      );
-                    })}
-                    {actions && <td className={tdClassName} />}
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
