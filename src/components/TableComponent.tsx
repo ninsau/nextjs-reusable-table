@@ -112,17 +112,25 @@ function TableComponent<T extends Record<string, any>>({
   };
 
   const toggleHeaderDropdown = (prop: keyof T, e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     setHeaderDropdown((prev) => {
-      const newState = { ...prev };
-      Object.keys(newState).forEach((key) => {
-        newState[key] = key === String(prop) ? !prev[String(prop)] : false;
-      });
-      return newState;
+      const newState = Object.keys(prev).reduce(
+        (acc, key) => ({
+          ...acc,
+          [key]: false,
+        }),
+        {}
+      );
+      return {
+        ...newState,
+        [String(prop)]: !prev[String(prop)],
+      };
     });
   };
 
-  const toggleColumnVisibility = (prop: keyof T) => {
+  const toggleColumnVisibility = (prop: keyof T, e: React.MouseEvent) => {
+    e.stopPropagation();
     setHiddenColumns((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(prop)) {
@@ -132,9 +140,16 @@ function TableComponent<T extends Record<string, any>>({
       }
       return newSet;
     });
+    setHeaderDropdown((prev) => ({ ...prev, [String(prop)]: false }));
   };
 
-  const toggleSticky = (prop: keyof T, type: "vertical" | "horizontal") => {
+  const toggleSticky = (
+    prop: keyof T,
+    type: "vertical" | "horizontal",
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    e.preventDefault();
     setStickyColumns((prev) => {
       const current = prev[prop as string];
       let newValue: "vertical" | "horizontal" | "both" | null = null;
@@ -291,22 +306,23 @@ function TableComponent<T extends Record<string, any>>({
                   <th
                     key={col}
                     scope="col"
-                    className={thClassName(prop)}
-                    onClick={() => handleSort(prop)}
+                    className={`${thClassName(prop)} relative`}
                     style={{
                       cursor: sortableProps.includes(prop)
                         ? "pointer"
                         : "default",
                     }}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>
-                        {col} {getSortIndicator(prop)}
-                      </span>
+                    <div className="flex items-center justify-between space-x-2">
                       <div
-                        className="relative"
-                        id={`header-dropdown-${String(prop)}`}
+                        className="flex-1 min-w-0"
+                        onClick={() => handleSort(prop)}
                       >
+                        <span className="block truncate">
+                          {col} {getSortIndicator(prop)}
+                        </span>
+                      </div>
+                      <div className="flex-shrink-0 relative">
                         <button
                           onClick={(e) => toggleHeaderDropdown(prop, e)}
                           className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
@@ -327,9 +343,14 @@ function TableComponent<T extends Record<string, any>>({
                           </svg>
                         </button>
                         {headerDropdown[String(prop)] && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 dark:bg-gray-700">
+                          <div
+                            className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[100] dark:bg-gray-700"
+                            style={{ top: "100%" }}
+                          >
                             <button
-                              onClick={() => toggleSticky(prop, "horizontal")}
+                              onClick={(e) =>
+                                toggleSticky(prop, "horizontal", e)
+                              }
                               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
                             >
                               {stickyColumns[prop as string]?.includes(
@@ -340,7 +361,7 @@ function TableComponent<T extends Record<string, any>>({
                               Left
                             </button>
                             <button
-                              onClick={() => toggleSticky(prop, "vertical")}
+                              onClick={(e) => toggleSticky(prop, "vertical", e)}
                               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
                             >
                               {stickyColumns[prop as string]?.includes(
@@ -351,7 +372,7 @@ function TableComponent<T extends Record<string, any>>({
                               Top
                             </button>
                             <button
-                              onClick={() => toggleColumnVisibility(prop)}
+                              onClick={(e) => toggleColumnVisibility(prop, e)}
                               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
                             >
                               Hide Column
@@ -376,11 +397,7 @@ function TableComponent<T extends Record<string, any>>({
                 return (
                   <tr
                     key={dataIndex}
-                    onClick={(e) => {
-                      if (!(e.target as HTMLElement).closest(".cell-content")) {
-                        rowOnClick && rowOnClick(item);
-                      }
-                    }}
+                    onClick={() => rowOnClick && rowOnClick(item)}
                     className={`${trClassName(dataIndex)} ${
                       rowOnClick ? "cursor-pointer" : ""
                     }`}
@@ -392,11 +409,7 @@ function TableComponent<T extends Record<string, any>>({
               return (
                 <tr
                   key={dataIndex}
-                  onClick={(e) => {
-                    if (!(e.target as HTMLElement).closest(".cell-content")) {
-                      rowOnClick && rowOnClick(item);
-                    }
-                  }}
+                  onClick={() => rowOnClick && rowOnClick(item)}
                   className={`${trClassName(dataIndex)} ${
                     rowOnClick ? "cursor-pointer" : ""
                   }`}
@@ -425,6 +438,7 @@ function TableComponent<T extends Record<string, any>>({
                             maxWidth: "200px",
                             overflowX: "auto",
                           }}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {displayArray.map((chip, idx) => (
                             <span
