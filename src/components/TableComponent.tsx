@@ -255,6 +255,7 @@ function TableComponent<T extends Record<string, any>>({
     if (stickyType === "vertical" || stickyType === "both") {
       classes.push("sticky-header");
     }
+
     return classes.join(" ");
   };
 
@@ -265,7 +266,7 @@ function TableComponent<T extends Record<string, any>>({
         }`
       : customClassNames.th || "";
 
-    return `${baseClass} ${getStickyClass(prop)}`;
+    return `${baseClass} ${getStickyClass(prop)} break-words`;
   };
 
   const trClassName = (index: number) =>
