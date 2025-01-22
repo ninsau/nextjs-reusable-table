@@ -19,7 +19,7 @@ export interface TableProps<T> {
     actionTd?: string;
     actionButton?: string;
     actionSvg?: string;
-    dropdownMenu?: string
+    dropdownMenu?: string;
     dropdownItem?: string;
     pagination?: {
       container?: string;
@@ -38,43 +38,6 @@ export interface TableProps<T> {
   totalPages?: number;
   sortableProps?: Array<keyof T>;
   formatValue?: (value: string, prop: string, item: T) => React.ReactNode;
-  formatCell?: (
-    value: string,
-    prop: string,
-    item: T,
-    index: number
-  ) => {
-    content?: React.ReactNode;
-    className?: string;
-    style?: React.CSSProperties;
-  };
-  stickyColumns?: {
-    left?: Array<keyof T>;
-    right?: Array<keyof T>;
-  };
-  stickyHeader?: boolean;
-  groupBy?: keyof T;
-  groupRenderer?: (groupValue: any, groupedItems: T[]) => React.ReactNode;
-  columnResizable?: boolean;
-  multiSelect?: boolean;
-  selectedRows?: T[];
-  onSelectionChange?: (selectedItems: T[]) => void;
-  columnVisibility?: { [key in keyof T]?: boolean };
-
-  exportOptions?: {
-    csv?: boolean;
-    excel?: boolean;
-    pdf?: boolean;
-  };
-  aggregates?: {
-    [key in keyof T]?: {
-      type: "sum" | "average" | "count" | "min" | "max" | "custom";
-      customFn?: (values: any[]) => any;
-    };
-  };
-  cellEditable?: boolean;
-  onCellEdit?: (newValue: any, prop: keyof T, item: T, index: number) => void;
-  maxHeight?: string | number;
   noContentProps?: {
     text?: string;
     icon?: React.ReactNode;

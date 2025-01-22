@@ -20,25 +20,18 @@
   @apply bg-gray-50;
 }
 
-.sticky {
-  position: sticky !important;
-  z-index: 10;
-  background-clip: padding-box;
-}
-
 .sticky-left {
+  position: sticky !important;
   left: 0;
   z-index: 20;
-}
-
-.sticky-right {
-  right: 0;
-  z-index: 20;
+  background: inherit;
 }
 
 .sticky-header {
+  position: sticky !important;
   top: 0;
   z-index: 30;
+  background: inherit;
 }
 
 .table-scroll-container {
@@ -49,14 +42,6 @@
 .table td,
 .table th {
   @apply transition-colors duration-150;
-}
-
-.table-shadow-left {
-  box-shadow: inset 10px 0 8px -8px rgba(0, 0, 0, 0.15);
-}
-
-.table-shadow-right {
-  box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, 0.15);
 }
 
 .dark .table {
@@ -75,27 +60,6 @@
   background-color: inherit;
 }
 
-.table input[type="checkbox"] {
-  @apply cursor-pointer rounded border-gray-300;
-  @apply focus:ring-2 focus:ring-offset-2 focus:ring-blue-500;
-}
-
-.dark .table input[type="checkbox"] {
-  @apply border-gray-600;
-}
-
 .table-cell-truncate {
   @apply max-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
-}
-
-.table-row-selected {
-  @apply bg-blue-50;
-}
-
-.dark .table-row-selected {
-  @apply bg-blue-900 bg-opacity-20;
-}
-
-.table-resizer {
-  @apply absolute right-0 top-0 h-full w-1 cursor-col-resize bg-gray-300 opacity-0 hover:opacity-100;
 }
