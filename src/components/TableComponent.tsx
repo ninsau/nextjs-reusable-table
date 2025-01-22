@@ -32,10 +32,18 @@ function TableComponent<T extends Record<string, any>>({
   noContentProps,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [expandedCells, setExpandedCells] = useState<{[key: string]: boolean}>({});
+  const [expandedCells, setExpandedCells] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [sortProp, setSortProp] = useState<keyof T | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
-  const [stickyColumns, setStickyColumns] = useState<{[key: string]: "vertical" | "horizontal" | "both" | null}>({});
+  const [stickyColumns, setStickyColumns] = useState<{
+    [key: string]: "vertical" | "horizontal" | "both" | null;
+  }>({});
+  const [headerDropdown, setHeaderDropdown] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [hiddenColumns, setHiddenColumns] = useState<Set<keyof T>>(new Set());
 
   useEffect(() => {
     if (enableDarkMode) {
@@ -48,6 +56,22 @@ function TableComponent<T extends Record<string, any>>({
       };
     }
   }, [enableDarkMode]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      Object.keys(headerDropdown).forEach((key) => {
+        if (headerDropdown[key]) {
+          const element = document.getElementById(`header-dropdown-${key}`);
+          if (element && !element.contains(event.target as Node)) {
+            setHeaderDropdown((prev) => ({ ...prev, [key]: false }));
+          }
+        }
+      });
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [headerDropdown]);
 
   if (loading) {
     return <TableSkeleton enableDarkMode={enableDarkMode} />;
@@ -87,25 +111,39 @@ function TableComponent<T extends Record<string, any>>({
     }
   };
 
-  const toggleSticky = (prop: keyof T, e: React.MouseEvent) => {
-    e.preventDefault();
-    setStickyColumns(prev => {
+  const toggleHeaderDropdown = (prop: keyof T, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHeaderDropdown((prev) => {
+      const newState = { ...prev };
+      Object.keys(newState).forEach((key) => {
+        newState[key] = key === String(prop) ? !prev[String(prop)] : false;
+      });
+      return newState;
+    });
+  };
+
+  const toggleColumnVisibility = (prop: keyof T) => {
+    setHiddenColumns((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(prop)) {
+        newSet.delete(prop);
+      } else {
+        newSet.add(prop);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSticky = (prop: keyof T, type: "vertical" | "horizontal") => {
+    setStickyColumns((prev) => {
       const current = prev[prop as string];
       let newValue: "vertical" | "horizontal" | "both" | null = null;
-      
-      if (e.shiftKey) {
-        if (current === "vertical") newValue = null;
-        else if (current === "both") newValue = "horizontal";
-        else newValue = "vertical";
-      } else {
-        if (current === "horizontal") newValue = null;
-        else if (current === "both") newValue = "vertical";
-        else newValue = "horizontal";
-      }
 
-      if (current === null && newValue === "vertical" && e.shiftKey) newValue = "vertical";
-      if (current === "horizontal" && newValue === "vertical") newValue = "both";
-      if (current === "vertical" && newValue === "horizontal") newValue = "both";
+      if (current === type) newValue = null;
+      else if (current === "both")
+        newValue = type === "vertical" ? "horizontal" : "vertical";
+      else if (!current) newValue = type;
+      else if (current !== type) newValue = "both";
 
       return { ...prev, [prop as string]: newValue };
     });
@@ -125,7 +163,8 @@ function TableComponent<T extends Record<string, any>>({
   }
 
   let paginatedData = sortedData;
-  let calculatedTotalPages = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
+  let calculatedTotalPages =
+    totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
 
   if (enablePagination) {
     if (totalPages !== undefined) {
@@ -148,11 +187,12 @@ function TableComponent<T extends Record<string, any>>({
       }`
     : "";
 
-  const baseTheadClassName = !disableDefaultStyles && enableDarkMode
-    ? isDarkMode
-      ? "bg-gray-700 text-gray-300"
-      : "bg-gray-50 text-gray-500"
-    : "";
+  const baseTheadClassName =
+    !disableDefaultStyles && enableDarkMode
+      ? isDarkMode
+        ? "bg-gray-700 text-gray-300"
+        : "bg-gray-50 text-gray-500"
+      : "";
 
   const baseTbodyClassName = !disableDefaultStyles
     ? `divide-y ${
@@ -192,7 +232,7 @@ function TableComponent<T extends Record<string, any>>({
   const getStickyClass = (prop: keyof T): string => {
     const stickyType = stickyColumns[prop as string];
     if (!stickyType) return "";
-    
+
     const classes = [];
     if (stickyType === "horizontal" || stickyType === "both") {
       classes.push("sticky-left");
@@ -209,7 +249,7 @@ function TableComponent<T extends Record<string, any>>({
           customClassNames.th || ""
         }`
       : customClassNames.th || "";
-    
+
     return `${baseClass} ${getStickyClass(prop)}`;
   };
 
@@ -224,7 +264,7 @@ function TableComponent<T extends Record<string, any>>({
           customClassNames.td || ""
         }`
       : customClassNames.td || "";
-    
+
     return `${baseClass} ${getStickyClass(prop)}`;
   };
 
@@ -236,28 +276,93 @@ function TableComponent<T extends Record<string, any>>({
     return sortableProps.includes(prop) ? "▲" : "";
   };
 
+  const visibleProps = props.filter((prop) => !hiddenColumns.has(prop));
+
   return (
     <>
       <div style={{ overflowX: "auto" }} className="pb-6">
         <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
           <thead className={theadClassName}>
             <tr>
-              {columns.map((col, i) => (
-                <th
-                  key={col}
-                  scope="col"
-                  className={thClassName(props[i])}
-                  onClick={() => handleSort(props[i])}
-                  onContextMenu={(e) => toggleSticky(props[i], e)}
-                  style={{
-                    cursor: sortableProps.includes(props[i])
-                      ? "pointer"
-                      : "default",
-                  }}
-                >
-                  {col} {getSortIndicator(props[i])}
-                </th>
-              ))}
+              {columns.map((col, i) => {
+                const prop = props[i];
+                if (hiddenColumns.has(prop)) return null;
+                return (
+                  <th
+                    key={col}
+                    scope="col"
+                    className={thClassName(prop)}
+                    onClick={() => handleSort(prop)}
+                    style={{
+                      cursor: sortableProps.includes(prop)
+                        ? "pointer"
+                        : "default",
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>
+                        {col} {getSortIndicator(prop)}
+                      </span>
+                      <div
+                        className="relative"
+                        id={`header-dropdown-${String(prop)}`}
+                      >
+                        <button
+                          onClick={(e) => toggleHeaderDropdown(prop, e)}
+                          className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            className="w-4 h-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6h.01M12 12h.01M12 18h.01"
+                            />
+                          </svg>
+                        </button>
+                        {headerDropdown[String(prop)] && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 dark:bg-gray-700">
+                            <button
+                              onClick={() => toggleSticky(prop, "horizontal")}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                              {stickyColumns[prop as string]?.includes(
+                                "horizontal"
+                              )
+                                ? "Unstick"
+                                : "Stick"}{" "}
+                              Left
+                            </button>
+                            <button
+                              onClick={() => toggleSticky(prop, "vertical")}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                              {stickyColumns[prop as string]?.includes(
+                                "vertical"
+                              )
+                                ? "Unstick"
+                                : "Stick"}{" "}
+                              Top
+                            </button>
+                            <button
+                              onClick={() => toggleColumnVisibility(prop)}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                              Hide Column
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </th>
+                );
+              })}
               {actions && actionTexts && (
                 <th scope="col" className={thClassName(props[0])}>
                   <span className="sr-only">{actionTexts.join(", ")}</span>
@@ -271,7 +376,11 @@ function TableComponent<T extends Record<string, any>>({
                 return (
                   <tr
                     key={dataIndex}
-                    onClick={() => rowOnClick && rowOnClick(item)}
+                    onClick={(e) => {
+                      if (!(e.target as HTMLElement).closest(".cell-content")) {
+                        rowOnClick && rowOnClick(item);
+                      }
+                    }}
                     className={`${trClassName(dataIndex)} ${
                       rowOnClick ? "cursor-pointer" : ""
                     }`}
@@ -283,12 +392,16 @@ function TableComponent<T extends Record<string, any>>({
               return (
                 <tr
                   key={dataIndex}
-                  onClick={() => rowOnClick && rowOnClick(item)}
+                  onClick={(e) => {
+                    if (!(e.target as HTMLElement).closest(".cell-content")) {
+                      rowOnClick && rowOnClick(item);
+                    }
+                  }}
                   className={`${trClassName(dataIndex)} ${
                     rowOnClick ? "cursor-pointer" : ""
                   }`}
                 >
-                  {props.map((prop) => {
+                  {visibleProps.map((prop) => {
                     let value = item[prop];
                     if (value === null || value === undefined || value === "") {
                       value = "-" as T[keyof T];
@@ -307,7 +420,7 @@ function TableComponent<T extends Record<string, any>>({
                       }
                       displayValue = (
                         <div
-                          className="flex flex-wrap gap-1"
+                          className="cell-content flex flex-wrap gap-1"
                           style={{
                             maxWidth: "200px",
                             overflowX: "auto",
@@ -342,7 +455,7 @@ function TableComponent<T extends Record<string, any>>({
                       value.startsWith("http")
                     ) {
                       displayValue = (
-                        <Link href={value}>
+                        <Link href={value} className="cell-content">
                           <span
                             className="text-blue-500 hover:underline"
                             onClick={(e) => e.stopPropagation()}
@@ -384,7 +497,7 @@ function TableComponent<T extends Record<string, any>>({
                           }));
                         }}
                       >
-                        {displayValue}
+                        <div className="cell-content">{displayValue}</div>
                       </td>
                     );
                   })}

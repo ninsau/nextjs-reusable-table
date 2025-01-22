@@ -12,6 +12,14 @@ yarn add nextjs-reusable-table
 pnpm add nextjs-reusable-table
 ```
 
+## Prerequisites
+
+- Next.js 12 or later
+- React 16 or later
+- React DOM 16 or later
+- Tailwind CSS 3.0 or later
+- TypeScript (recommended)
+
 ## Basic Usage
 
 ```tsx
@@ -25,43 +33,81 @@ interface User {
   name: string;
   email: string;
   balance: string;
+  status: string;
+  createdAt: string;
+  tags: string[];
 }
 
 const MyTable = () => {
   const data: User[] = [
-    { id: 1, name: "Alice", email: "alice@example.com", balance: "1200.45" },
-    { id: 2, name: "Bob", email: "bob@example.com", balance: "300.00" },
+    {
+      id: 1,
+      name: "Alice Johnson",
+      email: "alice@example.com",
+      balance: "1200.45",
+      status: "active",
+      createdAt: "2024-01-15T10:30:00Z",
+      tags: ["VIP", "Early Adopter"],
+    },
+    {
+      id: 2,
+      name: "Bob Smith",
+      email: "bob@example.com",
+      balance: "300.00",
+      status: "inactive",
+      createdAt: "2024-01-16T15:45:00Z",
+      tags: ["Trial"],
+    },
   ];
 
-  const formatValue = (value: string, prop: string) => {
-    if (prop === "balance") return `$${Number(value).toFixed(2)}`;
-    return value;
+  const formatValue = (value: string, prop: string, item: User) => {
+    switch (prop) {
+      case "balance":
+        return `$${Number(value).toFixed(2)}`;
+      case "status":
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs ${
+              value === "active"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {value}
+          </span>
+        );
+      default:
+        return value;
+    }
+  };
+
+  const handleRowClick = (user: User) => {
+    console.log("Clicked user:", user);
   };
 
   return (
     <TableComponent<User>
-      columns={["ID", "Name", "Email", "Balance"]}
+      columns={[
+        "ID",
+        "Name",
+        "Email",
+        "Balance",
+        "Status",
+        "Created At",
+        "Tags",
+      ]}
       data={data}
-      props={["id", "name", "email", "balance"]}
+      props={["id", "name", "email", "balance", "status", "createdAt", "tags"]}
       formatValue={formatValue}
-      sortableProps={["name", "balance"]}
-      stickyHeader={true}
-      stickyColumns={{
-        left: ["name"],
-        right: ["balance"],
-      }}
+      sortableProps={["name", "balance", "status", "createdAt"]}
+      rowOnClick={handleRowClick}
+      enableDarkMode={true}
     />
   );
 };
+
+export default MyTable;
 ```
-
-## Prerequisites
-
-- Next.js 12 or later
-- React 16 or later
-- React DOM 16 or later
-- Tailwind CSS (optional, for default styling)
-- TypeScript (recommended)
 
 ## Introduction
 
@@ -71,27 +117,200 @@ By adhering to industry standards and best practices, this component ensures mai
 
 Use this documentation as a comprehensive guide to seamlessly integrate the Next.js Reusable Table into your workflow, enhance your frontend data management capabilities, and offer end-users a polished, intuitive interface for exploring tabular information.
 
-## Key Features
+## Features
 
-- **TypeScript Support**: Strong typing throughout ensures predictable and bug-free integrations
-- **Next.js Compatibility**: Built explicitly with Next.js in mind, ensuring optimal SSR/ISR compatibility
-- **Sticky Columns & Headers**: Keep important columns and headers visible while scrolling
-- **Multi-Select with Checkboxes**: Select multiple rows with accurate state management
-- **Customizable Columns**: Easily define which properties map to which columns
-- **Integrated Sorting**: Enable sorting for specific columns
-- **Built-in Search**: Filter rows by query strings without external dependencies
-- **Pagination**: Control data pagination out-of-the-box
-- **User-Friendly Styling**: Leverage default Tailwind CSS styles or apply custom class names
-- **Robust Data Formatting**: Automatically handle dates, arrays, URLs, numeric values
-- **Action Dropdowns**: Add context-specific row actions via dropdown
-- **Empty State Handling**: Present informative empty states
-- **Dark Mode Support**: Seamless theme adaption
-- **Column Resizing**: Dynamically adjust column widths
-- **Row Groups**: Group rows with custom headers
-- **Performance Optimized**: Crafted for large datasets
-- **Cell Editing**: Inline editing capabilities
-- **Array Data Handling**: Smart handling of array data with expand/collapse
-- **Loading States**: Built-in skeleton loader
+### Column Management
+
+Each column header includes a dropdown menu (⋮) with the following options:
+
+- Stick/unstick horizontally (right-click header)
+- Stick/unstick vertically (shift + right-click header)
+- Hide/show columns
+- Sort columns (when enabled)
+
+```tsx
+<TableComponent<User>
+  columns={columns}
+  data={data}
+  props={props}
+  sortableProps={["name", "email", "createdAt"]} // Enable sorting for these columns
+/>
+```
+
+### Smart Row Interactions
+
+The table provides intelligent click handling:
+
+- Click anywhere on a row to trigger row action
+- Click on cell content to expand/interact without triggering row action
+- Expandable content with "show more" functionality
+
+```tsx
+<TableComponent<User>
+  // ... other props
+  rowOnClick={(user) => console.log("Row clicked:", user)}
+  formatValue={(value, prop, item) => {
+    if (prop === "description") {
+      return <div className="hover:bg-gray-50 cursor-pointer">{value}</div>;
+    }
+    return value;
+  }}
+/>
+```
+
+### Data Type Handling
+
+The table automatically handles different data types:
+
+#### Arrays
+
+Arrays are displayed as chips with expand/collapse functionality:
+
+```tsx
+interface Item {
+  tags: string[];
+}
+
+const data = [
+  {
+    tags: ["one", "two", "three", "four", "five", "six"],
+  },
+];
+
+// Tags will show first 5 items with "+1 more" button
+```
+
+#### Dates
+
+Automatic date formatting:
+
+```tsx
+interface Item {
+  createdAt: string;
+}
+
+const data = [
+  {
+    createdAt: "2024-01-15T10:30:00Z", // Will be formatted as "Jan 15, 2024 10:30 AM"
+  },
+];
+```
+
+#### URLs
+
+Automatic link detection and formatting:
+
+```tsx
+interface Item {
+  website: string;
+}
+
+const data = [
+  {
+    website: "https://example.com", // Will be rendered as clickable link
+  },
+];
+```
+
+### Action Dropdown
+
+Add row actions with dropdown menu:
+
+```tsx
+<TableComponent<User>
+  // ... other props
+  actions={true}
+  actionTexts={["Edit", "Delete", "View Details"]}
+  actionFunctions={[
+    (user) => handleEdit(user),
+    (user) => handleDelete(user),
+    (user) => handleView(user),
+  ]}
+/>
+```
+
+### Search and Pagination
+
+Built-in search and pagination support:
+
+```tsx
+const [page, setPage] = useState(1);
+const [searchTerm, setSearchTerm] = useState("");
+
+<TableComponent<User>
+  // ... other props
+  searchValue={searchTerm}
+  enablePagination={true}
+  page={page}
+  setPage={setPage}
+  itemsPerPage={10}
+/>;
+```
+
+### Custom Styling
+
+Customize appearance with Tailwind classes:
+
+```tsx
+const customClassNames = {
+  table: "shadow-lg border-2 border-gray-200",
+  thead: "bg-gray-50",
+  tbody: "divide-y divide-gray-200",
+  th: "px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
+  tr: "hover:bg-gray-50",
+  td: "px-4 py-2",
+  actionButton: "text-gray-600 hover:text-gray-900",
+  pagination: {
+    container: "mt-4",
+    button: "px-3 py-1 bg-gray-200 rounded",
+    buttonDisabled: "opacity-50",
+    pageInfo: "mx-2",
+  },
+};
+
+<TableComponent<User>
+  // ... other props
+  customClassNames={customClassNames}
+  disableDefaultStyles={false} // Set to true to use only custom classes
+/>;
+```
+
+### Dark Mode
+
+Built-in dark mode support that respects system preferences:
+
+```tsx
+<TableComponent<User>
+  // ... other props
+  enableDarkMode={true} // Will automatically switch based on system preference
+/>
+```
+
+### Loading State
+
+Show loading skeleton:
+
+```tsx
+<TableComponent<User>
+  // ... other props
+  loading={true}
+/>
+```
+
+### Empty State
+
+Custom empty state message:
+
+```tsx
+<TableComponent<User>
+  // ... other props
+  noContentProps={{
+    text: "No users found",
+    name: "users",
+    icon: <CustomIcon />, // Optional
+  }}
+/>
+```
 
 ## Props Reference
 
@@ -104,115 +323,89 @@ Use this documentation as a comprehensive guide to seamlessly integrate the Next
 | props       | ReadonlyArray<keyof T> | Yes      | -       | Object keys to display |
 | loading     | boolean                | No       | false   | Show loading state     |
 | searchValue | string                 | No       | -       | Filter value for rows  |
-| maxHeight   | string \| number       | No       | "100vh" | Maximum table height   |
+
+### Column Management Props
+
+| Prop          | Type           | Default | Description                |
+| ------------- | -------------- | ------- | -------------------------- |
+| sortableProps | Array<keyof T> | []      | Columns that can be sorted |
+| formatValue   | Function       | -       | Custom value formatter     |
+
+### Interaction Props
+
+| Prop            | Type              | Default | Description              |
+| --------------- | ----------------- | ------- | ------------------------ |
+| rowOnClick      | (item: T) => void | -       | Row click handler        |
+| actions         | boolean           | false   | Enable action dropdown   |
+| actionTexts     | string[]          | -       | Action dropdown labels   |
+| actionFunctions | Array<Function>   | -       | Action dropdown handlers |
 
 ### Styling Props
 
-| Prop                 | Type                                              | Default | Description             |
-| -------------------- | ------------------------------------------------- | ------- | ----------------------- |
-| disableDefaultStyles | boolean                                           | false   | Disable built-in styles |
-| customClassNames     | Object                                            | {}      | Custom class names      |
-| enableDarkMode       | boolean                                           | true    | Enable dark mode        |
-| stickyHeader         | boolean                                           | false   | Make header sticky      |
-| stickyColumns        | { left?: Array<keyof T>; right?: Array<keyof T> } | -       | Make columns sticky     |
+| Prop                 | Type    | Default | Description             |
+| -------------------- | ------- | ------- | ----------------------- |
+| disableDefaultStyles | boolean | false   | Disable built-in styles |
+| customClassNames     | Object  | {}      | Custom class names      |
+| enableDarkMode       | boolean | true    | Enable dark mode        |
 
-### Feature Props
+### Pagination Props
 
-| Prop             | Type           | Default | Description            |
-| ---------------- | -------------- | ------- | ---------------------- |
-| enablePagination | boolean        | false   | Enable pagination      |
-| page             | number         | 1       | Current page number    |
-| itemsPerPage     | number         | 10      | Items per page         |
-| sortableProps    | Array<keyof T> | []      | Sortable columns       |
-| multiSelect      | boolean        | false   | Enable row selection   |
-| columnResizable  | boolean        | false   | Enable column resizing |
-| cellEditable     | boolean        | false   | Enable cell editing    |
-| groupBy          | keyof T        | -       | Group rows by property |
+| Prop             | Type    | Default | Description          |
+| ---------------- | ------- | ------- | -------------------- |
+| enablePagination | boolean | false   | Enable pagination    |
+| page             | number  | 1       | Current page         |
+| itemsPerPage     | number  | 10      | Items per page       |
+| totalPages       | number  | -       | Total pages override |
 
-## Advanced Examples
+## Types
 
-### With Sticky Columns and MultiSelect
-
-```tsx
-const [selectedRows, setSelectedRows] = useState<User[]>([]);
-
-<TableComponent<User>
-  columns={columns}
-  data={data}
-  props={props}
-  stickyHeader={true}
-  stickyColumns={{
-    left: ["name"],
-    right: ["actions"],
-  }}
-  multiSelect={true}
-  selectedRows={selectedRows}
-  onSelectionChange={setSelectedRows}
-/>;
-```
-
-### With Custom Formatting
-
-```tsx
-const formatValue = (value: string, prop: string, item: User) => {
-  switch (prop) {
-    case "balance":
-      return `$${Number(value).toFixed(2)}`;
-    case "status":
-      return (
-        <span
-          className={`px-2 py-1 rounded-full ${
-            value === "active"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {value}
-        </span>
-      );
-    default:
-      return value;
-  }
-};
-
-<TableComponent
-  columns={columns}
-  data={data}
-  props={props}
-  formatValue={formatValue}
-/>;
-```
-
-### With Row Groups
-
-```tsx
-<TableComponent<Transaction>
-  columns={columns}
-  data={data}
-  props={props}
-  groupBy="category"
-  groupRenderer={(category, items) => (
-    <div className="font-bold bg-gray-100 p-2">
-      {category} ({items.length} items)
-    </div>
-  )}
-/>
-```
-
-## Performance Optimization
-
-For best performance with large datasets:
-
-```tsx
-<TableComponent<User>
-  columns={columns}
-  data={largeDataSet}
-  props={props}
-  maxHeight="600px"
-  itemsPerPage={50}
-  enablePagination={true}
-  stickyHeader={true}
-/>
+```typescript
+interface TableProps<T> {
+  columns: string[];
+  data: T[];
+  props: ReadonlyArray<keyof T>;
+  actions?: boolean;
+  actionTexts?: string[];
+  loading?: boolean;
+  actionFunctions?: Array<(item: T) => void>;
+  searchValue?: string;
+  disableDefaultStyles?: boolean;
+  customClassNames?: {
+    container?: string;
+    table?: string;
+    thead?: string;
+    tbody?: string;
+    th?: string;
+    tr?: string;
+    td?: string;
+    actionTd?: string;
+    actionButton?: string;
+    actionSvg?: string;
+    dropdownMenu?: string;
+    dropdownItem?: string;
+    pagination?: {
+      container?: string;
+      button?: string;
+      buttonDisabled?: string;
+      pageInfo?: string;
+    };
+  };
+  renderRow?: (item: T, index: number) => React.ReactNode;
+  rowOnClick?: (item: T) => void;
+  enableDarkMode?: boolean;
+  enablePagination?: boolean;
+  page?: number;
+  setPage?: (page: number) => void;
+  itemsPerPage?: number;
+  totalPages?: number;
+  sortableProps?: Array<keyof T>;
+  formatValue?: (value: string, prop: string, item: T) => React.ReactNode;
+  noContentProps?: {
+    text?: string;
+    icon?: React.ReactNode;
+    name?: string;
+  };
+}
 ```
 
 ## ALL ADVANCED FEATURE EXAMPLES
@@ -220,310 +413,291 @@ For best performance with large datasets:
 ```tsx
 "use client";
 import React, { useState } from "react";
-import { TableComponent } from "nextjs-reusable-table";
 import "nextjs-reusable-table/dist/index.css";
+import { TableComponent } from "nextjs-reusable-table";
 
-// Define a comprehensive interface for our data
-interface Transaction {
-  id: number;
-  date: string;
-  customerName: string;
-  description: string;
-  amount: number;
-  status: "pending" | "completed" | "failed";
-  category: string;
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  joinDate: string;
+  status: string;
+  roles: string[];
+  lastLogin: string;
+  profileUrl: string;
   tags: string[];
-  assignedTo: string;
-  priority: "low" | "medium" | "high";
-  notes: string;
-  url?: string;
-  metadata: {
-    createdBy: string;
-    lastModified: string;
-  };
+  department: string;
 }
 
-const CompleteTableExample = () => {
-  // States
+const Test = () => {
   const [page, setPage] = useState(1);
-  const [searchValue, setSearchValue] = useState("");
-  const [selectedRows, setSelectedRows] = useState<Transaction[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Sample data
-  const transactions: Transaction[] = [
+  const sampleData: User[] = [
     {
-      id: 1,
-      date: "2024-01-15",
-      customerName: "John Smith",
-      description: "Software License Purchase",
-      amount: 1299.99,
-      status: "completed",
-      category: "Software",
-      tags: ["license", "annual", "software"],
-      assignedTo: "Alice Johnson",
-      priority: "high",
-      notes: "Enterprise license for 100 users",
-      url: "https://example.com/invoice/1",
-      metadata: {
-        createdBy: "system",
-        lastModified: "2024-01-15T10:30:00",
-      },
+      id: "1",
+      name: "John Doe",
+      email: "john@example.com",
+      joinDate: "2023-01-15T10:30:00Z",
+      status: "Active",
+      roles: ["Admin", "Editor", "User"],
+      lastLogin: "2024-01-20T15:45:00Z",
+      profileUrl: "https://example.com/john",
+      tags: ["VIP", "Early Adopter"],
+      department: "Engineering",
     },
     {
-      id: 2,
-      date: "2024-01-16",
-      customerName: "Sarah Brown",
-      description: "Office Supplies",
-      amount: 245.5,
-      status: "pending",
-      category: "Supplies",
-      tags: ["office", "supplies", "monthly"],
-      assignedTo: "Bob Wilson",
-      priority: "medium",
-      notes: "Monthly office supply restock",
-      metadata: {
-        createdBy: "manual",
-        lastModified: "2024-01-16T14:20:00",
-      },
+      id: "2",
+      name: "Jane Smith",
+      email: "jane@example.com",
+      joinDate: "2023-02-20T09:15:00Z",
+      status: "Active",
+      roles: ["User", "Support"],
+      lastLogin: "2024-01-19T12:30:00Z",
+      profileUrl: "https://example.com/jane",
+      tags: ["Support Team"],
+      department: "Customer Support",
     },
-    // Add more sample data as needed
+    {
+      id: "3",
+      name: "Bob Johnson",
+      email: "bob@example.com",
+      joinDate: "2023-03-10T14:20:00Z",
+      status: "Inactive",
+      roles: ["User"],
+      lastLogin: "2023-12-15T10:00:00Z",
+      profileUrl: "https://example.com/bob",
+      tags: ["New User"],
+      department: "Marketing",
+    },
+    {
+      id: "4",
+      name: "Sarah Wilson",
+      email: "sarah@example.com",
+      joinDate: "2023-04-05T11:45:00Z",
+      status: "Active",
+      roles: ["Editor", "User", "Content Manager"],
+      lastLogin: "2024-01-21T09:15:00Z",
+      profileUrl: "https://example.com/sarah",
+      tags: ["Content Team", "VIP"],
+      department: "Content",
+    },
+    {
+      id: "5",
+      name: "Mike Brown",
+      email: "mike@example.com",
+      joinDate: "2023-05-12T13:10:00Z",
+      status: "Active",
+      roles: ["User", "Analytics"],
+      lastLogin: "2024-01-18T16:20:00Z",
+      profileUrl: "https://example.com/mike",
+      tags: ["Analytics Team"],
+      department: "Data Science",
+    },
   ];
 
-  // Action handlers
-  const handleEdit = (item: Transaction) => {
-    console.log("Edit:", item);
-  };
+  const columns = [
+    "ID",
+    "Name",
+    "Email",
+    "Join Date",
+    "Status",
+    "Roles",
+    "Last Login",
+    "Profile",
+    "Tags",
+    "Department",
+  ];
 
-  const handleDelete = (item: Transaction) => {
-    console.log("Delete:", item);
-  };
+  const props: Array<keyof User> = [
+    "id",
+    "name",
+    "email",
+    "joinDate",
+    "status",
+    "roles",
+    "lastLogin",
+    "profileUrl",
+    "tags",
+    "department",
+  ];
 
-  const handleApprove = (item: Transaction) => {
-    console.log("Approve:", item);
-  };
+  const actionTexts = ["Edit", "Delete", "View Details"];
 
-  const handleCellEdit = (
-    newValue: any,
-    prop: keyof Transaction,
-    item: Transaction,
-    index: number
-  ) => {
-    console.log(`Cell edited: ${prop}`, { newValue, item, index });
-  };
+  const actionFunctions = [
+    (user: User) => console.log(`Edit ${user.name}`),
+    (user: User) => console.log(`Delete ${user.name}`),
+    (user: User) => console.log(`View ${user.name}'s details`),
+  ];
 
-  // Custom formatting function
-  const formatValue = (value: string, prop: string, item: Transaction) => {
+  const customFormatValue = (value: string, prop: string, item: User) => {
     switch (prop) {
-      case "amount":
-        return `$${Number(value).toFixed(2)}`;
       case "status":
         return (
           <span
             className={`px-2 py-1 rounded-full text-xs ${
-              value === "completed"
+              value === "Active"
                 ? "bg-green-100 text-green-800"
-                : value === "pending"
-                ? "bg-yellow-100 text-yellow-800"
                 : "bg-red-100 text-red-800"
             }`}
           >
             {value}
           </span>
         );
-      case "priority":
+      case "department":
         return (
-          <span
-            className={`px-2 py-1 rounded-full text-xs ${
-              value === "high"
-                ? "bg-red-100 text-red-800"
-                : value === "medium"
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-green-100 text-green-800"
-            }`}
-          >
+          <span className="font-medium text-gray-900 dark:text-gray-100">
             {value}
           </span>
         );
-      case "url":
-        return value ? (
+      case "profileUrl":
+        return (
           <a
             href={value}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 hover:underline"
+            className="text-blue-600 hover:underline"
+            onClick={(e) => e.stopPropagation()}
           >
-            View Invoice
+            View Profile
           </a>
-        ) : (
-          "-"
-        );
-      case "metadata":
-        const meta = JSON.parse(value);
-        return (
-          <div className="text-xs">
-            <div>Created: {meta.createdBy}</div>
-            <div>Modified: {new Date(meta.lastModified).toLocaleString()}</div>
-          </div>
         );
       default:
         return value;
     }
   };
 
-  // Custom cell formatting
-  const formatCell = (
-    value: string,
-    prop: string,
-    item: Transaction,
-    index: number
-  ) => {
-    if (prop === "description") {
-      return {
-        content: (
-          <div className="group relative">
-            <div className="font-medium">{value}</div>
-            {item.notes && (
-              <div className="hidden group-hover:block absolute z-50 bg-white shadow-lg p-2 rounded mt-1 text-sm">
-                {item.notes}
-              </div>
-            )}
-          </div>
-        ),
-        className: "cursor-help hover:bg-gray-50",
-        style: { maxWidth: "300px" },
-      };
-    }
-    return { content: value };
+  const handleRowClick = (user: User) => {
+    console.log(`Clicked row for ${user.name}`);
   };
 
-  // Custom row grouping renderer
-  const groupRenderer = (category: string, items: Transaction[]) => (
-    <div className="px-4 py-2 bg-gray-100 font-semibold text-gray-700">
-      {category} ({items.length} transactions, Total: $
-      {items.reduce((sum, item) => sum + item.amount, 0).toFixed(2)})
-    </div>
-  );
-
-  // Custom class names for styling
   const customClassNames = {
-    table: "shadow-lg border-2 border-gray-200",
-    th: "bg-gray-50 text-gray-600 font-semibold",
-    td: "px-4 py-2 border-b",
-    tr: "hover:bg-gray-50",
-    actionButton: "text-blue-600 hover:text-blue-800",
+    table: "min-w-full divide-y divide-gray-200 dark:divide-gray-700",
+    thead: "bg-gray-50 dark:bg-gray-800",
+    tbody:
+      "bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700",
+    th: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider",
+    tr: "hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200",
+    td: "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300",
+    actionButton:
+      "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
+    actionSvg: "w-5 h-5",
+    dropdownMenu:
+      "bg-white dark:bg-gray-800 shadow-lg rounded-md border dark:border-gray-700",
+    dropdownItem:
+      "px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700",
     pagination: {
-      container: "mt-4 flex justify-center",
-      button: "px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600",
+      container:
+        "bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6",
+      button:
+        "relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700",
       buttonDisabled: "opacity-50 cursor-not-allowed",
+      pageInfo: "text-sm text-gray-700 dark:text-gray-300",
     },
   };
 
   return (
-    <div className="p-4 space-y-4">
-      {/* Search input */}
-      <div className="flex items-center space-x-4">
+    <div className="p-4">
+      <div className="mb-4 flex items-center justify-between">
         <input
           type="text"
-          placeholder="Search transactions..."
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          className="px-4 py-2 border rounded-lg w-full max-w-md"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
         />
-
-        {selectedRows.length > 0 && (
-          <div className="bg-blue-50 px-4 py-2 rounded-lg flex items-center space-x-4">
-            <span className="text-blue-700">
-              Selected: {selectedRows.length} transactions
-            </span>
-            <button
-              onClick={() => setSelectedRows([])}
-              className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
-              Clear Selection
-            </button>
-          </div>
-        )}
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Tip: Right-click column headers for sticky options
+        </div>
       </div>
 
-      {/* Table Component */}
-      <TableComponent<Transaction>
-        columns={[
-          "ID",
-          "Date",
-          "Customer",
-          "Description",
-          "Amount",
-          "Status",
-          "Category",
-          "Tags",
-          "Assigned To",
-          "Priority",
-          "Metadata",
-          "Invoice",
-          "Actions",
-        ]}
-        data={transactions}
-        props={
-          [
-            "id",
-            "date",
-            "customerName",
-            "description",
-            "amount",
+      <div className="border rounded-lg dark:border-gray-700 overflow-hidden">
+        <TableComponent<User>
+          columns={columns}
+          data={sampleData}
+          props={props}
+          actions={true}
+          actionTexts={actionTexts}
+          actionFunctions={actionFunctions}
+          searchValue={searchTerm}
+          enablePagination={true}
+          page={page}
+          setPage={setPage}
+          itemsPerPage={5}
+          sortableProps={[
+            "name",
+            "email",
+            "joinDate",
             "status",
-            "category",
-            "tags",
-            "assignedTo",
-            "priority",
-            "metadata",
-            "url",
-          ] as const
-        }
-        actions={true}
-        actionTexts={["Edit", "Delete", "Approve"]}
-        actionFunctions={[handleEdit, handleDelete, handleApprove]}
-        loading={false}
-        searchValue={searchValue}
-        customClassNames={customClassNames}
-        enableDarkMode={true}
-        enablePagination={true}
-        page={page}
-        setPage={setPage}
-        itemsPerPage={10}
-        sortableProps={[
-          "date",
-          "customerName",
-          "amount",
-          "status",
-          "category",
-          "priority",
-        ]}
-        formatValue={formatValue}
-        formatCell={formatCell}
-        stickyHeader={true}
-        stickyColumns={{
-          left: ["customerName"],
-          right: ["status"],
-        }}
-        columnResizable={true}
-        multiSelect={true}
-        selectedRows={selectedRows}
-        onSelectionChange={setSelectedRows}
-        groupBy="category"
-        groupRenderer={groupRenderer}
-        cellEditable={true}
-        onCellEdit={handleCellEdit}
-        maxHeight="80vh"
-        noContentProps={{
-          text: "No transactions found",
-          name: "transactions",
-        }}
-      />
+            "department",
+            "lastLogin",
+          ]}
+          formatValue={customFormatValue}
+          rowOnClick={handleRowClick}
+          enableDarkMode={true}
+          customClassNames={customClassNames}
+          noContentProps={{
+            text: "No users found",
+            name: "users",
+          }}
+        />
+      </div>
+
+      <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+        <p>
+          <strong>Features demonstrated:</strong>
+        </p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>
+            Column Header Management (click ⋮ icon):
+            <ul className="list-disc pl-5 mt-1">
+              <li>Hide/Show columns</li>
+              <li>Toggle sticky horizontal/vertical</li>
+              <li>Sort columns</li>
+            </ul>
+          </li>
+          <li>
+            Smart Row Interaction:
+            <ul className="list-disc pl-5 mt-1">
+              <li>Click row area for row action</li>
+              <li>Click cell content to expand/interact</li>
+              <li>Protected link and action clicks</li>
+            </ul>
+          </li>
+          <li>
+            Enhanced Data Display:
+            <ul className="list-disc pl-5 mt-1">
+              <li>Array chips with expand/collapse</li>
+              <li>Formatted dates</li>
+              <li>Status badges</li>
+              <li>Clickable URLs</li>
+            </ul>
+          </li>
+          <li>
+            Visual Features:
+            <ul className="list-disc pl-5 mt-1">
+              <li>Dark mode support</li>
+              <li>Loading skeleton</li>
+              <li>Custom cell styling</li>
+              <li>Responsive layout</li>
+            </ul>
+          </li>
+          <li>
+            Functionality:
+            <ul className="list-disc pl-5 mt-1">
+              <li>Search filtering</li>
+              <li>Pagination</li>
+              <li>Action dropdown</li>
+              <li>Column sorting</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };
 
-export default CompleteTableExample;
+export default Test;
 ```
 
 ## Contributing
