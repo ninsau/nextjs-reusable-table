@@ -67,7 +67,6 @@ function TableComponent<T>({
         }
       });
     };
-
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
@@ -115,10 +114,7 @@ function TableComponent<T>({
     e.stopPropagation();
     setHeaderDropdown((prev) => {
       const newState = Object.keys(prev).reduce(
-        (acc, key) => ({
-          ...acc,
-          [key]: false,
-        }),
+        (acc, key) => ({ ...acc, [key]: false }),
         {}
       );
       return {
@@ -213,7 +209,7 @@ function TableComponent<T>({
 
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
-    : `${baseTheadClassName} ${customClassNames.thead || ""}`;
+    : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
 
   const tbodyClassName = disableDefaultStyles
     ? customClassNames.tbody || ""
@@ -230,7 +226,6 @@ function TableComponent<T>({
           customClassNames.th || ""
         }`
       : customClassNames.th || "";
-
     return `${baseClass} ${getColumnClass(prop)}`;
   };
 
@@ -245,7 +240,6 @@ function TableComponent<T>({
           customClassNames.td || ""
         }`
       : customClassNames.td || "";
-
     return `${baseClass} ${getColumnClass(prop)}`;
   };
 
@@ -253,11 +247,8 @@ function TableComponent<T>({
     let indicator = "";
     if (sortableProps.includes(props[i])) {
       if (props[i] === sortProp) {
-        if (sortOrder === "asc") {
-          indicator = "▲";
-        } else if (sortOrder === "desc") {
-          indicator = "▼";
-        }
+        if (sortOrder === "asc") indicator = "▲";
+        else if (sortOrder === "desc") indicator = "▼";
       }
     }
     return { col, indicator, prop: props[i] };
@@ -265,7 +256,10 @@ function TableComponent<T>({
 
   return (
     <>
-      <div style={{ overflowX: "auto" }} className="pb-6">
+      <div
+        className="table-scroll-container pb-6"
+        style={{ maxHeight: "600px", overflow: "auto" }}
+      >
         <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
           <thead className={theadClassName}>
             <tr>
@@ -373,7 +367,6 @@ function TableComponent<T>({
                     const isExpanded = expandedCells[cellKey];
                     let displayValue: React.ReactNode;
                     let valToFormat = String(value);
-
                     if (typeof value === "string" && isDateString(value)) {
                       valToFormat = formatDate(new Date(value), true);
                     } else if (Array.isArray(value)) {
