@@ -1,5 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  isValidElement,
+  cloneElement,
+} from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
 import ActionDropdown from "./ActionDropdown";
@@ -43,6 +48,9 @@ function TableComponent<T>({
   const [stickyColumns, setStickyColumns] = useState<{
     [key: string]: "left" | "right" | null;
   }>({});
+  const [hiddenColumns, setHiddenColumns] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     if (enableDarkMode) {
@@ -70,28 +78,6 @@ function TableComponent<T>({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
-
-  if (loading) {
-    return <TableSkeleton enableDarkMode={enableDarkMode} />;
-  }
-
-  if (!data || data.length === 0) {
-    return <NoContentComponent {...noContentProps} />;
-  }
-
-  let filteredData = data;
-  if (searchValue) {
-    filteredData = data.filter((item) => {
-      return props.some((prop) => {
-        const value = item[prop as keyof T];
-        return String(value).toLowerCase().includes(searchValue.toLowerCase());
-      });
-    });
-  }
-
-  if (filteredData.length === 0) {
-    return <NoContentComponent {...noContentProps} />;
-  }
 
   const handleSort = (col: string) => {
     if (!sortableProps.includes(col as keyof T)) return;
@@ -134,6 +120,33 @@ function TableComponent<T>({
     });
     setHeaderDropdown((prev) => ({ ...prev, [prop]: false }));
   };
+
+  const toggleHideColumn = (prop: string) => {
+    setHiddenColumns((prev) => ({ ...prev, [prop]: !prev[prop] }));
+    setHeaderDropdown((prev) => ({ ...prev, [prop]: false }));
+  };
+
+  if (loading) {
+    return <TableSkeleton enableDarkMode={enableDarkMode} />;
+  }
+
+  if (!data || data.length === 0) {
+    return <NoContentComponent {...noContentProps} />;
+  }
+
+  let filteredData = data;
+  if (searchValue) {
+    filteredData = data.filter((item) => {
+      return props.some((prop) => {
+        const value = item[prop as keyof T];
+        return String(value).toLowerCase().includes(searchValue.toLowerCase());
+      });
+    });
+  }
+
+  if (filteredData.length === 0) {
+    return <NoContentComponent {...noContentProps} />;
+  }
 
   let sortedData = [...filteredData];
   if (sortProp && sortOrder !== "none") {
@@ -258,78 +271,104 @@ function TableComponent<T>({
     <>
       <div
         className="table-scroll-container pb-6"
-        style={{ maxHeight: "600px", overflow: "auto" }}
+        style={{
+          maxHeight: "600px",
+          maxWidth: "100%",
+          overflow: "auto",
+          whiteSpace: "nowrap",
+        }}
       >
-        <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
+        <table
+          className={tableClassName}
+          style={{ margin: 0, padding: 0, minWidth: "fit-content" }}
+        >
           <thead className={theadClassName}>
             <tr>
-              {displayedColumns.map(({ col, indicator, prop }) => (
-                <th
-                  key={col}
-                  scope="col"
-                  className={thClassName(String(prop))}
-                  style={{
-                    cursor: sortableProps.includes(prop)
-                      ? "pointer"
-                      : "default",
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div
-                      className="flex-1"
-                      onClick={() => handleSort(String(prop))}
-                    >
-                      {col} {indicator}
-                    </div>
-                    <div className="relative">
-                      <button
-                        onClick={(e) => toggleHeaderDropdown(String(prop), e)}
-                        className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
+              {displayedColumns.map(({ col, indicator, prop }) => {
+                if (hiddenColumns[String(prop)]) return null;
+                return (
+                  <th
+                    key={col}
+                    scope="col"
+                    className={thClassName(String(prop))}
+                    style={{
+                      cursor: sortableProps.includes(prop)
+                        ? "pointer"
+                        : "default",
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="flex-1"
+                        onClick={() => handleSort(String(prop))}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          className="w-4 h-4"
+                        {col} {indicator}
+                      </div>
+                      <div className="relative">
+                        <button
+                          onClick={(e) => toggleHeaderDropdown(String(prop), e)}
+                          className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6h.01M12 12h.01M12 18h.01"
-                          />
-                        </svg>
-                      </button>
-                      {headerDropdown[String(prop)] && (
-                        <div
-                          id={`header-dropdown-${String(prop)}`}
-                          className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-[100]"
-                        >
-                          <button
-                            onClick={() => toggleSticky(String(prop), "left")}
-                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            className="w-4 h-4"
                           >
-                            {stickyColumns[String(prop)] === "left"
-                              ? "Unstick"
-                              : "Stick Left"}
-                          </button>
-                          <button
-                            onClick={() => toggleSticky(String(prop), "right")}
-                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6h.01M12 12h.01M12 18h.01"
+                            />
+                          </svg>
+                        </button>
+                        {headerDropdown[String(prop)] && (
+                          <div
+                            id={`header-dropdown-${String(prop)}`}
+                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-[100]"
                           >
-                            {stickyColumns[String(prop)] === "right"
-                              ? "Unstick"
-                              : "Stick Right"}
-                          </button>
-                        </div>
-                      )}
+                            <button
+                              onClick={() => toggleSticky(String(prop), "left")}
+                              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                            >
+                              {stickyColumns[String(prop)] === "left"
+                                ? "Unstick"
+                                : "Stick Left"}
+                            </button>
+                            <button
+                              onClick={() =>
+                                toggleSticky(String(prop), "right")
+                              }
+                              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                            >
+                              {stickyColumns[String(prop)] === "right"
+                                ? "Unstick"
+                                : "Stick Right"}
+                            </button>
+                            <button
+                              onClick={() => toggleHideColumn(String(prop))}
+                              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                            >
+                              {hiddenColumns[String(prop)]
+                                ? "Unhide Column"
+                                : "Hide Column"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </th>
-              ))}
+                  </th>
+                );
+              })}
               {actions && actionTexts && (
-                <th scope="col" className={thClassName("")}>
+                <th
+                  scope="col"
+                  className={`${thClassName("")}`}
+                  style={{ verticalAlign: "middle" }}
+                >
                   <span className="sr-only">{actionTexts.join(", ")}</span>
                 </th>
               )}
@@ -359,6 +398,7 @@ function TableComponent<T>({
                   }`}
                 >
                   {props.map((prop) => {
+                    if (hiddenColumns[String(prop)]) return null;
                     let value = item[prop];
                     if (value === null || value === undefined || value === "") {
                       value = "-" as T[keyof T];
@@ -367,29 +407,48 @@ function TableComponent<T>({
                     const isExpanded = expandedCells[cellKey];
                     let displayValue: React.ReactNode;
                     let valToFormat = String(value);
+
                     if (typeof value === "string" && isDateString(value)) {
                       valToFormat = formatDate(new Date(value), true);
                     } else if (Array.isArray(value)) {
-                      let displayArray: any[] = value as any[];
+                      let displayArray: any[] = [...value];
                       if (!isExpanded && displayArray.length > 5) {
                         displayArray = displayArray.slice(0, 5);
                       }
                       displayValue = (
                         <div
                           className="flex flex-wrap gap-1"
-                          style={{
-                            maxWidth: "200px",
-                            overflowX: "auto",
-                          }}
+                          style={{ maxWidth: "200px", overflowX: "auto" }}
                         >
-                          {displayArray.map((chip, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
-                            >
-                              {trimText(String(chip), 20)}
-                            </span>
-                          ))}
+                          {displayArray.map((chip, idx) => {
+                            const rawChip = trimText(String(chip), 20);
+                            if (formatValue) {
+                              const possiblyNode = formatValue(
+                                String(chip),
+                                String(prop),
+                                item
+                              );
+                              if (isValidElement(possiblyNode)) {
+                                return cloneElement(possiblyNode, { key: idx });
+                              }
+                              return (
+                                <span
+                                  key={idx}
+                                  className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                                >
+                                  {possiblyNode}
+                                </span>
+                              );
+                            }
+                            return (
+                              <span
+                                key={idx}
+                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                              >
+                                {rawChip}
+                              </span>
+                            );
+                          })}
                           {!isExpanded && (value as any[]).length > 5 && (
                             <span
                               className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
@@ -421,21 +480,23 @@ function TableComponent<T>({
                         </Link>
                       );
                     } else {
-                      if (!Array.isArray(value)) {
-                        if (!isExpanded) {
-                          valToFormat = trimText(valToFormat, 30);
-                        }
+                      if (!Array.isArray(value) && !isExpanded) {
+                        valToFormat = trimText(valToFormat, 30);
                       }
                       if (formatValue) {
-                        displayValue = formatValue(
+                        const possiblyNode = formatValue(
                           valToFormat,
                           String(prop),
                           item
                         );
+                        displayValue = isValidElement(possiblyNode)
+                          ? possiblyNode
+                          : possiblyNode ?? valToFormat;
                       } else {
                         displayValue = valToFormat;
                       }
                     }
+
                     if (!displayValue && !Array.isArray(value)) {
                       displayValue = valToFormat;
                     }
@@ -450,6 +511,7 @@ function TableComponent<T>({
                             [cellKey]: !prev[cellKey],
                           }));
                         }}
+                        style={{ verticalAlign: "middle" }}
                       >
                         {displayValue}
                       </td>
