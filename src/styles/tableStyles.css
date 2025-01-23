@@ -9,11 +9,11 @@
 }
 
 .table {
-  @apply min-w-full divide-y divide-gray-200 relative;
+  @apply min-w-full divide-y divide-gray-200;
 }
 
 .table th {
-  @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-normal break-words;
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
 }
 
 .table tbody tr:nth-child(even) {
@@ -24,27 +24,26 @@
   position: sticky !important;
   left: 0;
   z-index: 20;
-  background: inherit;
-  box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.15);
+  background-color: inherit;
+  border-right: 1px solid rgb(229, 231, 235);
 }
 
 .freeze-right {
   position: sticky !important;
   right: 0;
   z-index: 20;
-  background: inherit;
-  box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.15);
+  background-color: inherit;
+  border-left: 1px solid rgb(229, 231, 235);
 }
 
 .table-scroll-container {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  @apply relative;
 }
 
 .table td,
 .table th {
-  @apply transition-colors duration-150 relative;
+  @apply transition-colors duration-150;
 }
 
 .dark .table {
@@ -61,39 +60,9 @@
 
 .dark .freeze-left,
 .dark .freeze-right {
-  @apply bg-gray-900;
-  box-shadow: none;
-  border-right: 1px solid rgb(75, 85, 99);
+  border-color: rgb(75, 85, 99);
 }
 
 .table-cell-truncate {
   @apply max-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
-}
-
-.cell-content {
-  @apply relative z-10;
-}
-
-.dropdown-menu {
-  @apply absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50;
-}
-
-.dropdown-item {
-  @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left;
-}
-
-.dark .dropdown-menu {
-  @apply bg-gray-800 border border-gray-700;
-}
-
-.dark .dropdown-item {
-  @apply text-gray-300 hover:bg-gray-700;
-}
-
-.header-cell {
-  @apply relative p-4 break-words max-w-[300px];
-}
-
-.header-content {
-  @apply flex items-center justify-between space-x-2;
 }
