@@ -38,6 +38,20 @@
   border-left: 1px solid rgb(229, 231, 235);
 }
 
+.sticky-left {
+  position: sticky !important;
+  left: 0;
+  z-index: 20;
+  background-color: inherit;
+}
+
+.sticky-right {
+  position: sticky !important;
+  right: 0;
+  z-index: 20;
+  background-color: inherit;
+}
+
 .table-scroll-container {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
