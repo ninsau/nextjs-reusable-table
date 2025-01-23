@@ -1,6 +1,6 @@
 {
   "name": "nextjs-reusable-table",
-  "version": "3.1.4",
+  "version": "3.1.6",
   "main": "index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
