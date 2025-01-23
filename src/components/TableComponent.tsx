@@ -37,13 +37,16 @@ function TableComponent<T extends Record<string, any>>({
   }>({});
   const [sortProp, setSortProp] = useState<keyof T | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
-  const [stickyColumns, setStickyColumns] = useState<{
-    [key: string]: "vertical" | "horizontal" | "both" | null;
+  const [frozenColumns, setFrozenColumns] = useState<{
+    [key: string]: "left" | "right" | null;
   }>({});
   const [headerDropdown, setHeaderDropdown] = useState<{
     [key: string]: boolean;
   }>({});
   const [hiddenColumns, setHiddenColumns] = useState<Set<keyof T>>(new Set());
+  const [columnWidths, setColumnWidths] = useState<{ [key: string]: number }>(
+    {}
+  );
 
   useEffect(() => {
     if (enableDarkMode) {
@@ -72,6 +75,21 @@ function TableComponent<T extends Record<string, any>>({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
+
+  useEffect(() => {
+    const setInitialColumnWidths = () => {
+      const widths: { [key: string]: number } = {};
+      props.forEach((prop) => {
+        const headerElement = document.getElementById(`header-${String(prop)}`);
+        if (headerElement) {
+          widths[String(prop)] = headerElement.offsetWidth;
+        }
+      });
+      setColumnWidths(widths);
+    };
+
+    setInitialColumnWidths();
+  }, [props]);
 
   if (loading) {
     return <TableSkeleton enableDarkMode={enableDarkMode} />;
@@ -143,25 +161,42 @@ function TableComponent<T extends Record<string, any>>({
     setHeaderDropdown((prev) => ({ ...prev, [String(prop)]: false }));
   };
 
-  const toggleSticky = (
+  const toggleFreezeColumn = (
     prop: keyof T,
-    type: "vertical" | "horizontal",
+    position: "left" | "right",
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    e.preventDefault();
-    setStickyColumns((prev) => {
+    setFrozenColumns((prev) => {
       const current = prev[prop as string];
-      let newValue: "vertical" | "horizontal" | "both" | null = null;
+      let newValue: "left" | "right" | null = null;
 
-      if (current === type) newValue = null;
-      else if (current === "both")
-        newValue = type === "vertical" ? "horizontal" : "vertical";
-      else if (!current) newValue = type;
-      else if (current !== type) newValue = "both";
+      if (current === position) {
+        newValue = null;
+      } else {
+        newValue = position;
+      }
 
       return { ...prev, [prop as string]: newValue };
     });
+    setHeaderDropdown((prev) => ({ ...prev, [String(prop)]: false }));
+  };
+
+  const autoFitColumn = (prop: keyof T) => {
+    const cells = document.querySelectorAll(
+      `td[data-column="${String(prop)}"]`
+    );
+    let maxWidth = 0;
+
+    cells.forEach((cell) => {
+      const width = (cell as HTMLElement).scrollWidth;
+      maxWidth = Math.max(maxWidth, width);
+    });
+
+    setColumnWidths((prev) => ({
+      ...prev,
+      [String(prop)]: maxWidth + 32,
+    }));
   };
 
   let sortedData = [...filteredData];
@@ -244,19 +279,11 @@ function TableComponent<T extends Record<string, any>>({
     ? customClassNames.tbody || ""
     : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
 
-  const getStickyClass = (prop: keyof T): string => {
-    const stickyType = stickyColumns[prop as string];
-    if (!stickyType) return "";
+  const getFreezeClass = (prop: keyof T): string => {
+    const freezePosition = frozenColumns[prop as string];
+    if (!freezePosition) return "";
 
-    const classes = [];
-    if (stickyType === "horizontal" || stickyType === "both") {
-      classes.push("sticky-left");
-    }
-    if (stickyType === "vertical" || stickyType === "both") {
-      classes.push("sticky-header");
-    }
-
-    return classes.join(" ");
+    return freezePosition === "left" ? "freeze-left" : "freeze-right";
   };
 
   const thClassName = (prop: keyof T) => {
@@ -266,7 +293,7 @@ function TableComponent<T extends Record<string, any>>({
         }`
       : customClassNames.th || "";
 
-    return `${baseClass} ${getStickyClass(prop)} break-words`;
+    return `${baseClass} ${getFreezeClass(prop)}`;
   };
 
   const trClassName = (index: number) =>
@@ -281,7 +308,7 @@ function TableComponent<T extends Record<string, any>>({
         }`
       : customClassNames.td || "";
 
-    return `${baseClass} ${getStickyClass(prop)}`;
+    return `${baseClass} ${getFreezeClass(prop)}`;
   };
 
   const getSortIndicator = (prop: keyof T) => {
@@ -296,8 +323,8 @@ function TableComponent<T extends Record<string, any>>({
 
   return (
     <>
-      <div style={{ overflowX: "auto" }} className="pb-6">
-        <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
+      <div className="relative overflow-x-auto">
+        <table className={tableClassName}>
           <thead className={theadClassName}>
             <tr>
               {columns.map((col, i) => {
@@ -306,17 +333,21 @@ function TableComponent<T extends Record<string, any>>({
                 return (
                   <th
                     key={col}
+                    id={`header-${String(prop)}`}
                     scope="col"
                     className={`${thClassName(prop)} relative`}
                     style={{
                       cursor: sortableProps.includes(prop)
                         ? "pointer"
                         : "default",
+                      width: columnWidths[String(prop)] || "auto",
+                      minWidth: "150px",
+                      maxWidth: "300px",
                     }}
                   >
-                    <div className="flex items-center justify-between space-x-2">
+                    <div className="flex items-center justify-between space-x-2 p-1">
                       <div
-                        className="flex-1 min-w-0"
+                        className="flex-1 min-w-0 cursor-pointer"
                         onClick={() => handleSort(prop)}
                       >
                         <span className="block truncate">
@@ -344,33 +375,32 @@ function TableComponent<T extends Record<string, any>>({
                           </svg>
                         </button>
                         {headerDropdown[String(prop)] && (
-                          <div
-                            className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[100] dark:bg-gray-700"
-                            style={{ top: "100%" }}
-                          >
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[100] dark:bg-gray-700">
                             <button
                               onClick={(e) =>
-                                toggleSticky(prop, "horizontal", e)
+                                toggleFreezeColumn(prop, "left", e)
                               }
                               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
                             >
-                              {stickyColumns[prop as string]?.includes(
-                                "horizontal"
-                              )
-                                ? "Unstick"
-                                : "Stick"}{" "}
-                              Left
+                              {frozenColumns[prop as string] === "left"
+                                ? "Unfreeze"
+                                : "Freeze Left"}
                             </button>
                             <button
-                              onClick={(e) => toggleSticky(prop, "vertical", e)}
+                              onClick={(e) =>
+                                toggleFreezeColumn(prop, "right", e)
+                              }
                               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
                             >
-                              {stickyColumns[prop as string]?.includes(
-                                "vertical"
-                              )
-                                ? "Unstick"
-                                : "Stick"}{" "}
-                              Top
+                              {frozenColumns[prop as string] === "right"
+                                ? "Unfreeze"
+                                : "Freeze Right"}
+                            </button>
+                            <button
+                              onClick={() => autoFitColumn(prop)}
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left dark:text-gray-200 dark:hover:bg-gray-600"
+                            >
+                              Auto-fit Column
                             </button>
                             <button
                               onClick={(e) => toggleColumnVisibility(prop, e)}
@@ -425,8 +455,18 @@ function TableComponent<T extends Record<string, any>>({
                     let displayValue: React.ReactNode;
                     let valToFormat = String(value);
 
-                    if (typeof value === "string" && isDateString(value)) {
+                    if (formatValue && !Array.isArray(value)) {
+                      displayValue = formatValue(
+                        valToFormat,
+                        String(prop),
+                        item
+                      );
+                    } else if (
+                      typeof value === "string" &&
+                      isDateString(value)
+                    ) {
                       valToFormat = formatDate(new Date(value), true);
+                      displayValue = valToFormat;
                     } else if (Array.isArray(value)) {
                       let displayArray: any[] = value as any[];
                       if (!isExpanded && displayArray.length > 5) {
@@ -444,14 +484,14 @@ function TableComponent<T extends Record<string, any>>({
                           {displayArray.map((chip, idx) => (
                             <span
                               key={idx}
-                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs dark:bg-indigo-900 dark:text-gray-200"
                             >
                               {trimText(String(chip), 20)}
                             </span>
                           ))}
                           {!isExpanded && (value as any[]).length > 5 && (
                             <span
-                              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
+                              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer dark:bg-gray-700 dark:text-gray-300"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setExpandedCells((prev) => ({
@@ -485,15 +525,7 @@ function TableComponent<T extends Record<string, any>>({
                           valToFormat = trimText(valToFormat, 30);
                         }
                       }
-                      if (formatValue) {
-                        displayValue = formatValue(
-                          valToFormat,
-                          String(prop),
-                          item
-                        );
-                      } else {
-                        displayValue = valToFormat;
-                      }
+                      displayValue = valToFormat;
                     }
 
                     if (!displayValue && !Array.isArray(value)) {
@@ -504,6 +536,12 @@ function TableComponent<T extends Record<string, any>>({
                       <td
                         key={String(prop)}
                         className={tdClassName(prop)}
+                        data-column={String(prop)}
+                        style={{
+                          width: columnWidths[String(prop)] || "auto",
+                          minWidth: "150px",
+                          maxWidth: "300px",
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setExpandedCells((prev) => ({
@@ -512,7 +550,9 @@ function TableComponent<T extends Record<string, any>>({
                           }));
                         }}
                       >
-                        <div className="cell-content">{displayValue}</div>
+                        <div className="cell-content whitespace-normal break-words">
+                          {displayValue}
+                        </div>
                       </td>
                     );
                   })}
