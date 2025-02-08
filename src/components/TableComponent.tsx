@@ -32,17 +32,17 @@ function TableComponent<T>({
   noContentProps,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [expandedCells, setExpandedCells] = useState<{ [key: string]: boolean }>(
-    {}
-  );
+  const [expandedCells, setExpandedCells] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [sortProp, setSortProp] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
   const [headerDropdown, setHeaderDropdown] = useState<{
     [key: string]: boolean;
   }>({});
-  const [hiddenColumns, setHiddenColumns] = useState<{ [key: string]: boolean }>(
-    {}
-  );
+  const [hiddenColumns, setHiddenColumns] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     if (enableDarkMode) {
@@ -83,7 +83,7 @@ function TableComponent<T>({
   if (searchValue) {
     filteredData = data.filter((item) => {
       return props.some((prop) => {
-        const value = item[prop as keyof T];
+        const value = item[prop];
         return String(value).toLowerCase().includes(searchValue.toLowerCase());
       });
     });
@@ -93,9 +93,9 @@ function TableComponent<T>({
     return <NoContentComponent {...noContentProps} />;
   }
 
-  const handleSort = (col: string) => {
-    if (!sortableProps.includes(col as keyof T)) return;
-    if (sortProp === col) {
+  const handleSort = (prop: string) => {
+    if (!sortableProps.includes(prop as keyof T)) return;
+    if (sortProp === prop) {
       if (sortOrder === "none") {
         setSortOrder("asc");
       } else if (sortOrder === "asc") {
@@ -104,7 +104,7 @@ function TableComponent<T>({
         setSortOrder("none");
       }
     } else {
-      setSortProp(col);
+      setSortProp(prop);
       setSortOrder("asc");
     }
   };
@@ -256,11 +256,13 @@ function TableComponent<T>({
                 if (hiddenColumns[String(prop)]) return null;
                 return (
                   <th
-                    key={col}
+                    key={String(prop)}
                     scope="col"
                     className={thClassName(String(prop))}
                     style={{
-                      cursor: sortableProps.includes(prop) ? "pointer" : "default",
+                      cursor: sortableProps.includes(prop as keyof T)
+                        ? "pointer"
+                        : "default",
                     }}
                   >
                     <div className="flex items-center justify-between">
@@ -293,7 +295,7 @@ function TableComponent<T>({
                         {headerDropdown[String(prop)] && (
                           <div
                             id={`header-dropdown-${String(prop)}`}
-                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-[100]"
+                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50"
                           >
                             <button
                               onClick={() => toggleHideColumn(String(prop))}
@@ -323,9 +325,11 @@ function TableComponent<T>({
                 return (
                   <tr
                     key={dataIndex}
-                    onClick={() => rowOnClick && rowOnClick(item)}
+                    onClick={() => rowOnClick?.(item)}
                     className={`${trClassName(dataIndex)} ${
-                      rowOnClick ? "cursor-pointer" : ""
+                      rowOnClick
+                        ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                        : ""
                     }`}
                   >
                     {renderRow(item, dataIndex)}
@@ -335,9 +339,11 @@ function TableComponent<T>({
               return (
                 <tr
                   key={dataIndex}
-                  onClick={() => rowOnClick && rowOnClick(item)}
+                  onClick={() => rowOnClick?.(item)}
                   className={`${trClassName(dataIndex)} ${
-                    rowOnClick ? "cursor-pointer" : ""
+                    rowOnClick
+                      ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                      : ""
                   }`}
                 >
                   {props.map((prop) => {
@@ -354,7 +360,7 @@ function TableComponent<T>({
                     if (typeof value === "string" && isDateString(value)) {
                       valToFormat = formatDate(new Date(value), true);
                     } else if (Array.isArray(value)) {
-                      let displayArray: any[] = value as any[];
+                      let displayArray: any[] = value;
                       if (!isExpanded && displayArray.length > 5) {
                         displayArray = displayArray.slice(0, 5);
                       }
@@ -374,7 +380,7 @@ function TableComponent<T>({
                               {trimText(String(chip), 20)}
                             </span>
                           ))}
-                          {!isExpanded && (value as any[]).length > 5 && (
+                          {!isExpanded && value.length > 5 && (
                             <span
                               className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
                               onClick={(e) => {
@@ -385,7 +391,7 @@ function TableComponent<T>({
                                 }));
                               }}
                             >
-                              +{(value as any[]).length - 5} more
+                              +{value.length - 5} more
                             </span>
                           )}
                         </div>
@@ -455,7 +461,7 @@ function TableComponent<T>({
         </table>
       </div>
       {enablePagination && page !== undefined && setPage && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="mt-4 flex justify-center">
           <PaginationComponent
             page={page}
             setPage={setPage}
