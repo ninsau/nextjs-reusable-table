@@ -322,9 +322,7 @@ function TableComponent<T>({
           <tbody className={tbodyClassName}>
             {paginatedData.map((item, dataIndex) => {
               const rowClassNames = `${trClassName(dataIndex)} ${
-                rowOnClick
-                  ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
-                  : ""
+                rowOnClick ? "cursor-pointer" : ""
               }`;
 
               if (renderRow) {
