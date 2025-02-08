@@ -5,11 +5,11 @@ A highly customizable and reusable table component for Next.js applications, bui
 ## Installation
 
 ```bash
-npm install nextjs-reusable-table
+npm install nextjs-reusable-table@latest
 # or
-yarn add nextjs-reusable-table
+yarn add nextjs-reusable-table@latest
 # or
-pnpm add nextjs-reusable-table
+pnpm add nextjs-reusable-table@latest
 ```
 
 ## Prerequisites
