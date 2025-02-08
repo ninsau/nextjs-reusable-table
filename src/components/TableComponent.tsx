@@ -71,12 +71,6 @@ function TableComponent<T>({
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
 
-  const handleRowClick = (item: T) => {
-    if (rowOnClick) {
-      rowOnClick(item);
-    }
-  };
-
   if (loading) {
     return <TableSkeleton enableDarkMode={enableDarkMode} />;
   }
@@ -249,12 +243,6 @@ function TableComponent<T>({
     return { col, indicator, prop: props[i] };
   });
 
-  const rowHoverClass = rowOnClick
-    ? isDarkMode
-      ? "hover:bg-gray-600"
-      : "hover:bg-gray-50"
-    : "";
-
   return (
     <>
       <div
@@ -333,26 +321,29 @@ function TableComponent<T>({
           </thead>
           <tbody className={tbodyClassName}>
             {paginatedData.map((item, dataIndex) => {
+              const rowClassNames = `${trClassName(dataIndex)} ${
+                rowOnClick
+                  ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                  : ""
+              }`;
+
               if (renderRow) {
                 return (
                   <tr
                     key={dataIndex}
-                    onClick={() => handleRowClick(item)}
-                    className={`${trClassName(dataIndex)} ${rowHoverClass} ${
-                      rowOnClick ? "cursor-pointer" : ""
-                    }`}
+                    onClick={rowOnClick ? () => rowOnClick(item) : undefined}
+                    className={rowClassNames}
                   >
                     {renderRow(item, dataIndex)}
                   </tr>
                 );
               }
+
               return (
                 <tr
                   key={dataIndex}
-                  onClick={() => handleRowClick(item)}
-                  className={`${trClassName(dataIndex)} ${rowHoverClass} ${
-                    rowOnClick ? "cursor-pointer" : ""
-                  }`}
+                  onClick={rowOnClick ? () => rowOnClick(item) : undefined}
+                  className={rowClassNames}
                 >
                   {props.map((prop) => {
                     if (hiddenColumns[String(prop)]) return null;
@@ -453,16 +444,18 @@ function TableComponent<T>({
                     );
                   })}
                   {actions && actionTexts && actionFunctions && (
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <ActionDropdown<T>
-                        item={item}
-                        index={dataIndex}
-                        actionTexts={actionTexts}
-                        actionFunctions={actionFunctions}
-                        disableDefaultStyles={disableDefaultStyles}
-                        customClassNames={customClassNames}
-                        enableDarkMode={enableDarkMode}
-                      />
+                    <td>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <ActionDropdown
+                          item={item}
+                          index={dataIndex}
+                          actionTexts={actionTexts}
+                          actionFunctions={actionFunctions}
+                          disableDefaultStyles={disableDefaultStyles}
+                          customClassNames={customClassNames}
+                          enableDarkMode={enableDarkMode}
+                        />
+                      </div>
                     </td>
                   )}
                 </tr>
