@@ -71,6 +71,12 @@ function TableComponent<T>({
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
 
+  const handleRowClick = (item: T) => {
+    if (rowOnClick) {
+      rowOnClick(item);
+    }
+  };
+
   if (loading) {
     return <TableSkeleton enableDarkMode={enableDarkMode} />;
   }
@@ -243,12 +249,11 @@ function TableComponent<T>({
     return { col, indicator, prop: props[i] };
   });
 
-  const getRowHoverClass = () => {
-    if (!rowOnClick) return "";
-    return isDarkMode
-      ? "cursor-pointer hover:bg-gray-600"
-      : "cursor-pointer hover:bg-gray-100";
-  };
+  const rowHoverClass = rowOnClick
+    ? isDarkMode
+      ? "hover:bg-gray-600"
+      : "hover:bg-gray-50"
+    : "";
 
   return (
     <>
@@ -279,10 +284,7 @@ function TableComponent<T>({
                       >
                         {col} {indicator}
                       </div>
-                      <div
-                        className="relative"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <div className="relative">
                         <button
                           onClick={(e) => toggleHeaderDropdown(String(prop), e)}
                           className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
@@ -335,10 +337,10 @@ function TableComponent<T>({
                 return (
                   <tr
                     key={dataIndex}
-                    onClick={() => rowOnClick?.(item)}
-                    className={`${trClassName(
-                      dataIndex
-                    )} ${getRowHoverClass()}`}
+                    onClick={() => handleRowClick(item)}
+                    className={`${trClassName(dataIndex)} ${rowHoverClass} ${
+                      rowOnClick ? "cursor-pointer" : ""
+                    }`}
                   >
                     {renderRow(item, dataIndex)}
                   </tr>
@@ -347,13 +349,10 @@ function TableComponent<T>({
               return (
                 <tr
                   key={dataIndex}
-                  onClick={(e) => {
-                    if (rowOnClick) {
-                      e.stopPropagation();
-                      rowOnClick(item);
-                    }
-                  }}
-                  className={`${trClassName(dataIndex)} ${getRowHoverClass()}`}
+                  onClick={() => handleRowClick(item)}
+                  className={`${trClassName(dataIndex)} ${rowHoverClass} ${
+                    rowOnClick ? "cursor-pointer" : ""
+                  }`}
                 >
                   {props.map((prop) => {
                     if (hiddenColumns[String(prop)]) return null;
@@ -380,6 +379,7 @@ function TableComponent<T>({
                             maxWidth: "200px",
                             overflowX: "auto",
                           }}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {displayArray.map((chip, idx) => (
                             <span
