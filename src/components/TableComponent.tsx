@@ -432,11 +432,13 @@ function TableComponent<T>({
                         key={String(prop)}
                         className={tdClassName(String(prop))}
                         onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedCells((prev) => ({
-                            ...prev,
-                            [cellKey]: !prev[cellKey],
-                          }));
+                          if (!rowOnClick) {
+                            e.stopPropagation();
+                            setExpandedCells((prev) => ({
+                              ...prev,
+                              [cellKey]: !prev[cellKey],
+                            }));
+                          }
                         }}
                       >
                         {displayValue}
