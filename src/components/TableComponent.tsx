@@ -276,7 +276,7 @@ function TableComponent<T>({
                         className="flex-1 flex items-center gap-1"
                         onClick={() => handleSort(String(prop))}
                       >
-                        {indicator} {col}
+                        {col} {indicator}
                       </div>
                       {showRemoveColumns && (
                         <div className="relative">
