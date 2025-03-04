@@ -237,11 +237,7 @@ function TableComponent<T>({
     let indicator = "";
     if (sortableProps.includes(props[i])) {
       if (props[i] === sortProp) {
-        if (sortOrder === "asc") indicator = "▲";
-        else if (sortOrder === "desc") indicator = "▼";
-        else indicator = "▲";
-      } else {
-        indicator = "▲";
+        indicator = sortOrder === "asc" ? "▲" : sortOrder === "desc" ? "▼" : "";
       }
     }
     return { col, indicator, prop: props[i] };
@@ -249,7 +245,6 @@ function TableComponent<T>({
 
   return (
     <>
-      {/* SCROLL CONTAINER */}
       <div
         className="table-scroll-container pb-6"
         style={{ maxHeight: "600px", overflow: "auto" }}
@@ -275,7 +270,12 @@ function TableComponent<T>({
                         className="flex-1 flex items-center gap-1"
                         onClick={() => handleSort(String(prop))}
                       >
-                        {col} {indicator}
+                        {col}
+                        {indicator && (
+                          <span className="text-xs text-gray-400">
+                            {indicator}
+                          </span>
+                        )}
                       </div>
                       {showRemoveColumns && (
                         <div className="relative">
@@ -473,19 +473,17 @@ function TableComponent<T>({
           </tbody>
         </table>
       </div>
-      {/* PAGINATION OUTSIDE THE SCROLL CONTAINER, FIXED TO VIEWPORT */}
       {enablePagination && page !== undefined && setPage && (
         <div
           style={{
-            position: "fixed",
+            position: "sticky",
             bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 999,
+            zIndex: 50,
             background: isDarkMode ? "#111827" : "#fff",
             display: "flex",
             justifyContent: "center",
             padding: "1rem 0",
+            width: "100%",
           }}
         >
           <PaginationComponent
