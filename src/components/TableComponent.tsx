@@ -161,7 +161,7 @@ function TableComponent<T>({
   }
 
   const baseTableClassName = !disableDefaultStyles
-    ? `w-full divide-y ${
+    ? `border border-gray-200 w-full divide-y ${
         enableDarkMode && isDarkMode
           ? "bg-gray-900 text-gray-200 divide-gray-700"
           : "bg-white text-gray-900 divide-gray-200"
@@ -171,8 +171,8 @@ function TableComponent<T>({
   const baseTheadClassName =
     !disableDefaultStyles && enableDarkMode
       ? isDarkMode
-        ? "bg-gray-700 text-gray-300"
-        : "bg-gray-50 text-gray-500"
+        ? "bg-gray-700 text-gray-300 border-b border-gray-600"
+        : "bg-gray-50 text-gray-700 border-b border-gray-200"
       : "";
 
   const baseTbodyClassName = !disableDefaultStyles
@@ -183,13 +183,15 @@ function TableComponent<T>({
 
   const baseTrClassName = (index: number) =>
     !disableDefaultStyles
-      ? index % 2 === 0
-        ? isDarkMode
-          ? "bg-gray-800"
-          : "bg-white"
-        : isDarkMode
-        ? "bg-gray-700"
-        : "bg-gray-100"
+      ? `hover:bg-gray-50 ${
+          index % 2 === 0
+            ? isDarkMode
+              ? "bg-gray-800"
+              : "bg-white"
+            : isDarkMode
+            ? "bg-gray-700"
+            : "bg-gray-100"
+        }`
       : "";
 
   const baseTdClassName = !disableDefaultStyles
@@ -212,7 +214,7 @@ function TableComponent<T>({
 
   const thClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
-      ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
+      ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${
           customClassNames.th || ""
         }`
       : customClassNames.th || "";
@@ -226,7 +228,7 @@ function TableComponent<T>({
 
   const tdClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
-      ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
+      ? `px-2 py-2 sm:px-4 sm:py-2 text-sm whitespace-nowrap ${baseTdClassName} ${
           customClassNames.td || ""
         }`
       : customClassNames.td || "";
@@ -249,7 +251,6 @@ function TableComponent<T>({
 
   return (
     <>
-      {/* SCROLL CONTAINER */}
       <div
         className="table-scroll-container pb-6"
         style={{ maxHeight: "600px", overflow: "auto" }}
@@ -473,11 +474,10 @@ function TableComponent<T>({
           </tbody>
         </table>
       </div>
-      {/* PAGINATION OUTSIDE THE SCROLL CONTAINER, FIXED TO VIEWPORT */}
       {enablePagination && page !== undefined && setPage && (
         <div
           style={{
-            position: "fixed",
+            position: "sticky",
             bottom: 0,
             left: 0,
             right: 0,
