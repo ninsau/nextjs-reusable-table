@@ -8,7 +8,7 @@ export const formatDate = (date: Date, includeTime = false): string => {
         minute: "2-digit",
       }
     : { year: "numeric", month: "short", day: "numeric" };
-  return date.toLocaleDateString(undefined, options);
+  return date.toLocaleDateString("en-US", options);
 };
 
 export const isDateString = (str: string): boolean => {

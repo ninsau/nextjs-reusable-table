@@ -238,6 +238,9 @@ function TableComponent<T>({
       if (props[i] === sortProp) {
         if (sortOrder === "asc") indicator = "▲";
         else if (sortOrder === "desc") indicator = "▼";
+        else indicator = "⇅";
+      } else {
+        indicator = "⇅";
       }
     }
     return { col, indicator, prop: props[i] };
@@ -465,7 +468,17 @@ function TableComponent<T>({
         </table>
       </div>
       {enablePagination && page !== undefined && setPage && (
-        <div className="mt-4 flex justify-center">
+        <div
+          className="mt-4 flex justify-center"
+          style={{
+            position: "sticky",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 999,
+            background: isDarkMode ? "#111827" : "#fff"
+          }}
+        >
           <PaginationComponent
             page={page}
             setPage={setPage}
