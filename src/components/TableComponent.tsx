@@ -118,7 +118,10 @@ function TableComponent<T>({
         (acc, key) => ({ ...acc, [key]: false }),
         {}
       );
-      return { ...newState, [prop]: !prev[prop] };
+      return {
+        ...newState,
+        [prop]: !prev[prop],
+      };
     });
   };
 
@@ -158,7 +161,7 @@ function TableComponent<T>({
   }
 
   const baseTableClassName = !disableDefaultStyles
-    ? `w-full divide-y border border-gray-300 ${
+    ? `w-full divide-y ${
         enableDarkMode && isDarkMode
           ? "bg-gray-900 text-gray-200 divide-gray-700"
           : "bg-white text-gray-900 divide-gray-200"
@@ -246,6 +249,7 @@ function TableComponent<T>({
 
   return (
     <>
+      {/* SCROLL CONTAINER */}
       <div
         className="table-scroll-container pb-6"
         style={{ maxHeight: "600px", overflow: "auto" }}
@@ -271,7 +275,7 @@ function TableComponent<T>({
                         className="flex-1 flex items-center gap-1"
                         onClick={() => handleSort(String(prop))}
                       >
-                        {indicator} {col}
+                        {col} {indicator}
                       </div>
                       {showRemoveColumns && (
                         <div className="relative">
@@ -469,6 +473,7 @@ function TableComponent<T>({
           </tbody>
         </table>
       </div>
+      {/* PAGINATION OUTSIDE THE SCROLL CONTAINER, FIXED TO VIEWPORT */}
       {enablePagination && page !== undefined && setPage && (
         <div
           style={{
