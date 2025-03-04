@@ -43,6 +43,7 @@ export interface TableProps<T> {
     icon?: React.ReactNode;
     name?: string;
   };
+  showRemoveColumns?: boolean;
 }
 
 export interface ActionDropdownProps<T> {

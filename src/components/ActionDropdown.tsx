@@ -69,19 +69,6 @@ const ActionDropdown = <T,>({
     event.stopPropagation();
   };
 
-  const baseTdClassName = (i: number) =>
-    i % 2 === 0
-      ? isDarkMode
-        ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-800 text-gray-300"
-        : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-white text-gray-700"
-      : isDarkMode
-      ? "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-700 text-gray-300"
-      : "relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3 bg-gray-100 text-gray-700";
-
-  const tdClassName = disableDefaultStyles
-    ? customClassNames.actionTd || ""
-    : `${baseTdClassName(index)} ${customClassNames.actionTd || ""}`;
-
   const baseButtonClassName = "focus:outline-none text-gray-700";
   const baseSvgClassName = "w-6 h-6 text-gray-700 hover:text-gray-900";
   const baseDropdownMenuClassName =
@@ -132,7 +119,7 @@ const ActionDropdown = <T,>({
   );
 
   return (
-    <div key={`actions-${index}`} className={tdClassName}>
+    <div>
       <button
         ref={buttonRef}
         onClick={toggleDropdown}

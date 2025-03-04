@@ -30,6 +30,7 @@ function TableComponent<T>({
   sortableProps = [],
   formatValue,
   noContentProps,
+  showRemoveColumns = false,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
@@ -238,9 +239,9 @@ function TableComponent<T>({
       if (props[i] === sortProp) {
         if (sortOrder === "asc") indicator = "▲";
         else if (sortOrder === "desc") indicator = "▼";
-        else indicator = "⇅";
+        else indicator = "▲";
       } else {
-        indicator = "⇅";
+        indicator = "▲";
       }
     }
     return { col, indicator, prop: props[i] };
@@ -248,6 +249,7 @@ function TableComponent<T>({
 
   return (
     <>
+      {/* SCROLL CONTAINER */}
       <div
         className="table-scroll-container pb-6"
         style={{ maxHeight: "600px", overflow: "auto" }}
@@ -268,49 +270,53 @@ function TableComponent<T>({
                         : "default",
                     }}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center">
                       <div
-                        className="flex-1"
+                        className="flex-1 flex items-center gap-1"
                         onClick={() => handleSort(String(prop))}
                       >
-                        {col} {indicator}
+                        {indicator} {col}
                       </div>
-                      <div className="relative">
-                        <button
-                          onClick={(e) => toggleHeaderDropdown(String(prop), e)}
-                          className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            className="w-4 h-4"
+                      {showRemoveColumns && (
+                        <div className="relative">
+                          <button
+                            onClick={(e) =>
+                              toggleHeaderDropdown(String(prop), e)
+                            }
+                            className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 6h.01M12 12h.01M12 18h.01"
-                            />
-                          </svg>
-                        </button>
-                        {headerDropdown[String(prop)] && (
-                          <div
-                            id={`header-dropdown-${String(prop)}`}
-                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50"
-                          >
-                            <button
-                              onClick={() => toggleHideColumn(String(prop))}
-                              className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              className="w-4 h-4"
                             >
-                              {hiddenColumns[String(prop)]
-                                ? "Unhide Column"
-                                : "Remove Column"}
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6h.01M12 12h.01M12 18h.01"
+                              />
+                            </svg>
+                          </button>
+                          {headerDropdown[String(prop)] && (
+                            <div
+                              id={`header-dropdown-${String(prop)}`}
+                              className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50"
+                            >
+                              <button
+                                onClick={() => toggleHideColumn(String(prop))}
+                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                              >
+                                {hiddenColumns[String(prop)]
+                                  ? "Unhide Column"
+                                  : "Remove Column"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </th>
                 );
@@ -467,16 +473,19 @@ function TableComponent<T>({
           </tbody>
         </table>
       </div>
+      {/* PAGINATION OUTSIDE THE SCROLL CONTAINER, FIXED TO VIEWPORT */}
       {enablePagination && page !== undefined && setPage && (
         <div
-          className="mt-4 flex justify-center"
           style={{
-            position: "sticky",
+            position: "fixed",
             bottom: 0,
             left: 0,
             right: 0,
             zIndex: 999,
-            background: isDarkMode ? "#111827" : "#fff"
+            background: isDarkMode ? "#111827" : "#fff",
+            display: "flex",
+            justifyContent: "center",
+            padding: "1rem 0",
           }}
         >
           <PaginationComponent
