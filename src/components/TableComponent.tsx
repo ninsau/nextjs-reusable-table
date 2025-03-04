@@ -118,10 +118,7 @@ function TableComponent<T>({
         (acc, key) => ({ ...acc, [key]: false }),
         {}
       );
-      return {
-        ...newState,
-        [prop]: !prev[prop],
-      };
+      return { ...newState, [prop]: !prev[prop] };
     });
   };
 
@@ -161,19 +158,20 @@ function TableComponent<T>({
   }
 
   const baseTableClassName = !disableDefaultStyles
-    ? `w-full divide-y ${
+    ? `border border-gray-200 table-fixed w-full divide-y ${
         enableDarkMode && isDarkMode
-          ? "bg-gray-900 text-gray-200 divide-gray-700"
+          ? "bg-gray-900 text-gray-200 divide-gray-700 border-gray-700"
           : "bg-white text-gray-900 divide-gray-200"
       }`
     : "";
 
-  const baseTheadClassName =
-    !disableDefaultStyles && enableDarkMode
-      ? isDarkMode
-        ? "bg-gray-700 text-gray-300"
-        : "bg-gray-50 text-gray-500"
-      : "";
+  const baseTheadClassName = !disableDefaultStyles
+    ? `${
+        enableDarkMode && isDarkMode
+          ? "bg-gray-700 text-gray-300 border-b border-gray-600"
+          : "bg-gray-100 text-gray-700 border-b border-gray-200"
+      }`
+    : "";
 
   const baseTbodyClassName = !disableDefaultStyles
     ? `divide-y ${
@@ -183,13 +181,15 @@ function TableComponent<T>({
 
   const baseTrClassName = (index: number) =>
     !disableDefaultStyles
-      ? index % 2 === 0
-        ? isDarkMode
-          ? "bg-gray-800"
-          : "bg-white"
-        : isDarkMode
-        ? "bg-gray-700"
-        : "bg-gray-100"
+      ? `hover:bg-gray-50 transition-colors ${
+          index % 2 === 0
+            ? isDarkMode
+              ? "bg-gray-800"
+              : "bg-white"
+            : isDarkMode
+            ? "bg-gray-700"
+            : "bg-gray-50"
+        }`
       : "";
 
   const baseTdClassName = !disableDefaultStyles
@@ -212,11 +212,11 @@ function TableComponent<T>({
 
   const thClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
-      ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
+      ? `px-2 py-2 sm:px-3 sm:py-2 text-left text-xs font-medium uppercase tracking-wider overflow-hidden text-ellipsis whitespace-nowrap max-w-[100px] ${
           customClassNames.th || ""
         }`
       : customClassNames.th || "";
-    return `${baseClass}`;
+    return baseClass;
   };
 
   const trClassName = (index: number) =>
@@ -226,11 +226,11 @@ function TableComponent<T>({
 
   const tdClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
-      ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
+      ? `px-2 py-2 sm:px-3 sm:py-2 text-sm overflow-hidden text-ellipsis whitespace-nowrap ${baseTdClassName} ${
           customClassNames.td || ""
         }`
       : customClassNames.td || "";
-    return `${baseClass}`;
+    return baseClass;
   };
 
   const displayedColumns = columns.map((col, i) => {
@@ -249,7 +249,6 @@ function TableComponent<T>({
 
   return (
     <>
-      {/* SCROLL CONTAINER */}
       <div
         className="table-scroll-container pb-6"
         style={{ maxHeight: "600px", overflow: "auto" }}
@@ -373,10 +372,7 @@ function TableComponent<T>({
                       displayValue = (
                         <div
                           className="flex flex-wrap gap-1"
-                          style={{
-                            maxWidth: "200px",
-                            overflowX: "auto",
-                          }}
+                          style={{ maxWidth: "200px", overflowX: "auto" }}
                           onClick={(e) => e.stopPropagation()}
                         >
                           {displayArray.map((chip, idx) => (
@@ -473,7 +469,6 @@ function TableComponent<T>({
           </tbody>
         </table>
       </div>
-      {/* PAGINATION OUTSIDE THE SCROLL CONTAINER, FIXED TO VIEWPORT */}
       {enablePagination && page !== undefined && setPage && (
         <div
           style={{
