@@ -476,14 +476,15 @@ function TableComponent<T>({
       {enablePagination && page !== undefined && setPage && (
         <div
           style={{
-            position: "sticky",
+            position: "fixed",
             bottom: 0,
-            zIndex: 50,
+            left: 0,
+            width: "100vw",
+            zIndex: 9999,
             background: isDarkMode ? "#111827" : "#fff",
             display: "flex",
             justifyContent: "center",
             padding: "1rem 0",
-            width: "100%",
           }}
         >
           <PaginationComponent
