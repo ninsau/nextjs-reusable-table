@@ -80,7 +80,6 @@ function TableComponent<T>({
     return <NoContentComponent {...noContentProps} />;
   }
 
-  // Filter data if searchValue is provided
   let filteredData = data;
   if (searchValue) {
     filteredData = data.filter((item) => {
@@ -95,7 +94,6 @@ function TableComponent<T>({
     return <NoContentComponent {...noContentProps} />;
   }
 
-  // Sorting
   const handleSort = (prop: string) => {
     if (!sortableProps.includes(prop as keyof T)) return;
     if (sortProp === prop) {
@@ -112,7 +110,6 @@ function TableComponent<T>({
     }
   };
 
-  // Dropdown logic
   const toggleHeaderDropdown = (prop: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -133,7 +130,6 @@ function TableComponent<T>({
     setHeaderDropdown((prev) => ({ ...prev, [prop]: false }));
   };
 
-  // Apply sorting
   let sortedData = [...filteredData];
   if (sortProp && sortOrder !== "none") {
     sortedData.sort((a, b) => {
@@ -147,28 +143,23 @@ function TableComponent<T>({
     });
   }
 
-  // Pagination
   let paginatedData = sortedData;
   const calculatedTotalPages =
     totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
 
   if (enablePagination) {
     if (totalPages !== undefined) {
-      // external pagination scenario
       paginatedData = sortedData;
     } else {
-      // local pagination
       const startIndex = (page - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       paginatedData = sortedData.slice(startIndex, endIndex);
     }
-    // Ensure the current page doesn't exceed total
     if (page > calculatedTotalPages && setPage) {
       setPage(calculatedTotalPages);
     }
   }
 
-  // Base styling
   const baseTableClassName = !disableDefaultStyles
     ? `w-full divide-y ${
         enableDarkMode && isDarkMode
@@ -207,7 +198,6 @@ function TableComponent<T>({
       : "text-gray-700"
     : "";
 
-  // Final classes
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
     : `${baseTableClassName} ${customClassNames.table || ""}`;
@@ -243,7 +233,6 @@ function TableComponent<T>({
     return `${baseClass}`;
   };
 
-  // Build displayed columns with sort indicators
   const displayedColumns = columns.map((col, i) => {
     let indicator = "";
     if (sortableProps.includes(props[i])) {
@@ -256,7 +245,6 @@ function TableComponent<T>({
 
   return (
     <>
-      {/* Table scroll container */}
       <div
         className="table-scroll-container pb-6"
         style={{ maxHeight: "600px", overflow: "auto" }}
@@ -375,12 +363,9 @@ function TableComponent<T>({
                     let displayValue: React.ReactNode;
                     let valToFormat = String(value);
 
-                    // date check
                     if (typeof value === "string" && isDateString(value)) {
                       valToFormat = formatDate(new Date(value), true);
-                    }
-                    // array check
-                    else if (Array.isArray(value)) {
+                    } else if (Array.isArray(value)) {
                       let displayArray: any[] = value;
                       if (!isExpanded && displayArray.length > 5) {
                         displayArray = displayArray.slice(0, 5);
@@ -418,9 +403,7 @@ function TableComponent<T>({
                           )}
                         </div>
                       );
-                    }
-                    // link check
-                    else if (
+                    } else if (
                       typeof value === "string" &&
                       value.startsWith("http")
                     ) {
@@ -434,9 +417,7 @@ function TableComponent<T>({
                           </span>
                         </Link>
                       );
-                    }
-                    // default
-                    else {
+                    } else {
                       if (!Array.isArray(value) && !isExpanded) {
                         valToFormat = trimText(valToFormat, 30);
                       }
@@ -453,7 +434,6 @@ function TableComponent<T>({
                     if (!displayValue && !Array.isArray(value)) {
                       displayValue = valToFormat;
                     }
-
                     return (
                       <td
                         key={String(prop)}
@@ -502,10 +482,11 @@ function TableComponent<T>({
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 50,
-            background: isDarkMode ? "#111827" : "#fff",
+            // Make background transparent and remove box shadow:
+            background: "transparent",
             padding: "0.75rem 1rem",
             borderRadius: "0.5rem",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            boxShadow: "none",
             maxWidth: "90%",
           }}
         >
