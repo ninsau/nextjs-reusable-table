@@ -163,9 +163,9 @@ Pass noContentProps to customize text and icon:
 
 ```tsx
 "use client";
-import React, { useState } from "react";
-import "nextjs-reusable-table/dist/index.css";
+import React, { useState, useMemo } from "react";
 import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
 
 interface Project {
   id: number;
@@ -176,68 +176,195 @@ interface Project {
   link: string;
 }
 
-const ProjectTable = () => {
-  const [page, setPage] = useState(1);
-  const data: Project[] = [
+export default function AdvancedProjectTable() {
+  // Sample project data
+  const initialData: Project[] = [
     {
       id: 1,
       title: "Website Redesign",
-      tags: ["UI/UX", "Frontend"],
+      tags: ["UI", "UX", "Frontend"],
       deadline: "2025-03-15T10:30:00Z",
       active: true,
       link: "https://example.com/project/1",
     },
+    {
+      id: 2,
+      title: "Mobile App Development",
+      tags: ["iOS", "Android", "Backend"],
+      deadline: "2025-04-01T14:00:00Z",
+      active: false,
+      link: "https://example.com/project/2",
+    },
+    {
+      id: 3,
+      title: "Marketing Campaign",
+      tags: ["SEO", "Social Media"],
+      deadline: "2025-02-20T09:00:00Z",
+      active: true,
+      link: "https://example.com/project/3",
+    },
+    {
+      id: 4,
+      title: "E-commerce Platform",
+      tags: ["Frontend", "Backend", "API", "Payments", "Analytics"],
+      deadline: "2025-05-05T11:00:00Z",
+      active: true,
+      link: "https://example.com/project/4",
+    },
+    {
+      id: 5,
+      title: "Data Analysis",
+      tags: ["Python", "ML", "Data Science"],
+      deadline: "2025-03-01T08:00:00Z",
+      active: false,
+      link: "https://example.com/project/5",
+    },
   ];
 
-  const formatValue = (value: string, prop: string, item: Project) => {
+  // State for projects, pagination, search and external sorting
+  const [projects, setProjects] = useState<Project[]>(initialData);
+  const [page, setPage] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [sortConfig, setSortConfig] = useState<{
+    prop: keyof Project;
+    order: "asc" | "desc";
+  } | null>(null);
+
+  // External sort handler (toggles sort order on repeated clicks)
+  const handleSort = (prop: keyof Project) => {
+    let order: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.prop === prop) {
+      order = sortConfig.order === "asc" ? "desc" : "asc";
+    }
+    setSortConfig({ prop, order });
+  };
+
+  // Row action functions
+  const editProject = (project: Project) => {
+    alert(`Edit project: ${project.title}`);
+  };
+
+  const deleteProject = (project: Project) => {
+    alert(`Delete project: ${project.title}`);
+  };
+
+  // Row click handler
+  const handleRowClick = (project: Project) => {
+    console.log("Row clicked:", project);
+  };
+
+  // Custom cell formatting (example: display active as "Active"/"Archived")
+  const formatValue = (value: string, prop: string, project: Project) => {
     if (prop === "active") {
-      return item.active ? "Active" : "Archived";
+      return project.active ? "Active" : "Archived";
     }
     return value;
   };
 
-  return (
-    <TableComponent<Project>
-      columns={["ID", "Title", "Tags", "Deadline", "Status", "Link"]}
-      data={data}
-      props={["id", "title", "tags", "deadline", "active", "link"]}
-      formatValue={formatValue}
-      enablePagination
-      page={page}
-      setPage={setPage}
-      itemsPerPage={5}
-      sortableProps={["title", "deadline"]}
-    />
-  );
-};
+  // Compute sorted and filtered data based on search and sort settings
+  const sortedFilteredProjects = useMemo(() => {
+    const filtered = projects.filter((project) => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        String(project.id).includes(searchLower) ||
+        project.title.toLowerCase().includes(searchLower) ||
+        project.tags.join(" ").toLowerCase().includes(searchLower) ||
+        project.deadline.toLowerCase().includes(searchLower) ||
+        (project.active ? "active" : "archived").includes(searchLower) ||
+        project.link.toLowerCase().includes(searchLower)
+      );
+    });
+    if (sortConfig) {
+      filtered.sort((a, b) => {
+        const aValue = String(a[sortConfig.prop]).toLowerCase();
+        const bValue = String(b[sortConfig.prop]).toLowerCase();
+        if (aValue < bValue) return sortConfig.order === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortConfig.order === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return filtered;
+  }, [projects, searchTerm, sortConfig]);
 
-export default ProjectTable;
+  // Custom styling overrides using Tailwind classes. Omit to use defaults.
+  // Note: The default styles are already Tailwind-based, so you can just override the classes you want to change.
+  // You can also use the `customClassNames` prop to pass in your own class names for each element.
+  const customClassNames = {
+    table: "border border-gray-300",
+    thead: "bg-blue-100",
+    tbody: "",
+    th: "px-4 py-2",
+    tr: "",
+    td: "px-4 py-2",
+    pagination: {
+      container: "mt-4",
+      button: "bg-blue-500 text-white rounded px-3 py-1",
+      buttonDisabled: "bg-gray-300 text-gray-700 rounded px-3 py-1",
+      pageInfo: "text-blue-700",
+    },
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Advanced Project Table</h1>
+      {/* Search Input */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search projects..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border border-gray-300 rounded px-2 py-1 w-full"
+        />
+      </div>
+      {/* Table Component with all features enabled */}
+      <TableComponent<Project>
+        columns={["ID", "Title", "Tags", "Deadline", "Status", "Link"]}
+        data={sortedFilteredProjects}
+        props={["id", "title", "tags", "deadline", "active", "link"]}
+        sortableProps={["title", "deadline"]}
+        onSort={handleSort}
+        actionTexts={["Edit", "Delete"]}
+        actionFunctions={[editProject, deleteProject]}
+        rowOnClick={handleRowClick}
+        formatValue={formatValue}
+        enablePagination
+        page={page}
+        setPage={setPage}
+        itemsPerPage={2}
+        noContentProps={{ text: "No projects found", icon: null }}
+        customClassNames={customClassNames}
+      />
+    </div>
+  );
+}
 ```
 
 ## Prop Reference
 
-| Prop                 | Type                                 | Default | Description                 |
-| -------------------- | ------------------------------------ | ------- | --------------------------- |
-| columns              | string[]                             | –       | Column headers              |
-| data                 | T[]                                  | –       | Array of data objects       |
-| props                | ReadonlyArray<keyof T>               | –       | Object keys to display      |
-| actions              | boolean                              | false   | Enable action dropdown      |
-| actionTexts          | string[]                             | –       | Labels for dropdown actions |
-| loading              | boolean                              | false   | Show loading skeleton       |
-| actionFunctions      | Array<Function>                      | –       | Handlers for dropdown items |
-| searchValue          | string                               | –       | Filter rows by substring    |
-| rowOnClick           | (item: T) => void                    | –       | Callback for row clicks     |
-| enablePagination     | boolean                              | false   | Enable pagination           |
-| page                 | number                               | 1       | Current page index          |
-| setPage              | (page: number) => void               | –       | Page setter callback        |
-| itemsPerPage         | number                               | 10      | Rows per page               |
-| totalPages           | number                               | –       | Override total pages        |
-| sortableProps        | Array<keyof T>                       | []      | Columns that can be sorted  |
-| formatValue          | (val, prop, item) => React.ReactNode | –       | Custom cell formatter       |
-| enableDarkMode       | boolean                              | true    | Respect system dark mode    |
-| disableDefaultStyles | boolean                              | false   | Disable built-in styling    |
-| customClassNames     | object                               | {}      | Tailwind class overrides    |
-| noContentProps       | object                               | {}      | Custom empty state          |
+| Prop                 | Type                                 | Default | Description                                                  |
+| -------------------- | ------------------------------------ | ------- | ------------------------------------------------------------ |
+| columns              | string[]                             | –       | Column headers                                               |
+| data                 | T[]                                  | –       | Array of data objects                                        |
+| props                | ReadonlyArray<keyof T>               | –       | Object keys to display                                       |
+| actions              | boolean                              | false   | Enable action dropdown                                       |
+| actionTexts          | string[]                             | –       | Labels for dropdown actions                                  |
+| loading              | boolean                              | false   | Show loading skeleton                                        |
+| actionFunctions      | Array<Function>                      | –       | Handlers for dropdown items                                  |
+| searchValue          | string                               | –       | Filter rows by substring                                     |
+| rowOnClick           | (item: T) => void                    | –       | Callback for row clicks                                      |
+| enablePagination     | boolean                              | false   | Enable pagination                                            |
+| page                 | number                               | 1       | Current page index                                           |
+| setPage              | (page: number) => void               | –       | Page setter callback                                         |
+| itemsPerPage         | number                               | 10      | Rows per page                                                |
+| totalPages           | number                               | –       | Override total pages                                         |
+| sortableProps        | Array<keyof T>                       | []      | Columns that can be sorted                                   |
+| formatValue          | (val, prop, item) => React.ReactNode | –       | Custom cell formatter                                        |
+| enableDarkMode       | boolean                              | true    | Respect system dark mode                                     |
+| disableDefaultStyles | boolean                              | false   | Disable built-in styling                                     |
+| customClassNames     | object                               | {}      | Tailwind class overrides                                     |
+| noContentProps       | object                               | {}      | Custom empty state                                           |
+| onSort               | (prop: keyof T) => void              | –       | Callback triggered when a sortable column header is clicked. |
 
 ## Contributing
 
