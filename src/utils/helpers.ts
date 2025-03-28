@@ -14,7 +14,9 @@ export const formatDate = (date: Date, includeTime = false): string => {
 export const isDateString = (str: string): boolean => {
   if (str.length < 10) return false;
   const parsedDate = Date.parse(str);
-  return !isNaN(parsedDate) && !isNaN(new Date(parsedDate).getTime());
+  return (
+    !Number.isNaN(parsedDate) && !Number.isNaN(new Date(parsedDate).getTime())
+  );
 };
 
 export const trimText = (text: string, maxLength: number): string =>

@@ -1,10 +1,11 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import NoContentComponent from "./NoContentComponent";
 import TableSkeleton from "./TableSkeleton";
 import ActionDropdown from "./ActionDropdown";
 import Link from "next/link";
-import { TableProps } from "../types";
+import type { TableProps } from "../types";
 import { formatDate, isDateString, trimText } from "../utils/helpers";
 import PaginationComponent from "./PaginationComponent";
 
@@ -31,13 +32,12 @@ function TableComponent<T>({
   formatValue,
   noContentProps,
   showRemoveColumns = false,
+  onSort,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
     [key: string]: boolean;
   }>({});
-  const [sortProp, setSortProp] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("none");
   const [headerDropdown, setHeaderDropdown] = useState<{
     [key: string]: boolean;
   }>({});
@@ -59,14 +59,14 @@ function TableComponent<T>({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      Object.keys(headerDropdown).forEach((key) => {
+      for (const key of Object.keys(headerDropdown)) {
         if (headerDropdown[key]) {
           const element = document.getElementById(`header-dropdown-${key}`);
           if (element && !element.contains(event.target as Node)) {
             setHeaderDropdown((prev) => ({ ...prev, [key]: false }));
           }
         }
-      });
+      }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
@@ -95,53 +95,20 @@ function TableComponent<T>({
   }
 
   const handleSort = (prop: string) => {
-    if (!sortableProps.includes(prop as keyof T)) return;
-    if (sortProp === prop) {
-      if (sortOrder === "none") {
-        setSortOrder("asc");
-      } else if (sortOrder === "asc") {
-        setSortOrder("desc");
-      } else {
-        setSortOrder("none");
-      }
-    } else {
-      setSortProp(prop);
-      setSortOrder("asc");
+    if (sortableProps.includes(prop as keyof T) && onSort) {
+      onSort(prop as keyof T);
     }
   };
 
-  const toggleHeaderDropdown = (prop: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setHeaderDropdown((prev) => {
-      const newState = Object.keys(prev).reduce(
-        (acc, key) => ({ ...acc, [key]: false }),
-        {}
-      );
-      return {
-        ...newState,
-        [prop]: !prev[prop],
-      };
-    });
-  };
+  const displayedColumns = columns.map((col, i) => {
+    return {
+      col,
+      indicator: sortableProps.includes(props[i]) ? "⇅" : "",
+      prop: props[i],
+    };
+  });
 
-  const toggleHideColumn = (prop: string) => {
-    setHiddenColumns((prev) => ({ ...prev, [prop]: !prev[prop] }));
-    setHeaderDropdown((prev) => ({ ...prev, [prop]: false }));
-  };
-
-  let sortedData = [...filteredData];
-  if (sortProp && sortOrder !== "none") {
-    sortedData.sort((a, b) => {
-      const aVal = a[sortProp as keyof T];
-      const bVal = b[sortProp as keyof T];
-      const aStr = String(aVal).toLowerCase();
-      const bStr = String(bVal).toLowerCase();
-      if (aStr < bStr) return sortOrder === "asc" ? -1 : 1;
-      if (aStr > bStr) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
-  }
+  const sortedData = filteredData;
 
   let paginatedData = sortedData;
   const calculatedTotalPages =
@@ -233,16 +200,6 @@ function TableComponent<T>({
     return `${baseClass}`;
   };
 
-  const displayedColumns = columns.map((col, i) => {
-    let indicator = "";
-    if (sortableProps.includes(props[i])) {
-      if (props[i] === sortProp) {
-        indicator = sortOrder === "asc" ? "▲" : sortOrder === "desc" ? "▼" : "";
-      }
-    }
-    return { col, indicator, prop: props[i] };
-  });
-
   return (
     <>
       <div
@@ -269,6 +226,9 @@ function TableComponent<T>({
                       <div
                         className="flex-1 flex items-center gap-1"
                         onClick={() => handleSort(String(prop))}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSort(String(prop));
+                        }}
                       >
                         {col}
                         {indicator && (
@@ -281,9 +241,19 @@ function TableComponent<T>({
                         <div className="relative">
                           <button
                             onClick={(e) =>
-                              toggleHeaderDropdown(String(prop), e)
+                              setHeaderDropdown((prev) => {
+                                const newState = Object.keys(prev).reduce(
+                                  (acc, key) =>
+                                    Object.assign(acc, { [key]: false }),
+                                  {}
+                                );
+                                return Object.assign({}, newState, {
+                                  [String(prop)]: !prev[String(prop)],
+                                });
+                              })
                             }
                             className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
+                            type="button"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -291,6 +261,7 @@ function TableComponent<T>({
                               viewBox="0 0 24 24"
                               stroke="currentColor"
                               className="w-4 h-4"
+                              role="presentation"
                             >
                               <path
                                 strokeLinecap="round"
@@ -306,8 +277,18 @@ function TableComponent<T>({
                               className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50"
                             >
                               <button
-                                onClick={() => toggleHideColumn(String(prop))}
+                                onClick={() => {
+                                  setHiddenColumns((prev) => ({
+                                    ...prev,
+                                    [String(prop)]: !prev[String(prop)],
+                                  }));
+                                  setHeaderDropdown((prev) => ({
+                                    ...prev,
+                                    [String(prop)]: false,
+                                  }));
+                                }}
                                 className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
+                                type="button"
                               >
                                 {hiddenColumns[String(prop)]
                                   ? "Unhide Column"
@@ -337,8 +318,13 @@ function TableComponent<T>({
               if (renderRow) {
                 return (
                   <tr
-                    key={dataIndex}
+                    key={`dataIndex-${dataIndex + 1}`}
                     onClick={rowOnClick ? () => rowOnClick(item) : undefined}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && rowOnClick) {
+                        rowOnClick(item);
+                      }
+                    }}
                     className={rowClassNames}
                   >
                     {renderRow(item, dataIndex)}
@@ -348,8 +334,13 @@ function TableComponent<T>({
 
               return (
                 <tr
-                  key={dataIndex}
+                  key={`dataIndex-${dataIndex + 1}`}
                   onClick={rowOnClick ? () => rowOnClick(item) : undefined}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && rowOnClick) {
+                      rowOnClick(item);
+                    }
+                  }}
                   className={rowClassNames}
                 >
                   {props.map((prop) => {
@@ -366,7 +357,7 @@ function TableComponent<T>({
                     if (typeof value === "string" && isDateString(value)) {
                       valToFormat = formatDate(new Date(value), true);
                     } else if (Array.isArray(value)) {
-                      let displayArray: any[] = value;
+                      let displayArray: T[keyof T][] = value;
                       if (!isExpanded && displayArray.length > 5) {
                         displayArray = displayArray.slice(0, 5);
                       }
@@ -378,10 +369,23 @@ function TableComponent<T>({
                             overflowX: "auto",
                           }}
                           onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.stopPropagation();
+                              setExpandedCells((prev) => ({
+                                ...prev,
+                                [cellKey]: !prev[cellKey],
+                              }));
+                            }
+                          }}
                         >
                           {displayArray.map((chip, idx) => (
                             <span
-                              key={idx}
+                              key={
+                                typeof chip === "object" && chip !== null
+                                  ? JSON.stringify(chip)
+                                  : `${String(chip)}-${idx}`
+                              }
                               className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
                             >
                               {trimText(String(chip), 20)}
@@ -396,6 +400,15 @@ function TableComponent<T>({
                                   ...prev,
                                   [cellKey]: true,
                                 }));
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.stopPropagation();
+                                  setExpandedCells((prev) => ({
+                                    ...prev,
+                                    [cellKey]: true,
+                                  }));
+                                }
                               }}
                             >
                               +{value.length - 5} more
@@ -412,6 +425,11 @@ function TableComponent<T>({
                           <span
                             className="text-blue-500 hover:underline"
                             onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.stopPropagation();
+                              }
+                            }}
                           >
                             {isExpanded ? value : trimText(value, 30)}
                           </span>
@@ -447,6 +465,15 @@ function TableComponent<T>({
                             }));
                           }
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.stopPropagation();
+                            setExpandedCells((prev) => ({
+                              ...prev,
+                              [cellKey]: !prev[cellKey],
+                            }));
+                          }
+                        }}
                       >
                         {displayValue}
                       </td>
@@ -454,7 +481,14 @@ function TableComponent<T>({
                   })}
                   {actions && actionTexts && actionFunctions && (
                     <td>
-                      <div onClick={(e) => e.stopPropagation()}>
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.stopPropagation();
+                          }
+                        }}
+                      >
                         <ActionDropdown
                           item={item}
                           index={dataIndex}
@@ -482,7 +516,6 @@ function TableComponent<T>({
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 50,
-            // Make background transparent and remove box shadow:
             background: "transparent",
             padding: "0.75rem 1rem",
             borderRadius: "0.5rem",

@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import type React from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { ActionDropdownProps } from "../types";
+import type { ActionDropdownProps } from "../types";
 
 const ActionDropdown = <T,>({
   item,
-  index,
   actionTexts,
   actionFunctions,
   disableDefaultStyles = false,
@@ -35,18 +35,18 @@ const ActionDropdown = <T,>({
     setIsDropdownOpen((prev) => !prev);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node) &&
-      buttonRef.current &&
-      !buttonRef.current.contains(event.target as Node)
-    ) {
-      setIsDropdownOpen(false);
-    }
-  };
-
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -102,6 +102,11 @@ const ActionDropdown = <T,>({
         transform: "translateX(-10%)",
       }}
       onClick={handleDropdownClick}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          setIsDropdownOpen(false);
+        }
+      }}
     >
       {actionTexts.map((text, i) => (
         <button
@@ -111,6 +116,7 @@ const ActionDropdown = <T,>({
             setIsDropdownOpen(false);
           }}
           className={dropdownItemClassName}
+          type="button"
         >
           {text}
         </button>
@@ -124,6 +130,7 @@ const ActionDropdown = <T,>({
         ref={buttonRef}
         onClick={toggleDropdown}
         className={buttonClassName}
+        type="button"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -131,6 +138,7 @@ const ActionDropdown = <T,>({
           viewBox="0 0 24 24"
           stroke="currentColor"
           className={svgClassName}
+          role="presentation"
         >
           <path
             strokeLinecap="round"

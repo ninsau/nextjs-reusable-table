@@ -1,8 +1,7 @@
+@import "react-loading-skeleton/dist/skeleton.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "react-loading-skeleton/dist/skeleton.css";
 
 .table-container {
   overflow: hidden;
@@ -12,7 +11,7 @@
 
 .table {
   min-width: 100%;
-  divide-y: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
   position: relative;
 }
 
@@ -163,7 +162,7 @@
 }
 
 .dark .table {
-  divide-color: #374151;
+  border-color: #374151;
 }
 
 .dark .table th {

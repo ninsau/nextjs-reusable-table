@@ -1,8 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { TableSkeletonProps } from "../types";
+import type { TableSkeletonProps } from "../types";
 
 const TableSkeleton: React.FC<TableSkeletonProps> = ({
   disableDefaultStyles = false,
@@ -76,7 +77,11 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
               <thead>
                 <tr>
                   {Array.from({ length: 4 }).map((_, index) => (
-                    <th key={index} scope="col" className={thClassName}>
+                    <th
+                      key={`${index + 1}-header`}
+                      scope="col"
+                      className={thClassName}
+                    >
                       <Skeleton width={100} />
                     </th>
                   ))}
@@ -87,9 +92,12 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
               </thead>
               <tbody>
                 {Array.from({ length: 10 }).map((_, index) => (
-                  <tr key={index} className={trClassName(index)}>
+                  <tr key={`${index + 1}-row`} className={trClassName(index)}>
                     {Array.from({ length: 4 }).map((_, colIndex) => (
-                      <td key={colIndex} className={tdClassName}>
+                      <td
+                        key={`${index + 1}-${colIndex + 1}-cell`}
+                        className={tdClassName}
+                      >
                         <Skeleton width={150} />
                       </td>
                     ))}

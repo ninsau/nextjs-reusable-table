@@ -44,6 +44,7 @@ export interface TableProps<T> {
     name?: string;
   };
   showRemoveColumns?: boolean;
+  onSort?: (prop: keyof T) => void;
 }
 
 export interface ActionDropdownProps<T> {
@@ -79,7 +80,12 @@ export interface PaginationComponentProps {
   setPage: (page: number) => void;
   totalPages: number;
   disableDefaultStyles?: boolean;
-  customClassNames?: any;
+  customClassNames?: {
+    container?: string;
+    button?: string;
+    buttonDisabled?: string;
+    pageInfo?: string;
+  };
   enableDarkMode?: boolean;
 }
 

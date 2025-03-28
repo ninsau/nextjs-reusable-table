@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import { NoContentProps } from "../types";
+import type React from "react";
+import type { NoContentProps } from "../types";
 
 const NoContentComponent: React.FC<NoContentProps> = ({
   name = "items",
@@ -16,6 +16,7 @@ const NoContentComponent: React.FC<NoContentProps> = ({
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
+        role="presentation"
       >
         <path
           strokeLinecap="round"

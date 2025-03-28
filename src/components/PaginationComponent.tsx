@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { PaginationComponentProps } from "../types";
+import type React from "react";
+import { useState, useEffect } from "react";
+import type { PaginationComponentProps } from "../types";
 
 const PaginationComponent: React.FC<PaginationComponentProps> = ({
   page,
@@ -49,6 +50,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         disabled={page === 1}
         onClick={() => setPage(1)}
         className={page === 1 ? disabledButtonClassName : baseButtonClassName}
+        type="button"
       >
         First
       </button>
@@ -56,6 +58,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         disabled={page === 1}
         onClick={() => setPage(page - 1)}
         className={page === 1 ? disabledButtonClassName : baseButtonClassName}
+        type="button"
       >
         Previous
       </button>
@@ -68,6 +71,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         className={
           page === totalPages ? disabledButtonClassName : baseButtonClassName
         }
+        type="button"
       >
         Next
       </button>
@@ -77,6 +81,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         className={
           page === totalPages ? disabledButtonClassName : baseButtonClassName
         }
+        type="button"
       >
         Last
       </button>
