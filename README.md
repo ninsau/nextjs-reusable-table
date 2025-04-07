@@ -177,7 +177,6 @@ interface Project {
 }
 
 export default function AdvancedProjectTable() {
-  // Sample project data
   const initialData: Project[] = [
     {
       id: 1,
@@ -221,7 +220,6 @@ export default function AdvancedProjectTable() {
     },
   ];
 
-  // State for projects, pagination, search and external sorting
   const [projects, setProjects] = useState<Project[]>(initialData);
   const [page, setPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -230,7 +228,6 @@ export default function AdvancedProjectTable() {
     order: "asc" | "desc";
   } | null>(null);
 
-  // External sort handler (toggles sort order on repeated clicks)
   const handleSort = (prop: keyof Project) => {
     let order: "asc" | "desc" = "asc";
     if (sortConfig && sortConfig.prop === prop) {
@@ -239,7 +236,6 @@ export default function AdvancedProjectTable() {
     setSortConfig({ prop, order });
   };
 
-  // Row action functions
   const editProject = (project: Project) => {
     alert(`Edit project: ${project.title}`);
   };
@@ -248,12 +244,10 @@ export default function AdvancedProjectTable() {
     alert(`Delete project: ${project.title}`);
   };
 
-  // Row click handler
   const handleRowClick = (project: Project) => {
     console.log("Row clicked:", project);
   };
 
-  // Custom cell formatting (example: display active as "Active"/"Archived")
   const formatValue = (value: string, prop: string, project: Project) => {
     if (prop === "active") {
       return project.active ? "Active" : "Archived";
@@ -261,7 +255,12 @@ export default function AdvancedProjectTable() {
     return value;
   };
 
-  // Compute sorted and filtered data based on search and sort settings
+  const formatHeader = (header: string, prop: string, index: number) => (
+    <div>
+      <span className="font-semibold uppercase tracking-wide">{header}</span>
+    </div>
+  );
+
   const sortedFilteredProjects = useMemo(() => {
     const filtered = projects.filter((project) => {
       const searchLower = searchTerm.toLowerCase();
@@ -286,12 +285,9 @@ export default function AdvancedProjectTable() {
     return filtered;
   }, [projects, searchTerm, sortConfig]);
 
-  // Custom styling overrides using Tailwind classes. Omit to use defaults.
-  // Note: The default styles are already Tailwind-based, so you can just override the classes you want to change.
-  // You can also use the `customClassNames` prop to pass in your own class names for each element.
   const customClassNames = {
-    table: "border border-gray-300",
-    thead: "bg-blue-100",
+    table: "border border-gray-300 rounded-md shadow-sm",
+    thead: "bg-blue-50 text-blue-700",
     tbody: "",
     th: "px-4 py-2",
     tr: "",
@@ -307,7 +303,6 @@ export default function AdvancedProjectTable() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Advanced Project Table</h1>
-      {/* Search Input */}
       <div className="mb-4">
         <input
           type="text"
@@ -317,7 +312,6 @@ export default function AdvancedProjectTable() {
           className="border border-gray-300 rounded px-2 py-1 w-full"
         />
       </div>
-      {/* Table Component with all features enabled */}
       <TableComponent<Project>
         columns={["ID", "Title", "Tags", "Deadline", "Status", "Link"]}
         data={sortedFilteredProjects}
@@ -328,6 +322,7 @@ export default function AdvancedProjectTable() {
         actionFunctions={[editProject, deleteProject]}
         rowOnClick={handleRowClick}
         formatValue={formatValue}
+        formatHeader={formatHeader}
         enablePagination
         page={page}
         setPage={setPage}
@@ -365,6 +360,7 @@ export default function AdvancedProjectTable() {
 | customClassNames     | object                               | {}      | Tailwind class overrides                                     |
 | noContentProps       | object                               | {}      | Custom empty state                                           |
 | onSort               | (prop: keyof T) => void              | –       | Callback triggered when a sortable column header is clicked. |
+| formatHeader         | (header: string) => React.ReactNode  | –       | Custom header formatter                                      |
 
 ## Contributing
 

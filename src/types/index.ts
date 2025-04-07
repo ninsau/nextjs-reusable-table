@@ -38,6 +38,11 @@ export interface TableProps<T> {
   totalPages?: number;
   sortableProps?: Array<keyof T>;
   formatValue?: (value: string, prop: string, item: T) => React.ReactNode;
+  formatHeader?: (
+    header: string,
+    prop: string,
+    index: number
+  ) => React.ReactNode;
   noContentProps?: {
     text?: string;
     icon?: React.ReactNode;

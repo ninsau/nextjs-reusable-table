@@ -33,6 +33,7 @@ function TableComponent<T>({
   noContentProps,
   showRemoveColumns = false,
   onSort,
+  formatHeader,
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
@@ -105,6 +106,7 @@ function TableComponent<T>({
       col,
       indicator: sortableProps.includes(props[i]) ? "⇅" : "",
       prop: props[i],
+      index: i,
     };
   });
 
@@ -128,55 +130,46 @@ function TableComponent<T>({
   }
 
   const baseTableClassName = !disableDefaultStyles
-    ? `w-full divide-y ${
+    ? `w-full border rounded-md shadow-sm ${
         enableDarkMode && isDarkMode
-          ? "bg-gray-900 text-gray-200 divide-gray-700"
-          : "bg-white text-gray-900 divide-gray-200"
+          ? "bg-gray-900 text-gray-200 border-gray-700"
+          : "bg-white text-gray-900 border-gray-200"
       }`
     : "";
-
-  const baseTheadClassName =
-    !disableDefaultStyles && enableDarkMode
-      ? isDarkMode
-        ? "bg-gray-700 text-gray-300"
-        : "bg-gray-50 text-gray-500"
-      : "";
-
+  const baseTheadClassName = !disableDefaultStyles
+    ? enableDarkMode && isDarkMode
+      ? "bg-gray-800 text-gray-200"
+      : "bg-gray-50 text-gray-700"
+    : "";
   const baseTbodyClassName = !disableDefaultStyles
-    ? `divide-y ${
-        enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
-      }`
+    ? enableDarkMode && isDarkMode
+      ? "divide-y divide-gray-700"
+      : "divide-y divide-gray-200"
     : "";
-
   const baseTrClassName = (index: number) =>
     !disableDefaultStyles
       ? index % 2 === 0
-        ? isDarkMode
-          ? "bg-gray-800"
+        ? enableDarkMode && isDarkMode
+          ? "bg-gray-900"
           : "bg-white"
-        : isDarkMode
-        ? "bg-gray-700"
-        : "bg-gray-100"
+        : enableDarkMode && isDarkMode
+        ? "bg-gray-800"
+        : "bg-gray-50"
       : "";
-
   const baseTdClassName = !disableDefaultStyles
-    ? isDarkMode
-      ? "text-gray-300"
+    ? enableDarkMode && isDarkMode
+      ? "text-gray-200"
       : "text-gray-700"
     : "";
-
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
     : `${baseTableClassName} ${customClassNames.table || ""}`;
-
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
     : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
-
   const tbodyClassName = disableDefaultStyles
     ? customClassNames.tbody || ""
     : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
-
   const thClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
       ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
@@ -185,12 +178,10 @@ function TableComponent<T>({
       : customClassNames.th || "";
     return `${baseClass}`;
   };
-
   const trClassName = (index: number) =>
     disableDefaultStyles
       ? customClassNames.tr || ""
       : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
-
   const tdClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
       ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
@@ -209,7 +200,7 @@ function TableComponent<T>({
         <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
           <thead className={theadClassName}>
             <tr>
-              {displayedColumns.map(({ col, indicator, prop }) => {
+              {displayedColumns.map(({ col, indicator, prop, index }) => {
                 if (hiddenColumns[String(prop)]) return null;
                 return (
                   <th
@@ -230,7 +221,9 @@ function TableComponent<T>({
                           if (e.key === "Enter") handleSort(String(prop));
                         }}
                       >
-                        {col}
+                        {formatHeader
+                          ? formatHeader(col, String(prop), index)
+                          : col}
                         {indicator && (
                           <span className="text-xs text-gray-400">
                             {indicator}
@@ -314,7 +307,6 @@ function TableComponent<T>({
               const rowClassNames = `${trClassName(dataIndex)} ${
                 rowOnClick ? "cursor-pointer" : ""
               }`;
-
               if (renderRow) {
                 return (
                   <tr
@@ -331,7 +323,6 @@ function TableComponent<T>({
                   </tr>
                 );
               }
-
               return (
                 <tr
                   key={`dataIndex-${dataIndex + 1}`}
@@ -353,7 +344,6 @@ function TableComponent<T>({
                     const isExpanded = expandedCells[cellKey];
                     let displayValue: React.ReactNode;
                     let valToFormat = String(value);
-
                     if (typeof value === "string" && isDateString(value)) {
                       valToFormat = formatDate(new Date(value), true);
                     } else if (Array.isArray(value)) {
@@ -507,7 +497,6 @@ function TableComponent<T>({
           </tbody>
         </table>
       </div>
-
       {enablePagination && page !== undefined && setPage && (
         <div
           style={{
