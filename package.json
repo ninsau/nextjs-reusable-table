@@ -1,6 +1,6 @@
 {
   "name": "nextjs-reusable-table",
-  "version": "3.5.4",
+  "version": "3.5.5",
   "description": "A highly customizable and reusable table component for Next.js applications, built with TypeScript and the latest technologies.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
