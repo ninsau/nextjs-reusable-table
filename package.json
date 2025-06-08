@@ -9,7 +9,9 @@
     "dist",
     "dist/index.css"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/index.css"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsup src/index.ts --format esm,cjs --dts && npm run build:css",
