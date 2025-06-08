@@ -69,12 +69,12 @@ const ActionDropdown = <T,>({
     event.stopPropagation();
   };
 
-  const baseButtonClassName = "focus:outline-none text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-muted transition-colors";
-  const baseSvgClassName = "w-4 h-4";
+  const baseButtonClassName = "focus:outline-none text-gray-700";
+  const baseSvgClassName = "w-6 h-6 text-gray-700 hover:text-gray-900";
   const baseDropdownMenuClassName =
-    "absolute z-50 mt-1 w-48 bg-popover border border-border shadow-md rounded-md text-popover-foreground";
+    "absolute z-50 mt-1 w-48 bg-gray-200 shadow-md rounded-lg text-gray-700";
   const baseDropdownItemClassName =
-    "block w-full text-left px-3 py-2 text-sm text-popover-foreground hover:bg-muted transition-colors";
+    "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-300";
 
   const buttonClassName = disableDefaultStyles
     ? customClassNames.actionButton || ""

@@ -129,27 +129,43 @@ function TableComponent<T>({
     }
   }
 
-  // Use semantic CSS variables that inherit from parent theme
   const baseTableClassName = !disableDefaultStyles
-    ? "w-full divide-y border-collapse border-spacing-0 bg-background text-foreground border-border"
+    ? `w-full divide-y ${
+        enableDarkMode && isDarkMode
+          ? "bg-gray-900 text-gray-200 divide-gray-700"
+          : "bg-white text-gray-900 divide-gray-200"
+      }`
     : "";
 
-  const baseTheadClassName = !disableDefaultStyles
-    ? "bg-muted/50 text-muted-foreground border-b border-border"
-    : "";
+  const baseTheadClassName =
+    !disableDefaultStyles && enableDarkMode
+      ? isDarkMode
+        ? "bg-gray-700 text-gray-300"
+        : "bg-gray-50 text-gray-500"
+      : "";
 
   const baseTbodyClassName = !disableDefaultStyles
-    ? "divide-y divide-border"
+    ? `divide-y ${
+        enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
+      }`
     : "";
 
   const baseTrClassName = (index: number) =>
     !disableDefaultStyles
-      ? `border-b border-border hover:bg-muted/50 transition-colors ${
-          index % 2 === 0 ? "bg-background" : "bg-muted/25"
-        }`
+      ? index % 2 === 0
+        ? isDarkMode
+          ? "bg-gray-800"
+          : "bg-white"
+        : isDarkMode
+        ? "bg-gray-700"
+        : "bg-gray-100"
       : "";
 
-  const baseTdClassName = !disableDefaultStyles ? "text-foreground" : "";
+  const baseTdClassName = !disableDefaultStyles
+    ? isDarkMode
+      ? "text-gray-300"
+      : "text-gray-700"
+    : "";
 
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
@@ -157,7 +173,7 @@ function TableComponent<T>({
 
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
-    : `${baseTheadClassName} ${customClassNames.thead || ""} sticky top-0 z-10`;
+    : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
 
   const tbodyClassName = disableDefaultStyles
     ? customClassNames.tbody || ""
@@ -165,7 +181,7 @@ function TableComponent<T>({
 
   const thClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
-      ? `px-4 py-3 text-left text-sm font-medium text-muted-foreground uppercase tracking-wide ${
+      ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
           customClassNames.th || ""
         }`
       : customClassNames.th || "";
@@ -179,7 +195,9 @@ function TableComponent<T>({
 
   const tdClassName = (prop: string) => {
     const baseClass = !disableDefaultStyles
-      ? `px-4 py-3 text-sm ${baseTdClassName} ${customClassNames.td || ""}`
+      ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
+          customClassNames.td || ""
+        }`
       : customClassNames.td || "";
     return `${baseClass}`;
   };
@@ -187,7 +205,7 @@ function TableComponent<T>({
   return (
     <>
       <div
-        className="table-scroll-container pb-6 border border-border rounded-md bg-background shadow-sm"
+        className="table-scroll-container pb-6"
         style={{ maxHeight: "600px", overflow: "auto" }}
       >
         <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
@@ -218,7 +236,7 @@ function TableComponent<T>({
                           ? formatHeader(col, String(prop), index)
                           : col}
                         {indicator && (
-                          <span className="text-xs text-muted-foreground/60">
+                          <span className="text-xs text-gray-400">
                             {indicator}
                           </span>
                         )}
@@ -238,7 +256,7 @@ function TableComponent<T>({
                                 });
                               })
                             }
-                            className="p-1 hover:bg-muted rounded-full transition-colors"
+                            className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600"
                             type="button"
                           >
                             <svg
@@ -260,7 +278,7 @@ function TableComponent<T>({
                           {headerDropdown[String(prop)] && (
                             <div
                               id={`header-dropdown-${String(prop)}`}
-                              className="absolute right-0 mt-2 w-48 bg-popover border border-border rounded-md shadow-lg py-1 z-50"
+                              className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50"
                             >
                               <button
                                 onClick={() => {
@@ -273,7 +291,7 @@ function TableComponent<T>({
                                     [String(prop)]: false,
                                   }));
                                 }}
-                                className="block px-4 py-2 text-sm text-popover-foreground hover:bg-muted w-full text-left transition-colors"
+                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left"
                                 type="button"
                               >
                                 {hiddenColumns[String(prop)]
@@ -372,14 +390,14 @@ function TableComponent<T>({
                                   ? JSON.stringify(chip)
                                   : `${String(chip)}-${idx}`
                               }
-                              className="inline-block bg-secondary text-secondary-foreground px-2 py-1 rounded-full text-xs border border-border"
+                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
                             >
                               {trimText(String(chip), 20)}
                             </span>
                           ))}
                           {!isExpanded && value.length > 5 && (
                             <span
-                              className="inline-block bg-muted text-muted-foreground px-2 py-1 rounded-full text-xs cursor-pointer border border-border hover:bg-muted/80 transition-colors"
+                              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setExpandedCells((prev) => ({
@@ -409,7 +427,7 @@ function TableComponent<T>({
                       displayValue = (
                         <Link href={value}>
                           <span
-                            className="text-primary hover:text-primary/80 hover:underline transition-colors"
+                            className="text-blue-500 hover:underline"
                             onClick={(e) => e.stopPropagation()}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
