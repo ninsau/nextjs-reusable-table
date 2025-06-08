@@ -1,26 +1,16 @@
 {
   "name": "nextjs-reusable-table",
   "version": "3.5.2",
-  "description": "A highly customizable and reusable table component for Next.js applications, built with TypeScript and the latest technologies.",
-  "main": "dist/index.js",
+  "main": "index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./styles": "./dist/index.css",
-    "./package.json": "./package.json"
-  },
+  "sideEffects": [
+    "dist/index.css"
+  ],
   "files": [
     "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "sideEffects": [
-    "*.css"
+    "src",
+    "dist/index.css"
   ],
   "repository": {
     "type": "git",
@@ -30,21 +20,14 @@
     "url": "https://github.com/ninsau/nextjs-reusable-table/issues"
   },
   "homepage": "https://github.com/ninsau/nextjs-reusable-table#readme",
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=7.0.0"
-  },
   "scripts": {
-    "clean": "rm -rf dist",
-    "build": "npm run clean && tsup src/index.ts --format esm,cjs --dts --out-dir dist && npm run build:css",
-    "build:css": "tailwindcss -i src/styles/tableStyles.css -o dist/index.css --minify",
-    "build:css-compat": "tailwindcss -i src/styles/tableStyles.css -o dist/compat.css --minify",
-    "prepublishOnly": "npm run build",
-    "size": "bundlesize",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsup src/index.ts --format esm,cjs --dts && npm run build:css",
+    "build:css": "tailwindcss -i src/styles/tableStyles.css -o dist/index.css --minify"
   },
   "author": "ninsau",
   "license": "ISC",
+  "description": "A highly customizable and reusable table component for Next.js applications, built with TypeScript and the latest technologies.",
   "dependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
@@ -53,7 +36,6 @@
     "@types/react": "^18.3.9",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
-    "bundlesize": "^0.18.1",
     "postcss": "^8.4.47",
     "react-loading-skeleton": "^3.5.0",
     "tailwindcss": "^3.4.13",
@@ -64,27 +46,8 @@
     "next": ">=12",
     "react": ">=16",
     "react-dom": ">=16",
-    "tailwindcss": ">=2.0.0"
+    "tailwindcss": ">=3.0.0"
   },
-  "peerDependenciesMeta": {
-    "tailwindcss": {
-      "optional": true
-    }
-  },
-  "bundlesize": [
-    {
-      "path": "dist/index.js",
-      "maxSize": "50 kB"
-    },
-    {
-      "path": "dist/index.mjs",
-      "maxSize": "50 kB"
-    },
-    {
-      "path": "dist/index.css",
-      "maxSize": "10 kB"
-    }
-  ],
   "keywords": [
     "nextjs",
     "next.js",

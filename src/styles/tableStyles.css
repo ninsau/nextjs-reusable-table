@@ -1,7 +1,4 @@
 @import "react-loading-skeleton/dist/skeleton.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 .table-container {
   overflow: hidden;
