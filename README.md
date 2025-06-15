@@ -1,7 +1,3 @@
-# nextjs-reusable-table
-
-A highly customizable and reusable table component for Next.js applications, built with TypeScript and TailwindCSS.
-
 ![Maintenance](https://img.shields.io/badge/status-legacy%20only-lightgrey)
 
 > ## ⚠️ This package is no longer maintained.
@@ -11,6 +7,10 @@ A highly customizable and reusable table component for Next.js applications, bui
 > - No new features will be added here.
 > - For all new projects and updates, migrate to [`@flowers/nextjs-table`](https://www.npmjs.com/package/@flowers/nextjs-table).
 > - See our [migration guide](https://github.com/ninsau/flowers-nextjs-table/blob/main/MIGRATION.md) for help upgrading.
+
+# nextjs-reusable-table
+
+A highly customizable and reusable table component for Next.js applications, built with TypeScript and TailwindCSS.
 
 ## Installation
 
