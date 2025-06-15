@@ -2,10 +2,10 @@
 
 > ## ⚠️ This package is no longer maintained.
 >
-> The new and improved version is now [`@flowers/nextjs-table`](https://www.npmjs.com/package/@flowers/nextjs-table).
+> The new and improved version is now [`https://www.npmjs.com/package/flowers-nextjs-table`](https://www.npmjs.com/package/https://www.npmjs.com/package/flowers-nextjs-table).
 >
 > - No new features will be added here.
-> - For all new projects and updates, migrate to [`@flowers/nextjs-table`](https://www.npmjs.com/package/@flowers/nextjs-table).
+> - For all new projects and updates, migrate to [`https://www.npmjs.com/package/flowers-nextjs-table`](https://www.npmjs.com/package/https://www.npmjs.com/package/flowers-nextjs-table).
 > - See our [migration guide](https://github.com/ninsau/flowers-nextjs-table/blob/main/MIGRATION.md) for help upgrading.
 
 # nextjs-reusable-table
