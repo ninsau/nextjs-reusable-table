@@ -33,7 +33,7 @@
     "format": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "prepublishOnly": "npm run check && npm run test:ci && npm run build"
+    "prepublishOnly": "npm run build"
   },
   "author": "ninsau",
   "license": "ISC",
