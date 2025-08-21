@@ -13,6 +13,11 @@
 
 A **production-ready**, highly customizable and reusable table component for Next.js applications. Built with TypeScript, optimized for performance, and designed with developer experience in mind.
 
+## 📚 Documentation
+
+- **[📖 API Reference](API.md)** - Complete prop reference and component API
+- **[💡 Examples & Use Cases](EXAMPLES.md)** - Real-world examples and advanced usage patterns
+
 ## 🚀 Key Features
 
 - **🎯 Zero Configuration** - Works out of the box
