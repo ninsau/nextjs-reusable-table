@@ -7,14 +7,7 @@
 [![Tests](https://img.shields.io/badge/tests-96%20passed-brightgreen.svg)](#testing)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#installation)
 
-> ## 📦 This package is actively maintained and improved!
->
-> ✅ **Strict TypeScript** compliance with no `any` types  
-> ✅ **Modern tooling** with Biome for linting and formatting  
-> ✅ **Comprehensive testing** with 96+ test cases  
-> ✅ **Zero dependencies** except peer dependencies  
-> ✅ **Tree-shakable** ESM/CJS builds  
-> ✅ **Accessible** with proper ARIA attributes
+
 
 # nextjs-reusable-table
 
