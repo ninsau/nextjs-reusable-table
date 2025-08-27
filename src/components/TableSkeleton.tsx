@@ -51,7 +51,7 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
       }`;
   const tableClassName = disableDefaultStyles
     ? customClassNames.table || ""
-    : `${baseTableClassName} min-w-full divide-y ${
+    : `${baseTableClassName} w-full min-w-full divide-y ${
         customClassNames.table || ""
       }`;
   const thClassName = disableDefaultStyles
@@ -82,11 +82,15 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
                       scope="col"
                       className={thClassName}
                     >
-                      <Skeleton width={100} />
+                      <div className="animate-pulse bg-gray-300">
+                        <Skeleton width={100} />
+                      </div>
                     </th>
                   ))}
                   <th scope="col" className={thClassName}>
-                    <Skeleton width={50} />
+                    <div className="animate-pulse bg-gray-300">
+                      <Skeleton width={50} />
+                    </div>
                   </th>
                 </tr>
               </thead>
@@ -98,11 +102,15 @@ const TableSkeleton: React.FC<TableSkeletonProps> = ({
                         key={`${index + 1}-${colIndex + 1}-cell`}
                         className={tdClassName}
                       >
-                        <Skeleton width={150} />
+                        <div className="animate-pulse bg-gray-300">
+                          <Skeleton width={150} />
+                        </div>
                       </td>
                     ))}
                     <td className={tdClassName}>
-                      <Skeleton width={50} />
+                      <div className="animate-pulse bg-gray-300">
+                        <Skeleton width={50} />
+                      </div>
                     </td>
                   </tr>
                 ))}

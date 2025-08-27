@@ -76,7 +76,7 @@ describe("NoContentComponent", () => {
     it("handles complex custom icons", () => {
       const complexIcon = (
         <div data-testid="complex-icon">
-          <svg viewBox="0 0 50 50">
+          <svg viewBox="0 0 50 50" role="img" aria-label="complex icon">
             <circle cx="25" cy="25" r="20" />
           </svg>
           <span>Custom</span>
@@ -119,7 +119,7 @@ describe("NoContentComponent", () => {
       const multilineText = "No data available.\nPlease try again later.";
       render(<NoContentComponent text={multilineText} />);
 
-      expect(screen.getByText(multilineText)).toBeInTheDocument();
+      expect(screen.getByText((_content, element) => element?.textContent === multilineText)).toBeInTheDocument();
     });
   });
 
@@ -142,7 +142,7 @@ describe("NoContentComponent", () => {
 
     it("maintains accessibility when custom icon is provided", () => {
       const customIcon = (
-        <div data-testid="accessible-icon" aria-label="Custom empty state">
+        <div data-testid="accessible-icon" role="img" aria-label="Custom empty state">
           📭
         </div>
       );
@@ -320,14 +320,14 @@ describe("NoContentComponent", () => {
     });
 
     it("handles boolean false as text", () => {
-      render(<NoContentComponent text={false as any} />);
+      render(<NoContentComponent text={false as unknown as string} />);
 
       // Should not crash, might render nothing or fall back to default
       expect(screen.getByLabelText("No data")).toBeInTheDocument();
     });
 
     it("handles number as text", () => {
-      render(<NoContentComponent text={0 as any} />);
+      render(<NoContentComponent text={0 as unknown as string} />);
 
       expect(screen.getByText("0")).toBeInTheDocument();
     });

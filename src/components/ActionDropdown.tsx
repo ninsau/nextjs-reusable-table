@@ -47,9 +47,17 @@ const ActionDropdown = <T,>({
       }
     };
 
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscapeKey);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
     };
   }, []);
 
@@ -133,6 +141,13 @@ const ActionDropdown = <T,>({
         onClick={toggleDropdown}
         className={buttonClassName}
         type="button"
+        aria-label="Actions"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleDropdown();
+          }
+        }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

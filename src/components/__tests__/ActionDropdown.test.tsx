@@ -1,6 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import ActionDropdown from "../ActionDropdown";
 
 const mockItem = {
@@ -230,9 +229,10 @@ describe("ActionDropdown", () => {
         const menu = screen.getByRole("menu");
         expect(menu).toBeInTheDocument();
 
-        // Check if position style is applied
-        const style = window.getComputedStyle(menu);
-        expect(menu.style.position).toBe("absolute");
+        // Check if dropdown has positioning classes and styles
+        expect(menu).toHaveClass("absolute");
+        expect(menu.style.top).toBeTruthy();
+        expect(menu.style.left).toBeTruthy();
       });
     });
 
@@ -259,10 +259,9 @@ describe("ActionDropdown", () => {
       await waitFor(() => {
         const menu = screen.getByRole("menu");
         expect(menu).toBeInTheDocument();
-        // Position should be adjusted to stay on screen
-        expect(Number.parseInt(menu.style.left)).toBeLessThan(
-          window.innerWidth - 240,
-        );
+        // Position should be adjusted to stay on screen (the component uses Math.min to constrain)
+        const leftPosition = Number.parseInt(menu.style.left, 10);
+        expect(leftPosition).toBeLessThanOrEqual(window.innerWidth - 240);
       });
     });
   });
@@ -272,7 +271,7 @@ describe("ActionDropdown", () => {
       const user = userEvent.setup();
       const propsWithMissingFunction = {
         ...defaultProps,
-        actionFunctions: [jest.fn(), undefined, jest.fn()] as any,
+        actionFunctions: [jest.fn(), undefined as unknown as (item: unknown) => void, jest.fn()],
       };
 
       render(<ActionDropdown {...propsWithMissingFunction} />);

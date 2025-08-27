@@ -29,21 +29,25 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         isDarkMode
           ? "bg-gray-800 text-white hover:bg-gray-700"
           : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-      }`;
+      } ${customClassNames.button || ""}`;
   const disabledButtonClassName = disableDefaultStyles
     ? customClassNames.buttonDisabled || ""
-    : `opacity-50 cursor-not-allowed ${baseButtonClassName}`;
+    : `opacity-50 cursor-not-allowed px-3 py-1 mx-1 rounded-md ${
+        isDarkMode
+          ? "bg-gray-800 text-white hover:bg-gray-700"
+          : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+      } ${customClassNames.buttonDisabled || ""}`;
   const pageInfoClassName = disableDefaultStyles
     ? customClassNames.pageInfo || ""
     : `px-3 py-1 mx-1 text-sm ${
         isDarkMode ? "text-gray-300" : "text-gray-700"
-      }`;
+      } ${customClassNames.pageInfo || ""}`;
   return (
     <div
       className={
         disableDefaultStyles
           ? customClassNames.container || ""
-          : "flex justify-center items-center mt-4"
+          : `flex justify-center items-center mt-4 ${customClassNames.container || ""}`
       }
     >
       <button
@@ -66,20 +70,20 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         Page <strong>{page}</strong> of <strong>{totalPages}</strong>
       </span>
       <button
-        disabled={page === totalPages}
+        disabled={page >= totalPages || totalPages <= 0}
         onClick={() => setPage(page + 1)}
         className={
-          page === totalPages ? disabledButtonClassName : baseButtonClassName
+          page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName
         }
         type="button"
       >
         Next
       </button>
       <button
-        disabled={page === totalPages}
+        disabled={page >= totalPages || totalPages <= 0}
         onClick={() => setPage(totalPages)}
         className={
-          page === totalPages ? disabledButtonClassName : baseButtonClassName
+          page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName
         }
         type="button"
       >
