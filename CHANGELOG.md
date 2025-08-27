@@ -5,7 +5,7 @@ All notable changes to **nextjs-reusable-table** will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.8.0] - 2024-01-XX
 
 ### 🚀 **Added**
 - Comprehensive CI/CD pipeline with GitHub Actions
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AI Agent contribution guide (AGENTS.md)
 - Enhanced development scripts and validation pipeline
 - Editor configuration and VS Code settings
-- Funding and sponsorship information
+- Star encouragement for community support
 
 ### 📚 **Documentation**
 - Added AGENTS.md for AI agent contribution guidelines
@@ -24,6 +24,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CODE_OF_CONDUCT.md for community standards
 - Created comprehensive FAQ section
 - Added build process documentation with performance benchmarks
+- Added TESTING.md for testing strategy and coverage
+- Added CHANGELOG.md for version history tracking
+- Added BUILD.md for build process documentation
+
+### 🛠️ **Developer Experience**
+- Added extensive development scripts to package.json
+- Added .editorconfig for consistent coding styles
+- Enhanced validation pipeline with `npm run validate`
+- Improved linting and type checking workflows
+- Added performance monitoring and optimization tools
+
+### 🔧 **Technical Improvements**
+- Fixed linting issues and improved code quality
+- Updated contact information to cassidyblay@gmail.com
+- Removed funding references for small library approach
+- Enhanced package.json with better scripts and metadata
+- Improved CI/CD workflow for better automation
+
+### 📦 **Package**
+- Updated package files to exclude documentation from NPM
+- Enhanced build process with better optimization
+- Improved bundle analysis and size monitoring
+- Better TypeScript declarations and ESM support
+
+## [Unreleased]
 
 ### 🛠️ **Developer Experience**
 - Added `npm run validate` for complete code quality checks
