@@ -214,9 +214,34 @@ var formatDate = (date, includeTime = false) => {
   return new Intl.DateTimeFormat("en-US", options).format(date);
 };
 var isDateString = (str) => {
-  if (str.length < 10) return false;
+  if (typeof str !== "string" || str.length < 8) return false;
+  if (/^\d+$/.test(str.trim())) return false;
+  const datePatterns = [
+    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?([+-]\d{2}:\d{2}|Z)?)?$/,
+    // ISO format with timezone
+    /^\d{4}-\d{1,2}-\d{1,2}$/,
+    // YYYY-M-D or YYYY-MM-DD
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/,
+    // M/D/YYYY or MM/DD/YYYY
+    /^\d{1,2}-\d{1,2}-\d{4}$/,
+    // M-D-YYYY or MM-DD-YYYY
+    /^(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+\d{4}$/i
+    // Month DD, YYYY
+  ];
+  const hasDatePattern = datePatterns.some((pattern) => pattern.test(str.trim()));
+  if (!hasDatePattern) return false;
   const parsedDate = Date.parse(str);
-  return !Number.isNaN(parsedDate) && !Number.isNaN(new Date(parsedDate).getTime());
+  if (Number.isNaN(parsedDate)) return false;
+  const date = new Date(parsedDate);
+  if (Number.isNaN(date.getTime())) return false;
+  const reconstructed = date.toISOString().substr(0, 10);
+  const inputDatePart = str.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})/);
+  if (inputDatePart) {
+    const normalizedInput = inputDatePart[1].replace(/\b(\d)\b/g, "0$1").replace(/[-/]/g, "-");
+    if (reconstructed !== normalizedInput) return false;
+  }
+  const year = date.getFullYear();
+  return year >= 1900 && year <= 2100;
 };
 var trimText = (text, maxLength) => text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 
@@ -705,101 +730,105 @@ function TableComponent({
                     const isExpanded = expandedCells[cellKey];
                     let displayValue;
                     let valToFormat = String(value);
-                    if (typeof value === "string" && isDateString(value)) {
-                      valToFormat = formatDate(new Date(value), true);
-                    } else if (Array.isArray(value)) {
-                      let displayArray = value;
-                      if (!isExpanded && displayArray.length > 5) {
-                        displayArray = displayArray.slice(0, 5);
+                    if (formatValue) {
+                      const customFormatted = formatValue(
+                        valToFormat,
+                        String(prop),
+                        item
+                      );
+                      if (customFormatted !== void 0 && customFormatted !== null) {
+                        displayValue = customFormatted;
                       }
-                      displayValue = /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
-                        "div",
-                        {
-                          className: "flex flex-wrap gap-1",
-                          style: {
-                            maxWidth: "200px",
-                            overflowX: "auto"
-                          },
-                          onClick: (e) => e.stopPropagation(),
-                          onKeyDown: (e) => {
-                            if (e.key === "Enter") {
-                              e.stopPropagation();
-                              setExpandedCells((prev) => ({
-                                ...prev,
-                                [cellKey]: !prev[cellKey]
-                              }));
-                            }
-                          },
-                          role: "button",
-                          tabIndex: 0,
-                          children: [
-                            displayArray.map((chip, idx) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-                              "span",
-                              {
-                                className: "inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs",
-                                children: trimText(String(chip), 20)
-                              },
-                              typeof chip === "object" && chip !== null ? JSON.stringify(chip) : `${String(chip)}-${idx}`
-                            )),
-                            !isExpanded && value.length > 5 && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
-                              "span",
-                              {
-                                className: "inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer",
-                                onClick: (e) => {
-                                  e.stopPropagation();
-                                  setExpandedCells((prev) => ({
-                                    ...prev,
-                                    [cellKey]: true
-                                  }));
+                    }
+                    if (displayValue === void 0) {
+                      if (typeof value === "string" && isDateString(value)) {
+                        valToFormat = formatDate(new Date(value), true);
+                      } else if (Array.isArray(value)) {
+                        let displayArray = value;
+                        if (!isExpanded && displayArray.length > 5) {
+                          displayArray = displayArray.slice(0, 5);
+                        }
+                        displayValue = /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+                          "div",
+                          {
+                            className: "flex flex-wrap gap-1",
+                            style: {
+                              maxWidth: "200px",
+                              overflowX: "auto"
+                            },
+                            onClick: (e) => e.stopPropagation(),
+                            onKeyDown: (e) => {
+                              if (e.key === "Enter") {
+                                e.stopPropagation();
+                                setExpandedCells((prev) => ({
+                                  ...prev,
+                                  [cellKey]: !prev[cellKey]
+                                }));
+                              }
+                            },
+                            role: "button",
+                            tabIndex: 0,
+                            children: [
+                              displayArray.map((chip, idx) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                                "span",
+                                {
+                                  className: "inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs",
+                                  children: trimText(String(chip), 20)
                                 },
-                                onKeyDown: (e) => {
-                                  if (e.key === "Enter") {
+                                typeof chip === "object" && chip !== null ? JSON.stringify(chip) : `${String(chip)}-${idx}`
+                              )),
+                              !isExpanded && value.length > 5 && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+                                "span",
+                                {
+                                  className: "inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer",
+                                  onClick: (e) => {
                                     e.stopPropagation();
                                     setExpandedCells((prev) => ({
                                       ...prev,
                                       [cellKey]: true
                                     }));
-                                  }
-                                },
-                                role: "button",
-                                tabIndex: 0,
-                                children: [
-                                  "+",
-                                  value.length - 5,
-                                  " more"
-                                ]
-                              }
-                            )
-                          ]
-                        }
-                      );
-                    } else if (typeof value === "string" && value.startsWith("http")) {
-                      displayValue = /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_link.default, { href: value, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-                        "span",
-                        {
-                          className: "text-blue-500 hover:underline",
-                          onClick: (e) => e.stopPropagation(),
-                          onKeyDown: (e) => {
-                            if (e.key === "Enter") {
-                              e.stopPropagation();
-                            }
-                          },
-                          role: "link",
-                          tabIndex: 0,
-                          children: isExpanded ? value : trimText(value, 30)
-                        }
-                      ) });
-                    } else {
-                      if (!Array.isArray(value) && !isExpanded) {
-                        valToFormat = trimText(valToFormat, 30);
-                      }
-                      if (formatValue) {
-                        displayValue = formatValue(
-                          valToFormat,
-                          String(prop),
-                          item
+                                  },
+                                  onKeyDown: (e) => {
+                                    if (e.key === "Enter") {
+                                      e.stopPropagation();
+                                      setExpandedCells((prev) => ({
+                                        ...prev,
+                                        [cellKey]: true
+                                      }));
+                                    }
+                                  },
+                                  role: "button",
+                                  tabIndex: 0,
+                                  children: [
+                                    "+",
+                                    value.length - 5,
+                                    " more"
+                                  ]
+                                }
+                              )
+                            ]
+                          }
                         );
+                      } else if (typeof value === "string" && value.startsWith("http")) {
+                        displayValue = /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_link.default, { href: value, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                          "span",
+                          {
+                            className: "text-blue-500 hover:underline",
+                            onClick: (e) => e.stopPropagation(),
+                            onKeyDown: (e) => {
+                              if (e.key === "Enter") {
+                                e.stopPropagation();
+                              }
+                            },
+                            role: "link",
+                            tabIndex: 0,
+                            children: isExpanded ? value : trimText(value, 30)
+                          }
+                        ) });
                       } else {
+                        if (!Array.isArray(value) && !isExpanded) {
+                          valToFormat = trimText(valToFormat, 30);
+                        }
                         displayValue = valToFormat;
                       }
                     }

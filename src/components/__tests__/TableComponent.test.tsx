@@ -135,7 +135,7 @@ describe("TableComponent", () => {
       const nameHeader = screen
         .getByText("Name")
         .closest("div[role='button']")!;
-      nameHeader.focus();
+      (nameHeader as HTMLElement).focus();
       await user.keyboard("{Enter}");
 
       expect(sortableProps.onSort).toHaveBeenCalledWith("name");
@@ -231,8 +231,90 @@ describe("TableComponent", () => {
       expect(screen.getByText("❌ Inactive")).toBeInTheDocument();
     });
 
+    it("formatValue takes precedence over internal date formatting", () => {
+      const testData = [
+        {
+          id: 1,
+          name: "John Doe",
+          email: "john@example.com",
+          joinDate: "2024-01-15T10:30:00Z", // This would normally be auto-formatted as date
+          tags: ["react"],
+          active: true,
+          website: "https://johndoe.com",
+        },
+      ];
+
+      const formatValue = jest.fn((value, prop, _item) => {
+        if (prop === "joinDate") {
+          return `Custom: ${value}`;
+        }
+        return undefined; // Return undefined to fall back to default formatting
+      });
+
+      render(
+        <TableComponent
+          {...defaultProps}
+          data={testData}
+          formatValue={formatValue}
+        />
+      );
+
+      // Should show custom format instead of auto-formatted date
+      expect(screen.getByText("Custom: 2024-01-15T10:30:00Z")).toBeInTheDocument();
+      expect(formatValue).toHaveBeenCalledWith("2024-01-15T10:30:00Z", "joinDate", testData[0]);
+    });
+
+    it("formatValue can return null/undefined to fall back to default formatting", () => {
+      const testData = [
+        {
+          id: 1,
+          name: "John Doe", 
+          email: "john@example.com",
+          joinDate: "2024-01-15T10:30:00Z",
+          tags: ["react"],
+          active: true,
+          website: "https://johndoe.com",
+        },
+      ];
+
+      const formatValue = jest.fn((value, prop, _item) => {
+        if (prop === "joinDate") {
+          return null; // Fall back to default
+        }
+        return undefined;
+      });
+
+      render(
+        <TableComponent
+          {...defaultProps}
+          data={testData}
+          formatValue={formatValue}
+        />
+      );
+
+      // Should fall back to default date formatting
+      expect(screen.getByText(/Jan 15, 2024/)).toBeInTheDocument();
+      expect(formatValue).toHaveBeenCalledWith("2024-01-15T10:30:00Z", "joinDate", testData[0]);
+    });
+
+    it("formatValue takes precedence over URL link formatting", () => {
+      const formatValue = jest.fn((value, prop, _item) => {
+        if (prop === "website") {
+          return `🌐 ${value}`;
+        }
+        return undefined;
+      });
+
+      render(<TableComponent {...defaultProps} formatValue={formatValue} />);
+
+      // Should show custom format instead of link
+      expect(screen.getByText("🌐 https://johndoe.com")).toBeInTheDocument();
+      // Should not have link behavior 
+      expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    });
+
     it("uses custom formatHeader function when provided", () => {
-      const formatHeader = jest.fn((header, prop, index) => (
+      const formatHeader = jest.fn((header, _prop, index) => (
         <span data-testid={`header-${index}`}>🎯 {header}</span>
       ));
 
