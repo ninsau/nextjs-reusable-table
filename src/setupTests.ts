@@ -3,7 +3,7 @@ import React from "react";
 
 // Mock Next.js Link component
 jest.mock("next/link", () => {
-  return ({ children, href, ...props }: any) =>
+  return ({ children, href, ...props }: { children: React.ReactNode; href: string }) =>
     React.createElement("a", { href, ...props }, children);
 });
 
@@ -23,12 +23,10 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock IntersectionObserver
-(global as any).IntersectionObserver = class IntersectionObserver {
+(global as unknown as { IntersectionObserver: unknown }).IntersectionObserver = class IntersectionObserver {
   root = null;
   rootMargin = "";
   thresholds = [];
-
-  constructor() {}
   observe() {
     return null;
   }

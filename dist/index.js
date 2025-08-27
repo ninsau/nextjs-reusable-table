@@ -73,9 +73,16 @@ var ActionDropdown = ({
         setIsDropdownOpen(false);
       }
     };
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscapeKey);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
     };
   }, []);
   (0, import_react.useEffect)(() => {
@@ -141,6 +148,13 @@ var ActionDropdown = ({
         onClick: toggleDropdown,
         className: buttonClassName,
         type: "button",
+        "aria-label": "Actions",
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleDropdown();
+          }
+        },
         children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "svg",
           {
@@ -171,36 +185,40 @@ var ActionDropdown_default = ActionDropdown;
 // src/components/NoContentComponent.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 var NoContentComponent = ({
-  name = "items",
+  name = "No data",
   text,
   icon
-}) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "text-center py-10", children: [
-  icon ? icon : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+}) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex flex-col items-center justify-center space-y-4 text-center py-10", children: [
+  icon === void 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
     "svg",
     {
-      className: "mx-auto h-12 w-12 text-gray-400",
+      className: "mx-auto h-16 w-16 text-gray-400",
       fill: "none",
       viewBox: "0 0 24 24",
       stroke: "currentColor",
-      role: "presentation",
-      children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-        "path",
-        {
-          strokeLinecap: "round",
-          strokeLinejoin: "round",
-          strokeWidth: 2,
-          d: "M13 10V3L4 14h7v7l9-11h-7z"
-        }
-      )
+      role: "img",
+      "aria-label": name,
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("title", { children: name }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+          "path",
+          {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            strokeWidth: 2,
+            d: "M13 10V3L4 14h7v7l9-11h-7z"
+          }
+        )
+      ]
     }
-  ),
-  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-500", children: text ? text : `No ${name} found.` })
+  ) : icon,
+  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-500 text-lg", children: text !== void 0 ? text : "No data available" })
 ] });
 var NoContentComponent_default = NoContentComponent;
 
 // src/components/TableComponent.tsx
 var import_link = __toESM(require("next/link"));
-var import_react5 = require("react");
+var import_react3 = require("react");
 
 // src/utils/helpers.ts
 var formatDate = (date, includeTime = false) => {
@@ -211,7 +229,11 @@ var formatDate = (date, includeTime = false) => {
     hour: "2-digit",
     minute: "2-digit"
   } : { year: "numeric", month: "short", day: "numeric" };
-  return new Intl.DateTimeFormat("en-US", options).format(date);
+  try {
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  } catch {
+    return "Invalid Date";
+  }
 };
 var isDateString = (str) => {
   if (typeof str !== "string" || str.length < 8) return false;
@@ -234,16 +256,50 @@ var isDateString = (str) => {
   if (Number.isNaN(parsedDate)) return false;
   const date = new Date(parsedDate);
   if (Number.isNaN(date.getTime())) return false;
-  const reconstructed = date.toISOString().substr(0, 10);
-  const inputDatePart = str.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})/);
-  if (inputDatePart) {
-    const normalizedInput = inputDatePart[1].replace(/\b(\d)\b/g, "0$1").replace(/[-/]/g, "-");
-    if (reconstructed !== normalizedInput) return false;
+  const ymd = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  const isoWithTime = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+  const mdy = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (ymd || mdy || isoWithTime) {
+    let inputYear;
+    let inputMonth;
+    let inputDay;
+    let parsedYear;
+    let parsedMonth;
+    let parsedDay;
+    if (isoWithTime) {
+      inputYear = Number(isoWithTime[1]);
+      inputMonth = Number(isoWithTime[2]);
+      inputDay = Number(isoWithTime[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else if (ymd) {
+      inputYear = Number(ymd[1]);
+      inputMonth = Number(ymd[2]);
+      inputDay = Number(ymd[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else {
+      inputMonth = Number(mdy?.[1]);
+      inputDay = Number(mdy?.[2]);
+      inputYear = Number(mdy?.[3]);
+      parsedYear = date.getFullYear();
+      parsedMonth = date.getMonth() + 1;
+      parsedDay = date.getDate();
+    }
+    if (parsedYear !== inputYear || parsedMonth !== inputMonth || parsedDay !== inputDay) {
+      return false;
+    }
   }
-  const year = date.getFullYear();
+  const year = ymd || isoWithTime ? date.getUTCFullYear() : date.getFullYear();
   return year >= 1900 && year <= 2100;
 };
-var trimText = (text, maxLength) => text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+var trimText = (text, maxLength) => {
+  if (maxLength <= 0) return "...";
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+};
 
 // src/components/PaginationComponent.tsx
 var import_react2 = require("react");
@@ -268,13 +324,13 @@ var PaginationComponent = ({
       };
     }
   }, [enableDarkMode]);
-  const baseButtonClassName = disableDefaultStyles ? customClassNames.button || "" : `px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`;
-  const disabledButtonClassName = disableDefaultStyles ? customClassNames.buttonDisabled || "" : `opacity-50 cursor-not-allowed ${baseButtonClassName}`;
-  const pageInfoClassName = disableDefaultStyles ? customClassNames.pageInfo || "" : `px-3 py-1 mx-1 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`;
+  const baseButtonClassName = disableDefaultStyles ? customClassNames.button || "" : `px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"} ${customClassNames.button || ""}`;
+  const disabledButtonClassName = disableDefaultStyles ? customClassNames.buttonDisabled || "" : `opacity-50 cursor-not-allowed px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"} ${customClassNames.buttonDisabled || ""}`;
+  const pageInfoClassName = disableDefaultStyles ? customClassNames.pageInfo || "" : `px-3 py-1 mx-1 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"} ${customClassNames.pageInfo || ""}`;
   return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
     "div",
     {
-      className: disableDefaultStyles ? customClassNames.container || "" : "flex justify-center items-center mt-4",
+      className: disableDefaultStyles ? customClassNames.container || "" : `flex justify-center items-center mt-4 ${customClassNames.container || ""}`,
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
           "button",
@@ -305,9 +361,9 @@ var PaginationComponent = ({
         /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
           "button",
           {
-            disabled: page === totalPages,
+            disabled: page >= totalPages || totalPages <= 0,
             onClick: () => setPage(page + 1),
-            className: page === totalPages ? disabledButtonClassName : baseButtonClassName,
+            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName,
             type: "button",
             children: "Next"
           }
@@ -315,9 +371,9 @@ var PaginationComponent = ({
         /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
           "button",
           {
-            disabled: page === totalPages,
+            disabled: page >= totalPages || totalPages <= 0,
             onClick: () => setPage(totalPages),
-            className: page === totalPages ? disabledButtonClassName : baseButtonClassName,
+            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName,
             type: "button",
             children: "Last"
           }
@@ -328,145 +384,8 @@ var PaginationComponent = ({
 };
 var PaginationComponent_default = PaginationComponent;
 
-// src/components/TableSkeleton.tsx
-var import_react4 = require("react");
-
-// node_modules/react-loading-skeleton/dist/index.js
-var import_react3 = __toESM(require("react"), 1);
-var SkeletonThemeContext = import_react3.default.createContext({});
-var defaultEnableAnimation = true;
-function styleOptionsToCssProperties({ baseColor, highlightColor, width, height, borderRadius, circle, direction, duration, enableAnimation = defaultEnableAnimation, customHighlightBackground }) {
-  const style = {};
-  if (direction === "rtl")
-    style["--animation-direction"] = "reverse";
-  if (typeof duration === "number")
-    style["--animation-duration"] = `${duration}s`;
-  if (!enableAnimation)
-    style["--pseudo-element-display"] = "none";
-  if (typeof width === "string" || typeof width === "number")
-    style.width = width;
-  if (typeof height === "string" || typeof height === "number")
-    style.height = height;
-  if (typeof borderRadius === "string" || typeof borderRadius === "number")
-    style.borderRadius = borderRadius;
-  if (circle)
-    style.borderRadius = "50%";
-  if (typeof baseColor !== "undefined")
-    style["--base-color"] = baseColor;
-  if (typeof highlightColor !== "undefined")
-    style["--highlight-color"] = highlightColor;
-  if (typeof customHighlightBackground === "string")
-    style["--custom-highlight-background"] = customHighlightBackground;
-  return style;
-}
-function Skeleton({ count = 1, wrapper: Wrapper, className: customClassName, containerClassName, containerTestId, circle = false, style: styleProp, ...originalPropsStyleOptions }) {
-  var _a, _b, _c;
-  const contextStyleOptions = import_react3.default.useContext(SkeletonThemeContext);
-  const propsStyleOptions = { ...originalPropsStyleOptions };
-  for (const [key, value] of Object.entries(originalPropsStyleOptions)) {
-    if (typeof value === "undefined") {
-      delete propsStyleOptions[key];
-    }
-  }
-  const styleOptions = {
-    ...contextStyleOptions,
-    ...propsStyleOptions,
-    circle
-  };
-  const style = {
-    ...styleProp,
-    ...styleOptionsToCssProperties(styleOptions)
-  };
-  let className = "react-loading-skeleton";
-  if (customClassName)
-    className += ` ${customClassName}`;
-  const inline = (_a = styleOptions.inline) !== null && _a !== void 0 ? _a : false;
-  const elements = [];
-  const countCeil = Math.ceil(count);
-  for (let i = 0; i < countCeil; i++) {
-    let thisStyle = style;
-    if (countCeil > count && i === countCeil - 1) {
-      const width = (_b = thisStyle.width) !== null && _b !== void 0 ? _b : "100%";
-      const fractionalPart = count % 1;
-      const fractionalWidth = typeof width === "number" ? width * fractionalPart : `calc(${width} * ${fractionalPart})`;
-      thisStyle = { ...thisStyle, width: fractionalWidth };
-    }
-    const skeletonSpan = import_react3.default.createElement("span", { className, style: thisStyle, key: i }, "\u200C");
-    if (inline) {
-      elements.push(skeletonSpan);
-    } else {
-      elements.push(import_react3.default.createElement(
-        import_react3.default.Fragment,
-        { key: i },
-        skeletonSpan,
-        import_react3.default.createElement("br", null)
-      ));
-    }
-  }
-  return import_react3.default.createElement("span", { className: containerClassName, "data-testid": containerTestId, "aria-live": "polite", "aria-busy": (_c = styleOptions.enableAnimation) !== null && _c !== void 0 ? _c : defaultEnableAnimation }, Wrapper ? elements.map((el, i) => import_react3.default.createElement(Wrapper, { key: i }, el)) : elements);
-}
-
-// src/components/TableSkeleton.tsx
-var import_jsx_runtime4 = require("react/jsx-runtime");
-var TableSkeleton = ({
-  disableDefaultStyles = false,
-  customClassNames = {},
-  enableDarkMode = true
-}) => {
-  const [isDarkMode, setIsDarkMode] = (0, import_react4.useState)(false);
-  (0, import_react4.useEffect)(() => {
-    if (enableDarkMode) {
-      const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
-      setIsDarkMode(matchMedia.matches);
-      const handleChange = () => {
-        setIsDarkMode(matchMedia.matches);
-      };
-      matchMedia.addEventListener("change", handleChange);
-      return () => {
-        matchMedia.removeEventListener("change", handleChange);
-      };
-    }
-  }, [enableDarkMode]);
-  const baseContainerClassName = enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 border-gray-700" : "bg-white text-gray-900 border-gray-200";
-  const baseTableClassName = enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-300";
-  const baseThClassName = enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
-  const baseTdClassName = enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
-  const baseTrClassName = (index) => index % 2 === 0 ? enableDarkMode && isDarkMode ? "bg-gray-800" : "bg-white" : enableDarkMode && isDarkMode ? "bg-gray-700" : "bg-gray-50";
-  const containerClassName = disableDefaultStyles ? customClassNames.container || "" : `${baseContainerClassName} px-4 sm:px-6 lg:px-8 ${customClassNames.container || ""}`;
-  const tableClassName = disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} min-w-full divide-y ${customClassNames.table || ""}`;
-  const thClassName = disableDefaultStyles ? customClassNames.th || "" : `${baseThClassName} py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-3 ${customClassNames.th || ""}`;
-  const trClassName = (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
-  const tdClassName = disableDefaultStyles ? customClassNames.td || "" : `${baseTdClassName} whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-3 ${customClassNames.td || ""}`;
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: containerClassName, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "mt-8 flow-root", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("table", { className: tableClassName, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("tr", { children: [
-      Array.from({ length: 4 }).map((_, index) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        "th",
-        {
-          scope: "col",
-          className: thClassName,
-          children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Skeleton, { width: 100 })
-        },
-        `${index + 1}-header`
-      )),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("th", { scope: "col", className: thClassName, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Skeleton, { width: 50 }) })
-    ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("tbody", { children: Array.from({ length: 10 }).map((_, index) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("tr", { className: trClassName(index), children: [
-      Array.from({ length: 4 }).map((_2, colIndex) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        "td",
-        {
-          className: tdClassName,
-          children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Skeleton, { width: 150 })
-        },
-        `${index + 1}-${colIndex + 1}-cell`
-      )),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("td", { className: tdClassName, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Skeleton, { width: 50 }) })
-    ] }, `${index + 1}-row`)) })
-  ] }) }) }) }) });
-};
-var TableSkeleton_default = TableSkeleton;
-
 // src/components/TableComponent.tsx
-var import_jsx_runtime5 = require("react/jsx-runtime");
+var import_jsx_runtime4 = require("react/jsx-runtime");
 function TableComponent({
   columns,
   data,
@@ -493,11 +412,11 @@ function TableComponent({
   onSort,
   formatHeader
 }) {
-  const [isDarkMode, setIsDarkMode] = (0, import_react5.useState)(false);
-  const [expandedCells, setExpandedCells] = (0, import_react5.useState)({});
-  const [headerDropdown, setHeaderDropdown] = (0, import_react5.useState)({});
-  const [hiddenColumns, setHiddenColumns] = (0, import_react5.useState)({});
-  (0, import_react5.useEffect)(() => {
+  const [isDarkMode, setIsDarkMode] = (0, import_react3.useState)(false);
+  const [expandedCells, setExpandedCells] = (0, import_react3.useState)({});
+  const [headerDropdown, setHeaderDropdown] = (0, import_react3.useState)({});
+  const [hiddenColumns, setHiddenColumns] = (0, import_react3.useState)({});
+  (0, import_react3.useEffect)(() => {
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
       setIsDarkMode(matchMedia.matches);
@@ -508,7 +427,7 @@ function TableComponent({
       };
     }
   }, [enableDarkMode]);
-  (0, import_react5.useEffect)(() => {
+  (0, import_react3.useEffect)(() => {
     const handleClickOutside = (event) => {
       for (const key of Object.keys(headerDropdown)) {
         if (headerDropdown[key]) {
@@ -523,10 +442,15 @@ function TableComponent({
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(TableSkeleton_default, { enableDarkMode });
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "p-4 animate-pulse", "aria-busy": "true", "aria-live": "polite", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-6 bg-gray-300 mb-3 rounded" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-4 bg-gray-200 mb-2 rounded" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-4 bg-gray-200 mb-2 rounded" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-4 bg-gray-200 mb-2 rounded" })
+    ] });
   }
   if (!data || data.length === 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(NoContentComponent_default, { ...noContentProps });
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(NoContentComponent_default, { ...noContentProps });
   }
   let filteredData = data;
   if (searchValue) {
@@ -538,7 +462,7 @@ function TableComponent({
     });
   }
   if (filteredData.length === 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(NoContentComponent_default, { ...noContentProps });
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(NoContentComponent_default, { text: "No items found.", name: noContentProps?.name, icon: noContentProps?.icon });
   }
   const handleSort = (prop) => {
     if (sortableProps.includes(prop) && onSort) {
@@ -585,17 +509,17 @@ function TableComponent({
     const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
     return `${baseClass}`;
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(import_jsx_runtime5.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
       "div",
       {
         className: "table-scroll-container pb-6",
         style: { maxHeight: "600px", overflow: "auto" },
-        children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("table", { className: tableClassName, style: { margin: 0, padding: 0 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("thead", { className: theadClassName, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("tr", { children: [
+        children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("table", { className: tableClassName, style: { margin: 0, padding: 0 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("thead", { className: theadClassName, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("tr", { children: [
             displayedColumns.map(({ col, indicator, prop, index }) => {
               if (hiddenColumns[String(prop)]) return null;
-              return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+              return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                 "th",
                 {
                   scope: "col",
@@ -603,8 +527,8 @@ function TableComponent({
                   style: {
                     cursor: sortableProps.includes(prop) ? "pointer" : "default"
                   },
-                  children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+                  children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
                       "div",
                       {
                         className: "flex-1 flex items-center gap-1",
@@ -616,12 +540,12 @@ function TableComponent({
                         tabIndex: 0,
                         children: [
                           formatHeader ? formatHeader(col, String(prop), index) : col,
-                          indicator && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "text-xs text-gray-400", children: indicator })
+                          indicator && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "text-xs text-gray-400", children: indicator })
                         ]
                       }
                     ),
-                    showRemoveColumns && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                    showRemoveColumns && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "relative", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                         "button",
                         {
                           onClick: (_e) => setHeaderDropdown((prev) => {
@@ -636,7 +560,7 @@ function TableComponent({
                           }),
                           className: "p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600",
                           type: "button",
-                          children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                          children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                             "svg",
                             {
                               xmlns: "http://www.w3.org/2000/svg",
@@ -645,7 +569,7 @@ function TableComponent({
                               stroke: "currentColor",
                               className: "w-4 h-4",
                               role: "presentation",
-                              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                              children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                                 "path",
                                 {
                                   strokeLinecap: "round",
@@ -658,12 +582,12 @@ function TableComponent({
                           )
                         }
                       ),
-                      headerDropdown[String(prop)] && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                      headerDropdown[String(prop)] && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                         "div",
                         {
                           id: `header-dropdown-${String(prop)}`,
                           className: "absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50",
-                          children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                          children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                             "button",
                             {
                               onClick: () => {
@@ -689,12 +613,12 @@ function TableComponent({
                 String(prop)
               );
             }),
-            actions && actionTexts && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("th", { scope: "col", className: thClassName(""), children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "sr-only", children: actionTexts.join(", ") }) })
+            actions && actionTexts && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("th", { scope: "col", className: thClassName(""), children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "sr-only", children: actionTexts.join(", ") }) })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("tbody", { className: tbodyClassName, children: paginatedData.map((item, dataIndex) => {
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("tbody", { className: tbodyClassName, children: paginatedData.map((item, dataIndex) => {
             const rowClassNames = `${trClassName(dataIndex)} ${rowOnClick ? "cursor-pointer" : ""}`;
             if (renderRow) {
-              return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+              return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                 "tr",
                 {
                   onClick: rowOnClick ? () => rowOnClick(item) : void 0,
@@ -709,7 +633,7 @@ function TableComponent({
                 `dataIndex-${dataIndex + 1}`
               );
             }
-            return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+            return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
               "tr",
               {
                 onClick: rowOnClick ? () => rowOnClick(item) : void 0,
@@ -748,7 +672,7 @@ function TableComponent({
                         if (!isExpanded && displayArray.length > 5) {
                           displayArray = displayArray.slice(0, 5);
                         }
-                        displayValue = /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+                        displayValue = /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
                           "div",
                           {
                             className: "flex flex-wrap gap-1",
@@ -769,7 +693,7 @@ function TableComponent({
                             role: "button",
                             tabIndex: 0,
                             children: [
-                              displayArray.map((chip, idx) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                              displayArray.map((chip, idx) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                                 "span",
                                 {
                                   className: "inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs",
@@ -777,7 +701,7 @@ function TableComponent({
                                 },
                                 typeof chip === "object" && chip !== null ? JSON.stringify(chip) : `${String(chip)}-${idx}`
                               )),
-                              !isExpanded && value.length > 5 && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
+                              !isExpanded && value.length > 5 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
                                 "span",
                                 {
                                   className: "inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer",
@@ -810,7 +734,7 @@ function TableComponent({
                           }
                         );
                       } else if (typeof value === "string" && value.startsWith("http")) {
-                        displayValue = /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_link.default, { href: value, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                        displayValue = /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_link.default, { href: value, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                           "span",
                           {
                             className: "text-blue-500 hover:underline",
@@ -820,8 +744,6 @@ function TableComponent({
                                 e.stopPropagation();
                               }
                             },
-                            role: "link",
-                            tabIndex: 0,
                             children: isExpanded ? value : trimText(value, 30)
                           }
                         ) });
@@ -835,7 +757,7 @@ function TableComponent({
                     if (!displayValue && !Array.isArray(value)) {
                       displayValue = valToFormat;
                     }
-                    return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                       "td",
                       {
                         className: tdClassName(String(prop)),
@@ -862,7 +784,7 @@ function TableComponent({
                       String(prop)
                     );
                   }),
-                  actions && actionTexts && actionFunctions && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                  actions && actionTexts && actionFunctions && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("td", { children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                     "div",
                     {
                       onClick: (e) => e.stopPropagation(),
@@ -872,7 +794,7 @@ function TableComponent({
                         }
                       },
                       role: "presentation",
-                      children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+                      children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
                         ActionDropdown_default,
                         {
                           item,
@@ -894,7 +816,7 @@ function TableComponent({
         ] })
       }
     ),
-    enablePagination && page !== void 0 && setPage && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+    enablePagination && page !== void 0 && setPage && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
       "div",
       {
         style: {
@@ -909,7 +831,7 @@ function TableComponent({
           boxShadow: "none",
           maxWidth: "90%"
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
           PaginationComponent_default,
           {
             page,
@@ -925,6 +847,143 @@ function TableComponent({
   ] });
 }
 var TableComponent_default = TableComponent;
+
+// src/components/TableSkeleton.tsx
+var import_react5 = require("react");
+
+// node_modules/react-loading-skeleton/dist/index.js
+var import_react4 = __toESM(require("react"), 1);
+var SkeletonThemeContext = import_react4.default.createContext({});
+var defaultEnableAnimation = true;
+function styleOptionsToCssProperties({ baseColor, highlightColor, width, height, borderRadius, circle, direction, duration, enableAnimation = defaultEnableAnimation, customHighlightBackground }) {
+  const style = {};
+  if (direction === "rtl")
+    style["--animation-direction"] = "reverse";
+  if (typeof duration === "number")
+    style["--animation-duration"] = `${duration}s`;
+  if (!enableAnimation)
+    style["--pseudo-element-display"] = "none";
+  if (typeof width === "string" || typeof width === "number")
+    style.width = width;
+  if (typeof height === "string" || typeof height === "number")
+    style.height = height;
+  if (typeof borderRadius === "string" || typeof borderRadius === "number")
+    style.borderRadius = borderRadius;
+  if (circle)
+    style.borderRadius = "50%";
+  if (typeof baseColor !== "undefined")
+    style["--base-color"] = baseColor;
+  if (typeof highlightColor !== "undefined")
+    style["--highlight-color"] = highlightColor;
+  if (typeof customHighlightBackground === "string")
+    style["--custom-highlight-background"] = customHighlightBackground;
+  return style;
+}
+function Skeleton({ count = 1, wrapper: Wrapper, className: customClassName, containerClassName, containerTestId, circle = false, style: styleProp, ...originalPropsStyleOptions }) {
+  var _a, _b, _c;
+  const contextStyleOptions = import_react4.default.useContext(SkeletonThemeContext);
+  const propsStyleOptions = { ...originalPropsStyleOptions };
+  for (const [key, value] of Object.entries(originalPropsStyleOptions)) {
+    if (typeof value === "undefined") {
+      delete propsStyleOptions[key];
+    }
+  }
+  const styleOptions = {
+    ...contextStyleOptions,
+    ...propsStyleOptions,
+    circle
+  };
+  const style = {
+    ...styleProp,
+    ...styleOptionsToCssProperties(styleOptions)
+  };
+  let className = "react-loading-skeleton";
+  if (customClassName)
+    className += ` ${customClassName}`;
+  const inline = (_a = styleOptions.inline) !== null && _a !== void 0 ? _a : false;
+  const elements = [];
+  const countCeil = Math.ceil(count);
+  for (let i = 0; i < countCeil; i++) {
+    let thisStyle = style;
+    if (countCeil > count && i === countCeil - 1) {
+      const width = (_b = thisStyle.width) !== null && _b !== void 0 ? _b : "100%";
+      const fractionalPart = count % 1;
+      const fractionalWidth = typeof width === "number" ? width * fractionalPart : `calc(${width} * ${fractionalPart})`;
+      thisStyle = { ...thisStyle, width: fractionalWidth };
+    }
+    const skeletonSpan = import_react4.default.createElement("span", { className, style: thisStyle, key: i }, "\u200C");
+    if (inline) {
+      elements.push(skeletonSpan);
+    } else {
+      elements.push(import_react4.default.createElement(
+        import_react4.default.Fragment,
+        { key: i },
+        skeletonSpan,
+        import_react4.default.createElement("br", null)
+      ));
+    }
+  }
+  return import_react4.default.createElement("span", { className: containerClassName, "data-testid": containerTestId, "aria-live": "polite", "aria-busy": (_c = styleOptions.enableAnimation) !== null && _c !== void 0 ? _c : defaultEnableAnimation }, Wrapper ? elements.map((el, i) => import_react4.default.createElement(Wrapper, { key: i }, el)) : elements);
+}
+
+// src/components/TableSkeleton.tsx
+var import_jsx_runtime5 = require("react/jsx-runtime");
+var TableSkeleton = ({
+  disableDefaultStyles = false,
+  customClassNames = {},
+  enableDarkMode = true
+}) => {
+  const [isDarkMode, setIsDarkMode] = (0, import_react5.useState)(false);
+  (0, import_react5.useEffect)(() => {
+    if (enableDarkMode) {
+      const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+      setIsDarkMode(matchMedia.matches);
+      const handleChange = () => {
+        setIsDarkMode(matchMedia.matches);
+      };
+      matchMedia.addEventListener("change", handleChange);
+      return () => {
+        matchMedia.removeEventListener("change", handleChange);
+      };
+    }
+  }, [enableDarkMode]);
+  const baseContainerClassName = enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 border-gray-700" : "bg-white text-gray-900 border-gray-200";
+  const baseTableClassName = enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-300";
+  const baseThClassName = enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
+  const baseTdClassName = enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
+  const baseTrClassName = (index) => index % 2 === 0 ? enableDarkMode && isDarkMode ? "bg-gray-800" : "bg-white" : enableDarkMode && isDarkMode ? "bg-gray-700" : "bg-gray-50";
+  const containerClassName = disableDefaultStyles ? customClassNames.container || "" : `${baseContainerClassName} px-4 sm:px-6 lg:px-8 ${customClassNames.container || ""}`;
+  const tableClassName = disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} w-full min-w-full divide-y ${customClassNames.table || ""}`;
+  const thClassName = disableDefaultStyles ? customClassNames.th || "" : `${baseThClassName} py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-3 ${customClassNames.th || ""}`;
+  const trClassName = (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
+  const tdClassName = disableDefaultStyles ? customClassNames.td || "" : `${baseTdClassName} whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-3 ${customClassNames.td || ""}`;
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: containerClassName, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "mt-8 flow-root", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("table", { className: tableClassName, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("tr", { children: [
+      Array.from({ length: 4 }).map((_, index) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+        "th",
+        {
+          scope: "col",
+          className: thClassName,
+          children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { width: 100 }) })
+        },
+        `${index + 1}-header`
+      )),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("th", { scope: "col", className: thClassName, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { width: 50 }) }) })
+    ] }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("tbody", { children: Array.from({ length: 10 }).map((_, index) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("tr", { className: trClassName(index), children: [
+      Array.from({ length: 4 }).map((_2, colIndex) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+        "td",
+        {
+          className: tdClassName,
+          children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { width: 150 }) })
+        },
+        `${index + 1}-${colIndex + 1}-cell`
+      )),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("td", { className: tdClassName, children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { width: 50 }) }) })
+    ] }, `${index + 1}-row`)) })
+  ] }) }) }) }) });
+};
+var TableSkeleton_default = TableSkeleton;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ActionDropdown,

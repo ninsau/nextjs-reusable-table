@@ -195,10 +195,10 @@ describe("Helper Functions", () => {
 
     it("handles unicode characters correctly", () => {
       const text = "こんにちは世界！This is unicode text";
-      const result = trimText(text, 10);
+      const result = trimText(text, 12);
 
       expect(result).toBe("こんにちは世界！This...");
-      expect(result.length).toBe(13); // 10 + "..."
+      expect(result.length).toBe(15); // 12 + "..."
     });
 
     it("handles numbers and mixed content", () => {

@@ -8,7 +8,11 @@ export const formatDate = (date: Date, includeTime = false): string => {
         minute: "2-digit",
       }
     : { year: "numeric", month: "short", day: "numeric" };
-  return new Intl.DateTimeFormat("en-US", options).format(date);
+  try {
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  } catch {
+    return "Invalid Date";
+  }
 };
 
 export const isDateString = (str: string): boolean => {
@@ -36,21 +40,55 @@ export const isDateString = (str: string): boolean => {
   const date = new Date(parsedDate);
   if (Number.isNaN(date.getTime())) return false;
   
-  // Additional validation: ensure the parsed date matches the input string
-  // This catches cases like "2023-02-29" which gets auto-corrected to "2023-03-01"
-  const reconstructed = date.toISOString().substr(0, 10); // YYYY-MM-DD
-  const inputDatePart = str.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})/);
-  if (inputDatePart) {
-    const normalizedInput = inputDatePart[1]
-      .replace(/\b(\d)\b/g, '0$1') // Pad single digits
-      .replace(/[-/]/g, '-'); // Normalize separators
-    if (reconstructed !== normalizedInput) return false;
+  // Additional validation: ensure the parsed date matches the input components (Y, M, D)
+  // This catches cases like "2023-02-29" auto-correcting to "2023-03-01"
+  const ymd = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  const isoWithTime = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+  const mdy = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (ymd || mdy || isoWithTime) {
+    let inputYear: number;
+    let inputMonth: number; // 1-12
+    let inputDay: number;
+    let parsedYear: number;
+    let parsedMonth: number;
+    let parsedDay: number;
+    if (isoWithTime) {
+      // ISO with time is UTC-based comparison
+      inputYear = Number(isoWithTime[1]);
+      inputMonth = Number(isoWithTime[2]);
+      inputDay = Number(isoWithTime[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else if (ymd) {
+      // YYYY-M-D compare with UTC parts as many parsers normalize to UTC for ISO-like dates
+      inputYear = Number(ymd[1]);
+      inputMonth = Number(ymd[2]);
+      inputDay = Number(ymd[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else {
+      // M/D/YYYY compare with local parts
+      inputMonth = Number(mdy?.[1]);
+      inputDay = Number(mdy?.[2]);
+      inputYear = Number(mdy?.[3]);
+      parsedYear = date.getFullYear();
+      parsedMonth = date.getMonth() + 1;
+      parsedDay = date.getDate();
+    }
+    if (parsedYear !== inputYear || parsedMonth !== inputMonth || parsedDay !== inputDay) {
+      return false;
+    }
   }
   
   // Reasonable date range check (1900 to 2100)
-  const year = date.getFullYear();
+  const year = ymd || isoWithTime ? date.getUTCFullYear() : date.getFullYear();
   return year >= 1900 && year <= 2100;
 };
 
-export const trimText = (text: string, maxLength: number): string =>
-  text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+export const trimText = (text: string, maxLength: number): string => {
+  if (maxLength <= 0) return "...";
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+};

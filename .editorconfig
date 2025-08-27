@@ -1,0 +1,65 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# TypeScript/JavaScript files
+[*.{ts,tsx,js,jsx}]
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# YAML files
+[*.{yml,yaml}]
+indent_size = 2
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+
+# Package.json
+[package.json]
+indent_size = 2
+
+# Biome config
+[biome.json]
+indent_size = 2
+
+# Tailwind config
+[tailwind.config.js]
+indent_size = 2
+
+# Jest config
+[jest.config.js]
+indent_size = 2
+
+# PostCSS config
+[postcss.config.js]
+indent_size = 2
+
+# Tsup config
+[tsup.config.ts]
+indent_size = 2
+
+# TypeScript config
+[tsconfig.json]
+indent_size = 2
+
+# GitHub workflows
+[.github/workflows/*.yml]
+indent_size = 2
+
+# GitHub templates
+[.github/**/*.md]
+trim_trailing_whitespace = false

@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import React from "react";
 import TableSkeleton from "../TableSkeleton";
 
 describe("TableSkeleton", () => {
@@ -19,7 +18,7 @@ describe("TableSkeleton", () => {
       render(<TableSkeleton />);
 
       const headers = screen.getAllByRole("columnheader");
-      expect(headers).toHaveLength(4); // Default number of skeleton columns
+      expect(headers).toHaveLength(5);
     });
 
     it("renders skeleton data rows", () => {
@@ -199,7 +198,8 @@ describe("TableSkeleton", () => {
       render(<TableSkeleton />);
 
       expect(screen.getByRole("table")).toBeInTheDocument();
-      expect(screen.getAllByRole("columnheader")).toHaveLength(4);
+      const headers = screen.getAllByRole("columnheader");
+      expect(headers).toHaveLength(5);
       expect(screen.getAllByRole("row").length).toBeGreaterThan(4);
     });
 

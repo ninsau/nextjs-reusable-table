@@ -7,7 +7,6 @@ import { formatDate, isDateString, trimText } from "../utils/helpers";
 import ActionDropdown from "./ActionDropdown";
 import NoContentComponent from "./NoContentComponent";
 import PaginationComponent from "./PaginationComponent";
-import TableSkeleton from "./TableSkeleton";
 
 function TableComponent<T>({
   columns,
@@ -74,7 +73,14 @@ function TableComponent<T>({
   }, [headerDropdown]);
 
   if (loading) {
-    return <TableSkeleton enableDarkMode={enableDarkMode} />;
+    return (
+      <div className="p-4 animate-pulse" aria-busy="true" aria-live="polite">
+        <div className="h-6 bg-gray-300 mb-3 rounded" />
+        <div className="h-4 bg-gray-200 mb-2 rounded" />
+        <div className="h-4 bg-gray-200 mb-2 rounded" />
+        <div className="h-4 bg-gray-200 mb-2 rounded" />
+      </div>
+    );
   }
 
   if (!data || data.length === 0) {
@@ -92,7 +98,7 @@ function TableComponent<T>({
   }
 
   if (filteredData.length === 0) {
-    return <NoContentComponent {...noContentProps} />;
+    return <NoContentComponent text="No items found." name={noContentProps?.name} icon={noContentProps?.icon} />;
   }
 
   const handleSort = (prop: string) => {
@@ -454,8 +460,6 @@ function TableComponent<T>({
                                 e.stopPropagation();
                               }
                             }}
-                            role="link"
-                            tabIndex={0}
                           >
                             {isExpanded ? value : trimText(value, 30)}
                           </span>

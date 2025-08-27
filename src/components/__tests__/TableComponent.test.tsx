@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import React from "react";
+// React import not needed for tests using JSX with TS config
 import TableComponent from "../TableComponent";
 
 // Mock data for testing
@@ -87,7 +87,7 @@ describe("TableComponent", () => {
       render(<TableComponent {...defaultProps} searchValue="nonexistent" />);
 
       expect(screen.queryByRole("table")).not.toBeInTheDocument();
-      expect(screen.getByText("No data available")).toBeInTheDocument();
+      expect(screen.getByText("No items found.")).toBeInTheDocument();
     });
 
     it("searches across all columns", () => {
@@ -122,8 +122,9 @@ describe("TableComponent", () => {
 
       const nameHeader = screen
         .getByText("Name")
-        .closest("div[role='button']")!;
-      await user.click(nameHeader);
+        .closest("div[role='button']");
+      expect(nameHeader).not.toBeNull();
+      await user.click(nameHeader as HTMLElement);
 
       expect(sortableProps.onSort).toHaveBeenCalledWith("name");
     });
@@ -134,7 +135,8 @@ describe("TableComponent", () => {
 
       const nameHeader = screen
         .getByText("Name")
-        .closest("div[role='button']")!;
+        .closest("div[role='button']");
+      expect(nameHeader).not.toBeNull();
       (nameHeader as HTMLElement).focus();
       await user.keyboard("{Enter}");
 
@@ -182,8 +184,9 @@ describe("TableComponent", () => {
 
       render(<TableComponent {...defaultProps} rowOnClick={rowOnClick} />);
 
-      const firstRow = screen.getByText("John Doe").closest("tr")!;
-      await user.click(firstRow);
+      const firstRow = screen.getByText("John Doe").closest("tr");
+      expect(firstRow).not.toBeNull();
+      await user.click(firstRow as HTMLElement);
 
       expect(rowOnClick).toHaveBeenCalledWith(mockUsers[0]);
     });
@@ -253,8 +256,9 @@ describe("TableComponent", () => {
 
       render(
         <TableComponent
-          {...defaultProps}
+          columns={["ID", "Name", "Email", "Join Date", "Status", "Tags", "Website"]}
           data={testData}
+          props={["id", "name", "email", "joinDate", "active", "tags", "website"]}
           formatValue={formatValue}
         />
       );
@@ -277,7 +281,7 @@ describe("TableComponent", () => {
         },
       ];
 
-      const formatValue = jest.fn((value, prop, _item) => {
+      const formatValue = jest.fn((_value, prop, _item) => {
         if (prop === "joinDate") {
           return null; // Fall back to default
         }
@@ -286,14 +290,15 @@ describe("TableComponent", () => {
 
       render(
         <TableComponent
-          {...defaultProps}
+          columns={["ID", "Name", "Email", "Join Date", "Status", "Tags", "Website"]}
           data={testData}
+          props={["id", "name", "email", "joinDate", "active", "tags", "website"]}
           formatValue={formatValue}
         />
       );
 
       // Should fall back to default date formatting
-      expect(screen.getByText(/Jan 15, 2024/)).toBeInTheDocument();
+      expect(screen.getByText(/Jan 15, 2024.*10:30/)).toBeInTheDocument();
       expect(formatValue).toHaveBeenCalledWith("2024-01-15T10:30:00Z", "joinDate", testData[0]);
     });
 
@@ -337,7 +342,9 @@ describe("TableComponent", () => {
     it("shows pagination controls when enabled", () => {
       render(<TableComponent {...paginationProps} />);
 
-      expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
+      expect(screen.getByText((_content, element) => {
+        return element?.textContent === 'Page 1 of 2';
+      })).toBeInTheDocument();
     });
 
     it("shows only items for current page", () => {

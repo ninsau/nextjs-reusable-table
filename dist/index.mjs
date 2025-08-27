@@ -34,9 +34,16 @@ var ActionDropdown = ({
         setIsDropdownOpen(false);
       }
     };
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        setIsDropdownOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscapeKey);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
     };
   }, []);
   useEffect(() => {
@@ -102,6 +109,13 @@ var ActionDropdown = ({
         onClick: toggleDropdown,
         className: buttonClassName,
         type: "button",
+        "aria-label": "Actions",
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleDropdown();
+          }
+        },
         children: /* @__PURE__ */ jsx(
           "svg",
           {
@@ -132,36 +146,40 @@ var ActionDropdown_default = ActionDropdown;
 // src/components/NoContentComponent.tsx
 import { jsx as jsx2, jsxs as jsxs2 } from "react/jsx-runtime";
 var NoContentComponent = ({
-  name = "items",
+  name = "No data",
   text,
   icon
-}) => /* @__PURE__ */ jsxs2("div", { className: "text-center py-10", children: [
-  icon ? icon : /* @__PURE__ */ jsx2(
+}) => /* @__PURE__ */ jsxs2("div", { className: "flex flex-col items-center justify-center space-y-4 text-center py-10", children: [
+  icon === void 0 ? /* @__PURE__ */ jsxs2(
     "svg",
     {
-      className: "mx-auto h-12 w-12 text-gray-400",
+      className: "mx-auto h-16 w-16 text-gray-400",
       fill: "none",
       viewBox: "0 0 24 24",
       stroke: "currentColor",
-      role: "presentation",
-      children: /* @__PURE__ */ jsx2(
-        "path",
-        {
-          strokeLinecap: "round",
-          strokeLinejoin: "round",
-          strokeWidth: 2,
-          d: "M13 10V3L4 14h7v7l9-11h-7z"
-        }
-      )
+      role: "img",
+      "aria-label": name,
+      children: [
+        /* @__PURE__ */ jsx2("title", { children: name }),
+        /* @__PURE__ */ jsx2(
+          "path",
+          {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            strokeWidth: 2,
+            d: "M13 10V3L4 14h7v7l9-11h-7z"
+          }
+        )
+      ]
     }
-  ),
-  /* @__PURE__ */ jsx2("p", { className: "text-gray-500", children: text ? text : `No ${name} found.` })
+  ) : icon,
+  /* @__PURE__ */ jsx2("p", { className: "text-gray-500 text-lg", children: text !== void 0 ? text : "No data available" })
 ] });
 var NoContentComponent_default = NoContentComponent;
 
 // src/components/TableComponent.tsx
 import Link from "next/link";
-import { useEffect as useEffect4, useState as useState4 } from "react";
+import { useEffect as useEffect3, useState as useState3 } from "react";
 
 // src/utils/helpers.ts
 var formatDate = (date, includeTime = false) => {
@@ -172,7 +190,11 @@ var formatDate = (date, includeTime = false) => {
     hour: "2-digit",
     minute: "2-digit"
   } : { year: "numeric", month: "short", day: "numeric" };
-  return new Intl.DateTimeFormat("en-US", options).format(date);
+  try {
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  } catch {
+    return "Invalid Date";
+  }
 };
 var isDateString = (str) => {
   if (typeof str !== "string" || str.length < 8) return false;
@@ -195,16 +217,50 @@ var isDateString = (str) => {
   if (Number.isNaN(parsedDate)) return false;
   const date = new Date(parsedDate);
   if (Number.isNaN(date.getTime())) return false;
-  const reconstructed = date.toISOString().substr(0, 10);
-  const inputDatePart = str.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})/);
-  if (inputDatePart) {
-    const normalizedInput = inputDatePart[1].replace(/\b(\d)\b/g, "0$1").replace(/[-/]/g, "-");
-    if (reconstructed !== normalizedInput) return false;
+  const ymd = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  const isoWithTime = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+  const mdy = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (ymd || mdy || isoWithTime) {
+    let inputYear;
+    let inputMonth;
+    let inputDay;
+    let parsedYear;
+    let parsedMonth;
+    let parsedDay;
+    if (isoWithTime) {
+      inputYear = Number(isoWithTime[1]);
+      inputMonth = Number(isoWithTime[2]);
+      inputDay = Number(isoWithTime[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else if (ymd) {
+      inputYear = Number(ymd[1]);
+      inputMonth = Number(ymd[2]);
+      inputDay = Number(ymd[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else {
+      inputMonth = Number(mdy?.[1]);
+      inputDay = Number(mdy?.[2]);
+      inputYear = Number(mdy?.[3]);
+      parsedYear = date.getFullYear();
+      parsedMonth = date.getMonth() + 1;
+      parsedDay = date.getDate();
+    }
+    if (parsedYear !== inputYear || parsedMonth !== inputMonth || parsedDay !== inputDay) {
+      return false;
+    }
   }
-  const year = date.getFullYear();
+  const year = ymd || isoWithTime ? date.getUTCFullYear() : date.getFullYear();
   return year >= 1900 && year <= 2100;
 };
-var trimText = (text, maxLength) => text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+var trimText = (text, maxLength) => {
+  if (maxLength <= 0) return "...";
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+};
 
 // src/components/PaginationComponent.tsx
 import { useEffect as useEffect2, useState as useState2 } from "react";
@@ -229,13 +285,13 @@ var PaginationComponent = ({
       };
     }
   }, [enableDarkMode]);
-  const baseButtonClassName = disableDefaultStyles ? customClassNames.button || "" : `px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}`;
-  const disabledButtonClassName = disableDefaultStyles ? customClassNames.buttonDisabled || "" : `opacity-50 cursor-not-allowed ${baseButtonClassName}`;
-  const pageInfoClassName = disableDefaultStyles ? customClassNames.pageInfo || "" : `px-3 py-1 mx-1 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"}`;
+  const baseButtonClassName = disableDefaultStyles ? customClassNames.button || "" : `px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"} ${customClassNames.button || ""}`;
+  const disabledButtonClassName = disableDefaultStyles ? customClassNames.buttonDisabled || "" : `opacity-50 cursor-not-allowed px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"} ${customClassNames.buttonDisabled || ""}`;
+  const pageInfoClassName = disableDefaultStyles ? customClassNames.pageInfo || "" : `px-3 py-1 mx-1 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"} ${customClassNames.pageInfo || ""}`;
   return /* @__PURE__ */ jsxs3(
     "div",
     {
-      className: disableDefaultStyles ? customClassNames.container || "" : "flex justify-center items-center mt-4",
+      className: disableDefaultStyles ? customClassNames.container || "" : `flex justify-center items-center mt-4 ${customClassNames.container || ""}`,
       children: [
         /* @__PURE__ */ jsx3(
           "button",
@@ -266,9 +322,9 @@ var PaginationComponent = ({
         /* @__PURE__ */ jsx3(
           "button",
           {
-            disabled: page === totalPages,
+            disabled: page >= totalPages || totalPages <= 0,
             onClick: () => setPage(page + 1),
-            className: page === totalPages ? disabledButtonClassName : baseButtonClassName,
+            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName,
             type: "button",
             children: "Next"
           }
@@ -276,9 +332,9 @@ var PaginationComponent = ({
         /* @__PURE__ */ jsx3(
           "button",
           {
-            disabled: page === totalPages,
+            disabled: page >= totalPages || totalPages <= 0,
             onClick: () => setPage(totalPages),
-            className: page === totalPages ? disabledButtonClassName : baseButtonClassName,
+            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName,
             type: "button",
             children: "Last"
           }
@@ -289,8 +345,472 @@ var PaginationComponent = ({
 };
 var PaginationComponent_default = PaginationComponent;
 
+// src/components/TableComponent.tsx
+import { Fragment, jsx as jsx4, jsxs as jsxs4 } from "react/jsx-runtime";
+function TableComponent({
+  columns,
+  data,
+  props,
+  actions,
+  actionTexts,
+  loading,
+  actionFunctions,
+  searchValue,
+  disableDefaultStyles = false,
+  customClassNames = {},
+  renderRow,
+  rowOnClick,
+  enableDarkMode = true,
+  enablePagination = false,
+  page = 1,
+  setPage,
+  itemsPerPage = 10,
+  totalPages,
+  sortableProps = [],
+  formatValue,
+  noContentProps,
+  showRemoveColumns = false,
+  onSort,
+  formatHeader
+}) {
+  const [isDarkMode, setIsDarkMode] = useState3(false);
+  const [expandedCells, setExpandedCells] = useState3({});
+  const [headerDropdown, setHeaderDropdown] = useState3({});
+  const [hiddenColumns, setHiddenColumns] = useState3({});
+  useEffect3(() => {
+    if (enableDarkMode) {
+      const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
+      setIsDarkMode(matchMedia.matches);
+      const handleChange = () => setIsDarkMode(matchMedia.matches);
+      matchMedia.addEventListener("change", handleChange);
+      return () => {
+        matchMedia.removeEventListener("change", handleChange);
+      };
+    }
+  }, [enableDarkMode]);
+  useEffect3(() => {
+    const handleClickOutside = (event) => {
+      for (const key of Object.keys(headerDropdown)) {
+        if (headerDropdown[key]) {
+          const element = document.getElementById(`header-dropdown-${key}`);
+          if (element && !element.contains(event.target)) {
+            setHeaderDropdown((prev) => ({ ...prev, [key]: false }));
+          }
+        }
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [headerDropdown]);
+  if (loading) {
+    return /* @__PURE__ */ jsxs4("div", { className: "p-4 animate-pulse", "aria-busy": "true", "aria-live": "polite", children: [
+      /* @__PURE__ */ jsx4("div", { className: "h-6 bg-gray-300 mb-3 rounded" }),
+      /* @__PURE__ */ jsx4("div", { className: "h-4 bg-gray-200 mb-2 rounded" }),
+      /* @__PURE__ */ jsx4("div", { className: "h-4 bg-gray-200 mb-2 rounded" }),
+      /* @__PURE__ */ jsx4("div", { className: "h-4 bg-gray-200 mb-2 rounded" })
+    ] });
+  }
+  if (!data || data.length === 0) {
+    return /* @__PURE__ */ jsx4(NoContentComponent_default, { ...noContentProps });
+  }
+  let filteredData = data;
+  if (searchValue) {
+    filteredData = data.filter((item) => {
+      return props.some((prop) => {
+        const value = item[prop];
+        return String(value).toLowerCase().includes(searchValue.toLowerCase());
+      });
+    });
+  }
+  if (filteredData.length === 0) {
+    return /* @__PURE__ */ jsx4(NoContentComponent_default, { text: "No items found.", name: noContentProps?.name, icon: noContentProps?.icon });
+  }
+  const handleSort = (prop) => {
+    if (sortableProps.includes(prop) && onSort) {
+      onSort(prop);
+    }
+  };
+  const displayedColumns = columns.map((col, i) => {
+    return {
+      col,
+      indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
+      prop: props[i],
+      index: i
+    };
+  });
+  const sortedData = filteredData;
+  let paginatedData = sortedData;
+  const calculatedTotalPages = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
+  if (enablePagination) {
+    if (totalPages !== void 0) {
+      paginatedData = sortedData;
+    } else {
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      paginatedData = sortedData.slice(startIndex, endIndex);
+    }
+    if (page > calculatedTotalPages && setPage) {
+      setPage(calculatedTotalPages);
+    }
+  }
+  const baseTableClassName = !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "";
+  const baseTheadClassName = !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "";
+  const baseTbodyClassName = !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "";
+  const baseTrClassName = (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "";
+  const baseTdClassName = !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "";
+  const tableClassName = disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`;
+  const theadClassName = disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
+  const tbodyClassName = disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
+  const thClassName = (_prop) => {
+    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
+    return `${baseClass}`;
+  };
+  const trClassName = (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
+  const tdClassName = (_prop) => {
+    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
+    return `${baseClass}`;
+  };
+  return /* @__PURE__ */ jsxs4(Fragment, { children: [
+    /* @__PURE__ */ jsx4(
+      "div",
+      {
+        className: "table-scroll-container pb-6",
+        style: { maxHeight: "600px", overflow: "auto" },
+        children: /* @__PURE__ */ jsxs4("table", { className: tableClassName, style: { margin: 0, padding: 0 }, children: [
+          /* @__PURE__ */ jsx4("thead", { className: theadClassName, children: /* @__PURE__ */ jsxs4("tr", { children: [
+            displayedColumns.map(({ col, indicator, prop, index }) => {
+              if (hiddenColumns[String(prop)]) return null;
+              return /* @__PURE__ */ jsx4(
+                "th",
+                {
+                  scope: "col",
+                  className: thClassName(String(prop)),
+                  style: {
+                    cursor: sortableProps.includes(prop) ? "pointer" : "default"
+                  },
+                  children: /* @__PURE__ */ jsxs4("div", { className: "flex items-center", children: [
+                    /* @__PURE__ */ jsxs4(
+                      "div",
+                      {
+                        className: "flex-1 flex items-center gap-1",
+                        onClick: () => handleSort(String(prop)),
+                        onKeyDown: (e) => {
+                          if (e.key === "Enter") handleSort(String(prop));
+                        },
+                        role: "button",
+                        tabIndex: 0,
+                        children: [
+                          formatHeader ? formatHeader(col, String(prop), index) : col,
+                          indicator && /* @__PURE__ */ jsx4("span", { className: "text-xs text-gray-400", children: indicator })
+                        ]
+                      }
+                    ),
+                    showRemoveColumns && /* @__PURE__ */ jsxs4("div", { className: "relative", children: [
+                      /* @__PURE__ */ jsx4(
+                        "button",
+                        {
+                          onClick: (_e) => setHeaderDropdown((prev) => {
+                            const newState = {};
+                            for (const key of Object.keys(prev)) {
+                              newState[key] = false;
+                            }
+                            return {
+                              ...newState,
+                              [String(prop)]: !prev[String(prop)]
+                            };
+                          }),
+                          className: "p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600",
+                          type: "button",
+                          children: /* @__PURE__ */ jsx4(
+                            "svg",
+                            {
+                              xmlns: "http://www.w3.org/2000/svg",
+                              fill: "none",
+                              viewBox: "0 0 24 24",
+                              stroke: "currentColor",
+                              className: "w-4 h-4",
+                              role: "presentation",
+                              children: /* @__PURE__ */ jsx4(
+                                "path",
+                                {
+                                  strokeLinecap: "round",
+                                  strokeLinejoin: "round",
+                                  strokeWidth: 2,
+                                  d: "M12 6h.01M12 12h.01M12 18h.01"
+                                }
+                              )
+                            }
+                          )
+                        }
+                      ),
+                      headerDropdown[String(prop)] && /* @__PURE__ */ jsx4(
+                        "div",
+                        {
+                          id: `header-dropdown-${String(prop)}`,
+                          className: "absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50",
+                          children: /* @__PURE__ */ jsx4(
+                            "button",
+                            {
+                              onClick: () => {
+                                setHiddenColumns((prev) => ({
+                                  ...prev,
+                                  [String(prop)]: !prev[String(prop)]
+                                }));
+                                setHeaderDropdown((prev) => ({
+                                  ...prev,
+                                  [String(prop)]: false
+                                }));
+                              },
+                              className: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left",
+                              type: "button",
+                              children: hiddenColumns[String(prop)] ? "Unhide Column" : "Remove Column"
+                            }
+                          )
+                        }
+                      )
+                    ] })
+                  ] })
+                },
+                String(prop)
+              );
+            }),
+            actions && actionTexts && /* @__PURE__ */ jsx4("th", { scope: "col", className: thClassName(""), children: /* @__PURE__ */ jsx4("span", { className: "sr-only", children: actionTexts.join(", ") }) })
+          ] }) }),
+          /* @__PURE__ */ jsx4("tbody", { className: tbodyClassName, children: paginatedData.map((item, dataIndex) => {
+            const rowClassNames = `${trClassName(dataIndex)} ${rowOnClick ? "cursor-pointer" : ""}`;
+            if (renderRow) {
+              return /* @__PURE__ */ jsx4(
+                "tr",
+                {
+                  onClick: rowOnClick ? () => rowOnClick(item) : void 0,
+                  onKeyDown: (e) => {
+                    if (e.key === "Enter" && rowOnClick) {
+                      rowOnClick(item);
+                    }
+                  },
+                  className: rowClassNames,
+                  children: renderRow(item, dataIndex)
+                },
+                `dataIndex-${dataIndex + 1}`
+              );
+            }
+            return /* @__PURE__ */ jsxs4(
+              "tr",
+              {
+                onClick: rowOnClick ? () => rowOnClick(item) : void 0,
+                onKeyDown: (e) => {
+                  if (e.key === "Enter" && rowOnClick) {
+                    rowOnClick(item);
+                  }
+                },
+                className: rowClassNames,
+                children: [
+                  props.map((prop) => {
+                    if (hiddenColumns[String(prop)]) return null;
+                    let value = item[prop];
+                    if (value === null || value === void 0 || value === "") {
+                      value = "-";
+                    }
+                    const cellKey = `${dataIndex}-${String(prop)}`;
+                    const isExpanded = expandedCells[cellKey];
+                    let displayValue;
+                    let valToFormat = String(value);
+                    if (formatValue) {
+                      const customFormatted = formatValue(
+                        valToFormat,
+                        String(prop),
+                        item
+                      );
+                      if (customFormatted !== void 0 && customFormatted !== null) {
+                        displayValue = customFormatted;
+                      }
+                    }
+                    if (displayValue === void 0) {
+                      if (typeof value === "string" && isDateString(value)) {
+                        valToFormat = formatDate(new Date(value), true);
+                      } else if (Array.isArray(value)) {
+                        let displayArray = value;
+                        if (!isExpanded && displayArray.length > 5) {
+                          displayArray = displayArray.slice(0, 5);
+                        }
+                        displayValue = /* @__PURE__ */ jsxs4(
+                          "div",
+                          {
+                            className: "flex flex-wrap gap-1",
+                            style: {
+                              maxWidth: "200px",
+                              overflowX: "auto"
+                            },
+                            onClick: (e) => e.stopPropagation(),
+                            onKeyDown: (e) => {
+                              if (e.key === "Enter") {
+                                e.stopPropagation();
+                                setExpandedCells((prev) => ({
+                                  ...prev,
+                                  [cellKey]: !prev[cellKey]
+                                }));
+                              }
+                            },
+                            role: "button",
+                            tabIndex: 0,
+                            children: [
+                              displayArray.map((chip, idx) => /* @__PURE__ */ jsx4(
+                                "span",
+                                {
+                                  className: "inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs",
+                                  children: trimText(String(chip), 20)
+                                },
+                                typeof chip === "object" && chip !== null ? JSON.stringify(chip) : `${String(chip)}-${idx}`
+                              )),
+                              !isExpanded && value.length > 5 && /* @__PURE__ */ jsxs4(
+                                "span",
+                                {
+                                  className: "inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer",
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    setExpandedCells((prev) => ({
+                                      ...prev,
+                                      [cellKey]: true
+                                    }));
+                                  },
+                                  onKeyDown: (e) => {
+                                    if (e.key === "Enter") {
+                                      e.stopPropagation();
+                                      setExpandedCells((prev) => ({
+                                        ...prev,
+                                        [cellKey]: true
+                                      }));
+                                    }
+                                  },
+                                  role: "button",
+                                  tabIndex: 0,
+                                  children: [
+                                    "+",
+                                    value.length - 5,
+                                    " more"
+                                  ]
+                                }
+                              )
+                            ]
+                          }
+                        );
+                      } else if (typeof value === "string" && value.startsWith("http")) {
+                        displayValue = /* @__PURE__ */ jsx4(Link, { href: value, children: /* @__PURE__ */ jsx4(
+                          "span",
+                          {
+                            className: "text-blue-500 hover:underline",
+                            onClick: (e) => e.stopPropagation(),
+                            onKeyDown: (e) => {
+                              if (e.key === "Enter") {
+                                e.stopPropagation();
+                              }
+                            },
+                            children: isExpanded ? value : trimText(value, 30)
+                          }
+                        ) });
+                      } else {
+                        if (!Array.isArray(value) && !isExpanded) {
+                          valToFormat = trimText(valToFormat, 30);
+                        }
+                        displayValue = valToFormat;
+                      }
+                    }
+                    if (!displayValue && !Array.isArray(value)) {
+                      displayValue = valToFormat;
+                    }
+                    return /* @__PURE__ */ jsx4(
+                      "td",
+                      {
+                        className: tdClassName(String(prop)),
+                        onClick: (e) => {
+                          if (!rowOnClick) {
+                            e.stopPropagation();
+                            setExpandedCells((prev) => ({
+                              ...prev,
+                              [cellKey]: !prev[cellKey]
+                            }));
+                          }
+                        },
+                        onKeyDown: (e) => {
+                          if (e.key === "Enter") {
+                            e.stopPropagation();
+                            setExpandedCells((prev) => ({
+                              ...prev,
+                              [cellKey]: !prev[cellKey]
+                            }));
+                          }
+                        },
+                        children: displayValue
+                      },
+                      String(prop)
+                    );
+                  }),
+                  actions && actionTexts && actionFunctions && /* @__PURE__ */ jsx4("td", { children: /* @__PURE__ */ jsx4(
+                    "div",
+                    {
+                      onClick: (e) => e.stopPropagation(),
+                      onKeyDown: (e) => {
+                        if (e.key === "Enter") {
+                          e.stopPropagation();
+                        }
+                      },
+                      role: "presentation",
+                      children: /* @__PURE__ */ jsx4(
+                        ActionDropdown_default,
+                        {
+                          item,
+                          index: dataIndex,
+                          actionTexts,
+                          actionFunctions,
+                          disableDefaultStyles,
+                          customClassNames,
+                          enableDarkMode
+                        }
+                      )
+                    }
+                  ) })
+                ]
+              },
+              `dataIndex-${dataIndex + 1}`
+            );
+          }) })
+        ] })
+      }
+    ),
+    enablePagination && page !== void 0 && setPage && /* @__PURE__ */ jsx4(
+      "div",
+      {
+        style: {
+          position: "fixed",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 50,
+          background: "transparent",
+          padding: "0.75rem 1rem",
+          borderRadius: "0.5rem",
+          boxShadow: "none",
+          maxWidth: "90%"
+        },
+        children: /* @__PURE__ */ jsx4(
+          PaginationComponent_default,
+          {
+            page,
+            setPage,
+            totalPages: calculatedTotalPages,
+            disableDefaultStyles,
+            customClassNames: customClassNames.pagination,
+            enableDarkMode
+          }
+        )
+      }
+    )
+  ] });
+}
+var TableComponent_default = TableComponent;
+
 // src/components/TableSkeleton.tsx
-import { useEffect as useEffect3, useState as useState3 } from "react";
+import { useEffect as useEffect4, useState as useState4 } from "react";
 
 // node_modules/react-loading-skeleton/dist/index.js
 import React from "react";
@@ -368,14 +888,14 @@ function Skeleton({ count = 1, wrapper: Wrapper, className: customClassName, con
 }
 
 // src/components/TableSkeleton.tsx
-import { jsx as jsx4, jsxs as jsxs4 } from "react/jsx-runtime";
+import { jsx as jsx5, jsxs as jsxs5 } from "react/jsx-runtime";
 var TableSkeleton = ({
   disableDefaultStyles = false,
   customClassNames = {},
   enableDarkMode = true
 }) => {
-  const [isDarkMode, setIsDarkMode] = useState3(false);
-  useEffect3(() => {
+  const [isDarkMode, setIsDarkMode] = useState4(false);
+  useEffect4(() => {
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
       setIsDarkMode(matchMedia.matches);
@@ -394,498 +914,37 @@ var TableSkeleton = ({
   const baseTdClassName = enableDarkMode && isDarkMode ? "text-gray-300" : "text-gray-900";
   const baseTrClassName = (index) => index % 2 === 0 ? enableDarkMode && isDarkMode ? "bg-gray-800" : "bg-white" : enableDarkMode && isDarkMode ? "bg-gray-700" : "bg-gray-50";
   const containerClassName = disableDefaultStyles ? customClassNames.container || "" : `${baseContainerClassName} px-4 sm:px-6 lg:px-8 ${customClassNames.container || ""}`;
-  const tableClassName = disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} min-w-full divide-y ${customClassNames.table || ""}`;
+  const tableClassName = disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} w-full min-w-full divide-y ${customClassNames.table || ""}`;
   const thClassName = disableDefaultStyles ? customClassNames.th || "" : `${baseThClassName} py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-3 ${customClassNames.th || ""}`;
   const trClassName = (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
   const tdClassName = disableDefaultStyles ? customClassNames.td || "" : `${baseTdClassName} whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-3 ${customClassNames.td || ""}`;
-  return /* @__PURE__ */ jsx4("div", { className: containerClassName, children: /* @__PURE__ */ jsx4("div", { className: "mt-8 flow-root", children: /* @__PURE__ */ jsx4("div", { className: "-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8", children: /* @__PURE__ */ jsx4("div", { className: "inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8", children: /* @__PURE__ */ jsxs4("table", { className: tableClassName, children: [
-    /* @__PURE__ */ jsx4("thead", { children: /* @__PURE__ */ jsxs4("tr", { children: [
-      Array.from({ length: 4 }).map((_, index) => /* @__PURE__ */ jsx4(
+  return /* @__PURE__ */ jsx5("div", { className: containerClassName, children: /* @__PURE__ */ jsx5("div", { className: "mt-8 flow-root", children: /* @__PURE__ */ jsx5("div", { className: "-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8", children: /* @__PURE__ */ jsx5("div", { className: "inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8", children: /* @__PURE__ */ jsxs5("table", { className: tableClassName, children: [
+    /* @__PURE__ */ jsx5("thead", { children: /* @__PURE__ */ jsxs5("tr", { children: [
+      Array.from({ length: 4 }).map((_, index) => /* @__PURE__ */ jsx5(
         "th",
         {
           scope: "col",
           className: thClassName,
-          children: /* @__PURE__ */ jsx4(Skeleton, { width: 100 })
+          children: /* @__PURE__ */ jsx5("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ jsx5(Skeleton, { width: 100 }) })
         },
         `${index + 1}-header`
       )),
-      /* @__PURE__ */ jsx4("th", { scope: "col", className: thClassName, children: /* @__PURE__ */ jsx4(Skeleton, { width: 50 }) })
+      /* @__PURE__ */ jsx5("th", { scope: "col", className: thClassName, children: /* @__PURE__ */ jsx5("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ jsx5(Skeleton, { width: 50 }) }) })
     ] }) }),
-    /* @__PURE__ */ jsx4("tbody", { children: Array.from({ length: 10 }).map((_, index) => /* @__PURE__ */ jsxs4("tr", { className: trClassName(index), children: [
-      Array.from({ length: 4 }).map((_2, colIndex) => /* @__PURE__ */ jsx4(
+    /* @__PURE__ */ jsx5("tbody", { children: Array.from({ length: 10 }).map((_, index) => /* @__PURE__ */ jsxs5("tr", { className: trClassName(index), children: [
+      Array.from({ length: 4 }).map((_2, colIndex) => /* @__PURE__ */ jsx5(
         "td",
         {
           className: tdClassName,
-          children: /* @__PURE__ */ jsx4(Skeleton, { width: 150 })
+          children: /* @__PURE__ */ jsx5("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ jsx5(Skeleton, { width: 150 }) })
         },
         `${index + 1}-${colIndex + 1}-cell`
       )),
-      /* @__PURE__ */ jsx4("td", { className: tdClassName, children: /* @__PURE__ */ jsx4(Skeleton, { width: 50 }) })
+      /* @__PURE__ */ jsx5("td", { className: tdClassName, children: /* @__PURE__ */ jsx5("div", { className: "animate-pulse bg-gray-300", children: /* @__PURE__ */ jsx5(Skeleton, { width: 50 }) }) })
     ] }, `${index + 1}-row`)) })
   ] }) }) }) }) });
 };
 var TableSkeleton_default = TableSkeleton;
-
-// src/components/TableComponent.tsx
-import { Fragment, jsx as jsx5, jsxs as jsxs5 } from "react/jsx-runtime";
-function TableComponent({
-  columns,
-  data,
-  props,
-  actions,
-  actionTexts,
-  loading,
-  actionFunctions,
-  searchValue,
-  disableDefaultStyles = false,
-  customClassNames = {},
-  renderRow,
-  rowOnClick,
-  enableDarkMode = true,
-  enablePagination = false,
-  page = 1,
-  setPage,
-  itemsPerPage = 10,
-  totalPages,
-  sortableProps = [],
-  formatValue,
-  noContentProps,
-  showRemoveColumns = false,
-  onSort,
-  formatHeader
-}) {
-  const [isDarkMode, setIsDarkMode] = useState4(false);
-  const [expandedCells, setExpandedCells] = useState4({});
-  const [headerDropdown, setHeaderDropdown] = useState4({});
-  const [hiddenColumns, setHiddenColumns] = useState4({});
-  useEffect4(() => {
-    if (enableDarkMode) {
-      const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
-      setIsDarkMode(matchMedia.matches);
-      const handleChange = () => setIsDarkMode(matchMedia.matches);
-      matchMedia.addEventListener("change", handleChange);
-      return () => {
-        matchMedia.removeEventListener("change", handleChange);
-      };
-    }
-  }, [enableDarkMode]);
-  useEffect4(() => {
-    const handleClickOutside = (event) => {
-      for (const key of Object.keys(headerDropdown)) {
-        if (headerDropdown[key]) {
-          const element = document.getElementById(`header-dropdown-${key}`);
-          if (element && !element.contains(event.target)) {
-            setHeaderDropdown((prev) => ({ ...prev, [key]: false }));
-          }
-        }
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [headerDropdown]);
-  if (loading) {
-    return /* @__PURE__ */ jsx5(TableSkeleton_default, { enableDarkMode });
-  }
-  if (!data || data.length === 0) {
-    return /* @__PURE__ */ jsx5(NoContentComponent_default, { ...noContentProps });
-  }
-  let filteredData = data;
-  if (searchValue) {
-    filteredData = data.filter((item) => {
-      return props.some((prop) => {
-        const value = item[prop];
-        return String(value).toLowerCase().includes(searchValue.toLowerCase());
-      });
-    });
-  }
-  if (filteredData.length === 0) {
-    return /* @__PURE__ */ jsx5(NoContentComponent_default, { ...noContentProps });
-  }
-  const handleSort = (prop) => {
-    if (sortableProps.includes(prop) && onSort) {
-      onSort(prop);
-    }
-  };
-  const displayedColumns = columns.map((col, i) => {
-    return {
-      col,
-      indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
-      prop: props[i],
-      index: i
-    };
-  });
-  const sortedData = filteredData;
-  let paginatedData = sortedData;
-  const calculatedTotalPages = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
-  if (enablePagination) {
-    if (totalPages !== void 0) {
-      paginatedData = sortedData;
-    } else {
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      paginatedData = sortedData.slice(startIndex, endIndex);
-    }
-    if (page > calculatedTotalPages && setPage) {
-      setPage(calculatedTotalPages);
-    }
-  }
-  const baseTableClassName = !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "";
-  const baseTheadClassName = !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "";
-  const baseTbodyClassName = !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "";
-  const baseTrClassName = (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "";
-  const baseTdClassName = !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "";
-  const tableClassName = disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`;
-  const theadClassName = disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
-  const tbodyClassName = disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
-  const thClassName = (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
-    return `${baseClass}`;
-  };
-  const trClassName = (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
-  const tdClassName = (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
-    return `${baseClass}`;
-  };
-  return /* @__PURE__ */ jsxs5(Fragment, { children: [
-    /* @__PURE__ */ jsx5(
-      "div",
-      {
-        className: "table-scroll-container pb-6",
-        style: { maxHeight: "600px", overflow: "auto" },
-        children: /* @__PURE__ */ jsxs5("table", { className: tableClassName, style: { margin: 0, padding: 0 }, children: [
-          /* @__PURE__ */ jsx5("thead", { className: theadClassName, children: /* @__PURE__ */ jsxs5("tr", { children: [
-            displayedColumns.map(({ col, indicator, prop, index }) => {
-              if (hiddenColumns[String(prop)]) return null;
-              return /* @__PURE__ */ jsx5(
-                "th",
-                {
-                  scope: "col",
-                  className: thClassName(String(prop)),
-                  style: {
-                    cursor: sortableProps.includes(prop) ? "pointer" : "default"
-                  },
-                  children: /* @__PURE__ */ jsxs5("div", { className: "flex items-center", children: [
-                    /* @__PURE__ */ jsxs5(
-                      "div",
-                      {
-                        className: "flex-1 flex items-center gap-1",
-                        onClick: () => handleSort(String(prop)),
-                        onKeyDown: (e) => {
-                          if (e.key === "Enter") handleSort(String(prop));
-                        },
-                        role: "button",
-                        tabIndex: 0,
-                        children: [
-                          formatHeader ? formatHeader(col, String(prop), index) : col,
-                          indicator && /* @__PURE__ */ jsx5("span", { className: "text-xs text-gray-400", children: indicator })
-                        ]
-                      }
-                    ),
-                    showRemoveColumns && /* @__PURE__ */ jsxs5("div", { className: "relative", children: [
-                      /* @__PURE__ */ jsx5(
-                        "button",
-                        {
-                          onClick: (_e) => setHeaderDropdown((prev) => {
-                            const newState = {};
-                            for (const key of Object.keys(prev)) {
-                              newState[key] = false;
-                            }
-                            return {
-                              ...newState,
-                              [String(prop)]: !prev[String(prop)]
-                            };
-                          }),
-                          className: "p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600",
-                          type: "button",
-                          children: /* @__PURE__ */ jsx5(
-                            "svg",
-                            {
-                              xmlns: "http://www.w3.org/2000/svg",
-                              fill: "none",
-                              viewBox: "0 0 24 24",
-                              stroke: "currentColor",
-                              className: "w-4 h-4",
-                              role: "presentation",
-                              children: /* @__PURE__ */ jsx5(
-                                "path",
-                                {
-                                  strokeLinecap: "round",
-                                  strokeLinejoin: "round",
-                                  strokeWidth: 2,
-                                  d: "M12 6h.01M12 12h.01M12 18h.01"
-                                }
-                              )
-                            }
-                          )
-                        }
-                      ),
-                      headerDropdown[String(prop)] && /* @__PURE__ */ jsx5(
-                        "div",
-                        {
-                          id: `header-dropdown-${String(prop)}`,
-                          className: "absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50",
-                          children: /* @__PURE__ */ jsx5(
-                            "button",
-                            {
-                              onClick: () => {
-                                setHiddenColumns((prev) => ({
-                                  ...prev,
-                                  [String(prop)]: !prev[String(prop)]
-                                }));
-                                setHeaderDropdown((prev) => ({
-                                  ...prev,
-                                  [String(prop)]: false
-                                }));
-                              },
-                              className: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left",
-                              type: "button",
-                              children: hiddenColumns[String(prop)] ? "Unhide Column" : "Remove Column"
-                            }
-                          )
-                        }
-                      )
-                    ] })
-                  ] })
-                },
-                String(prop)
-              );
-            }),
-            actions && actionTexts && /* @__PURE__ */ jsx5("th", { scope: "col", className: thClassName(""), children: /* @__PURE__ */ jsx5("span", { className: "sr-only", children: actionTexts.join(", ") }) })
-          ] }) }),
-          /* @__PURE__ */ jsx5("tbody", { className: tbodyClassName, children: paginatedData.map((item, dataIndex) => {
-            const rowClassNames = `${trClassName(dataIndex)} ${rowOnClick ? "cursor-pointer" : ""}`;
-            if (renderRow) {
-              return /* @__PURE__ */ jsx5(
-                "tr",
-                {
-                  onClick: rowOnClick ? () => rowOnClick(item) : void 0,
-                  onKeyDown: (e) => {
-                    if (e.key === "Enter" && rowOnClick) {
-                      rowOnClick(item);
-                    }
-                  },
-                  className: rowClassNames,
-                  children: renderRow(item, dataIndex)
-                },
-                `dataIndex-${dataIndex + 1}`
-              );
-            }
-            return /* @__PURE__ */ jsxs5(
-              "tr",
-              {
-                onClick: rowOnClick ? () => rowOnClick(item) : void 0,
-                onKeyDown: (e) => {
-                  if (e.key === "Enter" && rowOnClick) {
-                    rowOnClick(item);
-                  }
-                },
-                className: rowClassNames,
-                children: [
-                  props.map((prop) => {
-                    if (hiddenColumns[String(prop)]) return null;
-                    let value = item[prop];
-                    if (value === null || value === void 0 || value === "") {
-                      value = "-";
-                    }
-                    const cellKey = `${dataIndex}-${String(prop)}`;
-                    const isExpanded = expandedCells[cellKey];
-                    let displayValue;
-                    let valToFormat = String(value);
-                    if (formatValue) {
-                      const customFormatted = formatValue(
-                        valToFormat,
-                        String(prop),
-                        item
-                      );
-                      if (customFormatted !== void 0 && customFormatted !== null) {
-                        displayValue = customFormatted;
-                      }
-                    }
-                    if (displayValue === void 0) {
-                      if (typeof value === "string" && isDateString(value)) {
-                        valToFormat = formatDate(new Date(value), true);
-                      } else if (Array.isArray(value)) {
-                        let displayArray = value;
-                        if (!isExpanded && displayArray.length > 5) {
-                          displayArray = displayArray.slice(0, 5);
-                        }
-                        displayValue = /* @__PURE__ */ jsxs5(
-                          "div",
-                          {
-                            className: "flex flex-wrap gap-1",
-                            style: {
-                              maxWidth: "200px",
-                              overflowX: "auto"
-                            },
-                            onClick: (e) => e.stopPropagation(),
-                            onKeyDown: (e) => {
-                              if (e.key === "Enter") {
-                                e.stopPropagation();
-                                setExpandedCells((prev) => ({
-                                  ...prev,
-                                  [cellKey]: !prev[cellKey]
-                                }));
-                              }
-                            },
-                            role: "button",
-                            tabIndex: 0,
-                            children: [
-                              displayArray.map((chip, idx) => /* @__PURE__ */ jsx5(
-                                "span",
-                                {
-                                  className: "inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs",
-                                  children: trimText(String(chip), 20)
-                                },
-                                typeof chip === "object" && chip !== null ? JSON.stringify(chip) : `${String(chip)}-${idx}`
-                              )),
-                              !isExpanded && value.length > 5 && /* @__PURE__ */ jsxs5(
-                                "span",
-                                {
-                                  className: "inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer",
-                                  onClick: (e) => {
-                                    e.stopPropagation();
-                                    setExpandedCells((prev) => ({
-                                      ...prev,
-                                      [cellKey]: true
-                                    }));
-                                  },
-                                  onKeyDown: (e) => {
-                                    if (e.key === "Enter") {
-                                      e.stopPropagation();
-                                      setExpandedCells((prev) => ({
-                                        ...prev,
-                                        [cellKey]: true
-                                      }));
-                                    }
-                                  },
-                                  role: "button",
-                                  tabIndex: 0,
-                                  children: [
-                                    "+",
-                                    value.length - 5,
-                                    " more"
-                                  ]
-                                }
-                              )
-                            ]
-                          }
-                        );
-                      } else if (typeof value === "string" && value.startsWith("http")) {
-                        displayValue = /* @__PURE__ */ jsx5(Link, { href: value, children: /* @__PURE__ */ jsx5(
-                          "span",
-                          {
-                            className: "text-blue-500 hover:underline",
-                            onClick: (e) => e.stopPropagation(),
-                            onKeyDown: (e) => {
-                              if (e.key === "Enter") {
-                                e.stopPropagation();
-                              }
-                            },
-                            role: "link",
-                            tabIndex: 0,
-                            children: isExpanded ? value : trimText(value, 30)
-                          }
-                        ) });
-                      } else {
-                        if (!Array.isArray(value) && !isExpanded) {
-                          valToFormat = trimText(valToFormat, 30);
-                        }
-                        displayValue = valToFormat;
-                      }
-                    }
-                    if (!displayValue && !Array.isArray(value)) {
-                      displayValue = valToFormat;
-                    }
-                    return /* @__PURE__ */ jsx5(
-                      "td",
-                      {
-                        className: tdClassName(String(prop)),
-                        onClick: (e) => {
-                          if (!rowOnClick) {
-                            e.stopPropagation();
-                            setExpandedCells((prev) => ({
-                              ...prev,
-                              [cellKey]: !prev[cellKey]
-                            }));
-                          }
-                        },
-                        onKeyDown: (e) => {
-                          if (e.key === "Enter") {
-                            e.stopPropagation();
-                            setExpandedCells((prev) => ({
-                              ...prev,
-                              [cellKey]: !prev[cellKey]
-                            }));
-                          }
-                        },
-                        children: displayValue
-                      },
-                      String(prop)
-                    );
-                  }),
-                  actions && actionTexts && actionFunctions && /* @__PURE__ */ jsx5("td", { children: /* @__PURE__ */ jsx5(
-                    "div",
-                    {
-                      onClick: (e) => e.stopPropagation(),
-                      onKeyDown: (e) => {
-                        if (e.key === "Enter") {
-                          e.stopPropagation();
-                        }
-                      },
-                      role: "presentation",
-                      children: /* @__PURE__ */ jsx5(
-                        ActionDropdown_default,
-                        {
-                          item,
-                          index: dataIndex,
-                          actionTexts,
-                          actionFunctions,
-                          disableDefaultStyles,
-                          customClassNames,
-                          enableDarkMode
-                        }
-                      )
-                    }
-                  ) })
-                ]
-              },
-              `dataIndex-${dataIndex + 1}`
-            );
-          }) })
-        ] })
-      }
-    ),
-    enablePagination && page !== void 0 && setPage && /* @__PURE__ */ jsx5(
-      "div",
-      {
-        style: {
-          position: "fixed",
-          bottom: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 50,
-          background: "transparent",
-          padding: "0.75rem 1rem",
-          borderRadius: "0.5rem",
-          boxShadow: "none",
-          maxWidth: "90%"
-        },
-        children: /* @__PURE__ */ jsx5(
-          PaginationComponent_default,
-          {
-            page,
-            setPage,
-            totalPages: calculatedTotalPages,
-            disableDefaultStyles,
-            customClassNames: customClassNames.pagination,
-            enableDarkMode
-          }
-        )
-      }
-    )
-  ] });
-}
-var TableComponent_default = TableComponent;
 export {
   ActionDropdown_default as ActionDropdown,
   NoContentComponent_default as NoContentComponent,
