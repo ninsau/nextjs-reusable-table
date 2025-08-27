@@ -68,9 +68,11 @@ describe("Helper Functions", () => {
     it("returns true for valid date formats", () => {
       const validDates = [
         "March 15, 2024",
+        "Mar 15, 2024", 
         "3/15/2024",
-        "15 Mar 2024",
-        "2024/03/15",
+        "03/15/2024",
+        "3-15-2024",
+        "03-15-2024",
       ];
 
       validDates.forEach((dateString) => {
@@ -88,6 +90,11 @@ describe("Helper Functions", () => {
         "2024", // Too short
         "hello world",
         "123456789", // Numbers but not a date
+        "1234567890123", // Pure numbers (even if valid timestamp)
+        "15 Mar 2024", // Doesn't match our patterns
+        "2024/03/15", // Doesn't match our patterns
+        "1800-01-01", // Before year range
+        "2200-01-01", // After year range
       ];
 
       invalidDates.forEach((dateString) => {
@@ -95,12 +102,11 @@ describe("Helper Functions", () => {
       });
     });
 
-    it("returns false for strings shorter than 10 characters", () => {
+    it("returns false for strings shorter than 8 characters", () => {
       const shortStrings = [
-        "2024-03-1", // 9 characters
         "test",
         "abc",
-        "12345678", // 8 characters
+        "1234567", // 7 characters
         "",
       ];
 
@@ -118,10 +124,10 @@ describe("Helper Functions", () => {
         [],
         true,
         false,
-      ] as any[];
+              ] as unknown[];
 
       invalidInputs.forEach((input) => {
-        expect(isDateString(input)).toBe(false);
+        expect(isDateString(input as string)).toBe(false);
       });
     });
 
@@ -221,6 +227,63 @@ describe("Helper Functions", () => {
 
         expect(result).toBe("Line 1\nLin...");
       });
+    });
+  });
+
+  describe("isDateString - Additional Edge Cases", () => {
+    it("rejects pure numeric strings even if they could be timestamps", () => {
+      const pureNumbers = [
+        "1234567890", // Unix timestamp
+        "1640995200000", // Millisecond timestamp  
+        "20240315", // YYYYMMDD format but pure numbers
+        "123456789012345", // Very large number
+      ];
+
+      pureNumbers.forEach((num) => {
+        expect(isDateString(num)).toBe(false);
+      });
+    });
+
+    it("accepts valid dates within year range (1900-2100)", () => {
+      const validYearDates = [
+        "1900-01-01",
+        "2024-06-15", 
+        "2099-12-31",
+        "2100-01-01",
+      ];
+
+      validYearDates.forEach((dateStr) => {
+        expect(isDateString(dateStr)).toBe(true);
+      });
+    });
+
+    it("rejects dates outside year range", () => {
+      const invalidYearDates = [
+        "1899-12-31",
+        "2101-01-01",
+        "0001-01-01",
+        "9999-01-01",
+      ];
+
+      invalidYearDates.forEach((dateStr) => {
+        expect(isDateString(dateStr)).toBe(false);
+      });
+    });
+
+    it("handles pattern matching correctly", () => {
+      // Valid patterns
+      expect(isDateString("2024-1-1")).toBe(true);       // YYYY-M-D
+      expect(isDateString("2024-01-01")).toBe(true);     // YYYY-MM-DD
+      expect(isDateString("1/1/2024")).toBe(true);       // M/D/YYYY
+      expect(isDateString("01/01/2024")).toBe(true);     // MM/DD/YYYY
+      expect(isDateString("1-1-2024")).toBe(true);       // M-D-YYYY
+      expect(isDateString("01-01-2024")).toBe(true);     // MM-DD-YYYY
+      expect(isDateString("Jan 1, 2024")).toBe(true);    // Month DD, YYYY
+      expect(isDateString("January 1 2024")).toBe(true); // Month DD YYYY
+
+      // Invalid patterns but parseable dates
+      expect(isDateString("2024/01/01")).toBe(false);    // Not in our patterns
+      expect(isDateString("01 Jan 2024")).toBe(false);   // Not in our patterns
     });
   });
 

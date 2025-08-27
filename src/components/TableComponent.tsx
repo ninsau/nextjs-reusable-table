@@ -360,9 +360,23 @@ function TableComponent<T>({
                     let displayValue: React.ReactNode;
                     let valToFormat = String(value);
 
-                    if (typeof value === "string" && isDateString(value)) {
-                      valToFormat = formatDate(new Date(value), true);
-                    } else if (Array.isArray(value)) {
+                    // First check if formatValue is provided and let it override all formatting
+                    if (formatValue) {
+                      const customFormatted = formatValue(
+                        valToFormat,
+                        String(prop),
+                        item,
+                      );
+                      if (customFormatted !== undefined && customFormatted !== null) {
+                        displayValue = customFormatted;
+                      }
+                    }
+
+                    // If formatValue didn't provide a value, fall back to internal formatting
+                    if (displayValue === undefined) {
+                      if (typeof value === "string" && isDateString(value)) {
+                        valToFormat = formatDate(new Date(value), true);
+                      } else if (Array.isArray(value)) {
                       let displayArray: T[keyof T][] = value;
                       if (!isExpanded && displayArray.length > 5) {
                         displayArray = displayArray.slice(0, 5);
@@ -447,17 +461,10 @@ function TableComponent<T>({
                           </span>
                         </Link>
                       );
-                    } else {
-                      if (!Array.isArray(value) && !isExpanded) {
-                        valToFormat = trimText(valToFormat, 30);
-                      }
-                      if (formatValue) {
-                        displayValue = formatValue(
-                          valToFormat,
-                          String(prop),
-                          item,
-                        );
                       } else {
+                        if (!Array.isArray(value) && !isExpanded) {
+                          valToFormat = trimText(valToFormat, 30);
+                        }
                         displayValue = valToFormat;
                       }
                     }
