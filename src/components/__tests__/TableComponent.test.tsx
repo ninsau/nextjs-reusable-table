@@ -354,6 +354,116 @@ describe("TableComponent", () => {
       expect(screen.getByText("John Doe")).toBeInTheDocument();
       expect(screen.queryByText("Jane Smith")).not.toBeInTheDocument();
     });
+
+    it("allows custom pagination positioning through customClassNames", () => {
+      const customPaginationClassNames = {
+        container: "custom-pagination-position",
+      };
+
+      render(
+        <TableComponent
+          {...paginationProps}
+          customClassNames={{
+            pagination: customPaginationClassNames,
+          }}
+        />
+      );
+
+      // Find the pagination container and verify it has the custom class
+      const paginationContainer = screen.getByText((_content, element) => {
+        return element?.textContent === 'Page 1 of 2';
+      }).closest("div");
+      expect(paginationContainer).toHaveClass("custom-pagination-position");
+    });
+
+    it("applies default pagination positioning when no custom class is provided", () => {
+      render(<TableComponent {...paginationProps} />);
+
+      // Find the pagination container and verify it has the default classes
+      const paginationContainer = screen.getByText((_content, element) => {
+        return element?.textContent === 'Page 1 of 2';
+      }).closest("div");
+      expect(paginationContainer).toHaveClass("flex", "justify-center", "items-center", "mt-4");
+    });
+
+    it("renders custom pagination component when renderPagination is provided", () => {
+      const customPagination = jest.fn((props) => (
+        <div data-testid="custom-pagination">
+          Custom Page {props.page} of {props.totalPages}
+          <button type="button" onClick={() => props.setPage(props.page + 1)}>Next</button>
+        </div>
+      ));
+
+      render(
+        <TableComponent
+          {...paginationProps}
+          renderPagination={customPagination}
+        />
+      );
+
+      // Should render custom pagination instead of built-in
+      expect(screen.getByTestId("custom-pagination")).toBeInTheDocument();
+      expect(screen.queryByText("Page 1 of 2")).not.toBeInTheDocument();
+
+      // Should call custom pagination with correct props
+      expect(customPagination).toHaveBeenCalledWith({
+        page: 1,
+        setPage: paginationProps.setPage,
+        totalPages: 2,
+        calculatedTotalPages: 2,
+        itemsPerPage: 1,
+      });
+    });
+
+    it("passes correct pagination props to custom renderPagination function", () => {
+      const mockRenderPagination = jest.fn(() => <div>Custom Pagination</div>);
+
+      render(
+        <TableComponent
+          {...paginationProps}
+          page={3}
+          itemsPerPage={5}
+          totalPages={10}
+          renderPagination={mockRenderPagination}
+        />
+      );
+
+      expect(mockRenderPagination).toHaveBeenCalledWith({
+        page: 3,
+        setPage: paginationProps.setPage,
+        totalPages: 10, // Should use provided totalPages
+        calculatedTotalPages: 1, // Should calculate: Math.ceil(2 users / 5 itemsPerPage) = 1
+        itemsPerPage: 5,
+      });
+    });
+
+    it("applies custom maxHeight as string", () => {
+      render(<TableComponent {...defaultProps} maxHeight="400px" />);
+
+      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      expect(scrollContainer).toHaveStyle({ maxHeight: "400px" });
+    });
+
+    it("applies custom maxHeight as number", () => {
+      render(<TableComponent {...defaultProps} maxHeight={300} />);
+
+      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      expect(scrollContainer).toHaveStyle({ maxHeight: "300px" });
+    });
+
+    it("uses default maxHeight when not specified", () => {
+      render(<TableComponent {...defaultProps} />);
+
+      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      expect(scrollContainer).toHaveStyle({ maxHeight: "600px" });
+    });
+
+    it("applies maxHeight with different units", () => {
+      render(<TableComponent {...defaultProps} maxHeight="50vh" />);
+
+      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      expect(scrollContainer).toHaveStyle({ maxHeight: "50vh" });
+    });
   });
 
   describe("Custom Styling", () => {

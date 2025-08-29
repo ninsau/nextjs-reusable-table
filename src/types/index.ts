@@ -50,6 +50,14 @@ export interface TableProps<T> {
   };
   showRemoveColumns?: boolean;
   onSort?: (prop: keyof T) => void;
+  renderPagination?: (props: {
+    page: number;
+    setPage: (page: number) => void;
+    totalPages: number;
+    calculatedTotalPages: number;
+    itemsPerPage: number;
+  }) => React.ReactNode;
+  maxHeight?: string | number;
 }
 
 export interface ActionDropdownProps<T> {

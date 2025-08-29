@@ -112,6 +112,22 @@ import { NoContentComponent } from "nextjs-reusable-table";
 | `setPage` | `(page: number) => void` | `undefined` | Page setter callback |
 | `itemsPerPage` | `number` | `10` | Number of items per page |
 | `totalPages` | `number` | `undefined` | Override total pages calculation |
+| `renderPagination` | `(props: PaginationRenderProps) => React.ReactNode` | `undefined` | Custom pagination renderer function |
+| `maxHeight` | `string \| number` | `"600px"` | Maximum height of the table container |
+
+#### PaginationRenderProps
+
+```typescript
+interface PaginationRenderProps {
+  page: number;                    // Current page number
+  setPage: (page: number) => void; // Function to change page
+  totalPages: number;              // Total pages (from props or calculated)
+  calculatedTotalPages: number;    // Pages calculated from data length
+  itemsPerPage: number;           // Items per page
+}
+```
+
+**Note:** Pagination positioning is fully customizable via the `customClassNames.pagination.container` property. You can position pagination at the top, bottom, left, right, or use fixed positioning. For complete custom pagination implementations, use the `renderPagination` prop. See the examples in the [EXAMPLES.md](EXAMPLES.md#custom-pagination-positioning) file for detailed usage patterns.
 
 #### Styling & Theming
 

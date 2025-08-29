@@ -423,7 +423,7 @@ export default function PaginatedTable() {
         <div className="text-sm text-gray-600">
           Total: {employees.length} employees
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <label htmlFor="per-page" className="text-sm text-gray-600">
             Items per page:
@@ -454,6 +454,330 @@ export default function PaginatedTable() {
         setPage={setCurrentPage}
         itemsPerPage={itemsPerPage}
       />
+    </div>
+  );
+}
+```
+
+### Custom Pagination Positioning
+
+```tsx
+export default function CustomPaginationPositionTable() {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Example 1: Position pagination at the top
+  const topPaginationStyles = {
+    pagination: {
+      container: "justify-start mt-0 mb-4 pt-4 border-b border-gray-200",
+    },
+  };
+
+  // Example 2: Position pagination on the right side
+  const rightPaginationStyles = {
+    pagination: {
+      container: "justify-end mt-4",
+    },
+  };
+
+  // Example 3: Position pagination in the center with custom styling
+  const centerCustomStyles = {
+    pagination: {
+      container: "justify-center mt-6 bg-gray-50 py-3 rounded-lg border",
+      button: "bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 mx-1 rounded-md font-medium",
+      buttonDisabled: "bg-gray-300 text-gray-500 px-3 py-2 mx-1 rounded-md font-medium",
+      pageInfo: "text-gray-700 font-semibold",
+    },
+  };
+
+  // Example 4: Fixed pagination at bottom (custom implementation)
+  const fixedBottomStyles = {
+    pagination: {
+      container: "fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg py-4 px-6 z-50",
+    },
+  };
+
+  // Example 5: Inline pagination within a card
+  const inlineCardStyles = {
+    container: "bg-white rounded-lg shadow-md overflow-hidden",
+    table: "w-full",
+    pagination: {
+      container: "bg-gray-50 px-6 py-3 border-t flex justify-between items-center",
+    },
+  };
+
+  return (
+    <div className="space-y-8 p-6">
+      <h2 className="text-2xl font-bold text-gray-900">Custom Pagination Positioning</h2>
+
+      {/* Top Positioned Pagination */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Top Positioned Pagination</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          enablePagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          itemsPerPage={5}
+          customClassNames={topPaginationStyles}
+        />
+      </div>
+
+      {/* Right Positioned Pagination */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Right Positioned Pagination</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          enablePagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          itemsPerPage={5}
+          customClassNames={rightPaginationStyles}
+        />
+      </div>
+
+      {/* Center with Custom Styling */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Center with Custom Styling</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          enablePagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          itemsPerPage={5}
+          customClassNames={centerCustomStyles}
+        />
+      </div>
+
+      {/* Inline Card Style */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Inline Card Style</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          enablePagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          itemsPerPage={5}
+          customClassNames={inlineCardStyles}
+        />
+      </div>
+
+      {/* Fixed Bottom (would need additional wrapper) */}
+      <div className="relative pb-20">
+        <h3 className="text-lg font-semibold mb-4">Table with Fixed Bottom Pagination</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Note: For fixed positioning, you'll need to add padding/margin to prevent overlap.
+        </p>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          enablePagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          itemsPerPage={5}
+        />
+
+        {/* Fixed pagination would be positioned outside the table container */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg py-4 px-6 z-50">
+          <div className="max-w-7xl mx-auto flex justify-center">
+            <TableComponent<Employee>
+              columns={[]}
+              data={[]}
+              props={[]}
+              enablePagination
+              page={currentPage}
+              setPage={setCurrentPage}
+              totalPages={Math.ceil(employees.length / 5)}
+              customClassNames={{
+                pagination: {
+                  container: "mt-0",
+                },
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### Custom Pagination Implementation
+
+```tsx
+export default function CustomPaginationTable() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
+  // Example 1: Simple custom pagination with different styling
+  const simpleCustomPagination = (props) => (
+    <div className="bg-blue-50 p-4 rounded-lg border">
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => props.setPage(props.page - 1)}
+          disabled={props.page === 1}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+        >
+          ← Previous
+        </button>
+
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600">Page</span>
+          <select
+            value={props.page}
+            onChange={(e) => props.setPage(Number(e.target.value))}
+            className="border rounded px-2 py-1"
+          >
+            {Array.from({ length: props.totalPages }, (_, i) => i + 1).map(page => (
+              <option key={page} value={page}>{page}</option>
+            ))}
+          </select>
+          <span className="text-sm text-gray-600">of {props.totalPages}</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => props.setPage(props.page + 1)}
+          disabled={props.page >= props.totalPages}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+
+  // Example 2: Advanced pagination with page size selector
+  const advancedCustomPagination = (props) => (
+    <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 p-4 bg-gray-50 rounded">
+      <div className="flex items-center space-x-2">
+        <span className="text-sm text-gray-600">Show</span>
+        <select
+          value={props.itemsPerPage}
+          onChange={(e) => {
+            const newItemsPerPage = Number(e.target.value);
+            // Reset to page 1 when changing page size
+            props.setPage(1);
+            // You would need to handle itemsPerPage change in parent component
+          }}
+          className="border rounded px-2 py-1 text-sm"
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={25}>25</option>
+          <option value={50}>50</option>
+        </select>
+        <span className="text-sm text-gray-600">entries</span>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <button
+          type="button"
+          onClick={() => props.setPage(1)}
+          disabled={props.page === 1}
+          className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+        >
+          First
+        </button>
+
+        <button
+          type="button"
+          onClick={() => props.setPage(props.page - 1)}
+          disabled={props.page === 1}
+          className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+        >
+          Previous
+        </button>
+
+        <div className="flex items-center space-x-1">
+          {Array.from({ length: Math.min(5, props.totalPages) }, (_, i) => {
+            const pageNum = Math.max(1, Math.min(props.totalPages - 4, props.page - 2)) + i;
+            return (
+              <button
+                key={pageNum}
+                type="button"
+                onClick={() => props.setPage(pageNum)}
+                className={`px-3 py-1 text-sm rounded ${
+                  pageNum === props.page
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white border hover:bg-gray-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => props.setPage(props.page + 1)}
+          disabled={props.page >= props.totalPages}
+          className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+        >
+          Next
+        </button>
+
+        <button
+          type="button"
+          onClick={() => props.setPage(props.totalPages)}
+          disabled={props.page >= props.totalPages}
+          className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+        >
+          Last
+        </button>
+      </div>
+
+      <div className="text-sm text-gray-600">
+        Showing {((props.page - 1) * props.itemsPerPage) + 1} to{' '}
+        {Math.min(props.page * props.itemsPerPage, props.calculatedTotalPages * props.itemsPerPage)}{' '}
+        of {props.calculatedTotalPages * props.itemsPerPage} entries
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 p-6">
+      <h2 className="text-2xl font-bold text-gray-900">Custom Pagination Implementation</h2>
+
+      {/* Simple Custom Pagination */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Simple Custom Pagination</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          enablePagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          renderPagination={simpleCustomPagination}
+        />
+      </div>
+
+      {/* Advanced Custom Pagination */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Advanced Custom Pagination</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          enablePagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          renderPagination={advancedCustomPagination}
+        />
+      </div>
     </div>
   );
 }
@@ -543,6 +867,73 @@ export default function MinimalTable() {
         customClassNames={minimalStyles}
         disableDefaultStyles={false}
       />
+    </div>
+  );
+}
+```
+
+### Custom Table Height
+
+```tsx
+export default function CustomHeightTable() {
+  return (
+    <div className="space-y-8 p-6">
+      <h2 className="text-2xl font-bold text-gray-900">Custom Table Height Examples</h2>
+
+      {/* Fixed height in pixels */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Fixed Height (400px)</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Join Date", "Status"]}
+          data={employees}
+          props={["name", "email", "joinDate", "active"]}
+          maxHeight="400px"
+        />
+      </div>
+
+      {/* Height as number (automatically converts to px) */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Height as Number (500px)</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Join Date", "Status"]}
+          data={employees}
+          props={["name", "email", "joinDate", "active"]}
+          maxHeight={500}
+        />
+      </div>
+
+      {/* Viewport height */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Viewport Height (70vh)</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Join Date", "Status"]}
+          data={employees}
+          props={["name", "email", "joinDate", "active"]}
+          maxHeight="70vh"
+        />
+      </div>
+
+      {/* No max height (unlimited) */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">No Height Limit</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Join Date", "Status"]}
+          data={employees}
+          props={["name", "email", "joinDate", "active"]}
+          maxHeight="none"
+        />
+      </div>
+
+      {/* Small height for compact display */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Compact Display (200px)</h3>
+        <TableComponent<Employee>
+          columns={["Name", "Email", "Status"]}
+          data={employees}
+          props={["name", "email", "active"]}
+          maxHeight="200px"
+        />
+      </div>
     </div>
   );
 }

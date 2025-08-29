@@ -33,6 +33,8 @@ function TableComponent<T>({
   showRemoveColumns = false,
   onSort,
   formatHeader,
+  renderPagination,
+  maxHeight = "600px",
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
@@ -212,7 +214,10 @@ function TableComponent<T>({
     <>
       <div
         className="table-scroll-container pb-6"
-        style={{ maxHeight: "600px", overflow: "auto" }}
+        style={{
+          maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight,
+          overflow: "auto"
+        }}
       >
         <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
           <thead className={theadClassName}>
@@ -532,20 +537,15 @@ function TableComponent<T>({
         </table>
       </div>
       {enablePagination && page !== undefined && setPage && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 50,
-            background: "transparent",
-            padding: "0.75rem 1rem",
-            borderRadius: "0.5rem",
-            boxShadow: "none",
-            maxWidth: "90%",
-          }}
-        >
+        renderPagination ? (
+          renderPagination({
+            page,
+            setPage,
+            totalPages: totalPages ?? calculatedTotalPages,
+            calculatedTotalPages: Math.ceil(sortedData.length / itemsPerPage),
+            itemsPerPage,
+          })
+        ) : (
           <PaginationComponent
             page={page}
             setPage={setPage}
@@ -554,7 +554,7 @@ function TableComponent<T>({
             customClassNames={customClassNames.pagination}
             enableDarkMode={enableDarkMode}
           />
-        </div>
+        )
       )}
     </>
   );
