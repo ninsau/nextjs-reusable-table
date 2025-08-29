@@ -4,6 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ActionDropdownProps } from "../types";
 
+/**
+ * Action dropdown component for table row actions with customizable positioning and styling
+ *
+ * @template T - The data type for the table row
+ */
 const ActionDropdown = <T,>({
   item,
   actionTexts,
@@ -93,12 +98,12 @@ const ActionDropdown = <T,>({
     : `${baseSvgClassName} ${customClassNames.actionSvg || ""}`;
 
   const dropdownMenuClassName = disableDefaultStyles
-    ? customClassNames.dropdownMenu || ""
-    : `${baseDropdownMenuClassName} ${customClassNames.dropdownMenu || ""}`;
+    ? (customClassNames.actionDropdown?.menu || customClassNames.dropdownMenu || "")
+    : `${baseDropdownMenuClassName} ${customClassNames.actionDropdown?.menu || customClassNames.dropdownMenu || ""}`;
 
   const dropdownItemClassName = disableDefaultStyles
-    ? customClassNames.dropdownItem || ""
-    : `${baseDropdownItemClassName} ${customClassNames.dropdownItem || ""}`;
+    ? (customClassNames.actionDropdown?.item || customClassNames.dropdownItem || "")
+    : `${baseDropdownItemClassName} ${customClassNames.actionDropdown?.item || customClassNames.dropdownItem || ""}`;
 
   const dropdownMenu = (
     <div

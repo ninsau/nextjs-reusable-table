@@ -939,6 +939,261 @@ export default function CustomHeightTable() {
 }
 ```
 
+## True Headless Customization
+
+The library now provides truly headless customization options, allowing you to customize virtually every aspect of the table while maintaining backward compatibility.
+
+### Complete Styling Control
+
+```tsx
+export default function TrulyHeadlessTable() {
+  return (
+    <TableComponent<Employee>
+      columns={["Name", "Email", "Status"]}
+      data={employees}
+      props={["name", "email", "active"]}
+      // Complete customization with no defaults
+      disableDefaultStyles={true}
+      customClassNames={{
+        // Core elements
+        scrollContainer: "my-scroll-container",
+        table: "my-table",
+        thead: "my-thead",
+        tbody: "my-tbody",
+        th: "my-th",
+        tr: "my-tr",
+        td: "my-td",
+
+        // Loading states
+        loadingContainer: "my-loading",
+        loadingSkeleton: {
+          container: "my-skeleton-container",
+          skeletonBar: "my-skeleton-bar",
+          skeletonItem: "my-skeleton-item"
+        },
+
+        // Cell expansion
+        cellExpansion: {
+          container: "my-cell-expansion"
+        },
+
+        // Interactive states
+        interactive: {
+          sortableCursor: "my-sortable-cursor",
+          clickableCursor: "my-clickable-cursor",
+          focusOutline: "my-focus-outline"
+        },
+
+        // Action dropdown
+        actionButton: "my-action-btn",
+        actionSvg: "my-action-svg",
+        actionDropdown: {
+          container: "my-dropdown-container",
+          menu: "my-dropdown-menu",
+          item: "my-dropdown-item",
+          overlay: "my-dropdown-overlay"
+        },
+
+        // Enhanced pagination
+        pagination: {
+          container: "my-pagination",
+          button: "my-pagination-btn",
+          buttonDisabled: "my-pagination-btn-disabled",
+          pageInfo: "my-pagination-info",
+          navigation: {
+            first: "my-first-btn",
+            previous: "my-prev-btn",
+            next: "my-next-btn",
+            last: "my-last-btn"
+          }
+        },
+
+        // Layout customization
+        layout: {
+          tableMargin: "my-table-margin",
+          tablePadding: "my-table-padding",
+          containerPadding: "my-container-padding"
+        },
+
+        // Responsive design
+        responsive: {
+          mobile: "my-mobile-styles",
+          tablet: "my-tablet-styles",
+          desktop: "my-desktop-styles"
+        },
+
+        // Theme customization
+        theme: {
+          colorScheme: "my-color-scheme",
+          spacing: "my-spacing",
+          typography: "my-typography",
+          borderRadius: "my-border-radius",
+          shadows: "my-shadows"
+        }
+      }}
+
+      // Advanced props
+      maxHeight="70vh"
+      scrollBehavior="auto"
+      tableLayout="fixed"
+      cellExpansion={{
+        enabled: true,
+        maxWidth: 300,
+        behavior: 'wrap'
+      }}
+      accessibility={{
+        focusStyles: "focus:ring-2 focus:ring-blue-500 focus:outline-none",
+        screenReaderLabels: {
+          actions: "Table actions",
+          pagination: "Table pagination",
+          loading: "Loading table data"
+        },
+        keyboardNavigation: true
+      }}
+
+      // Inline style overrides
+      customStyles={{
+        container: { backgroundColor: '#f8f9fa' },
+        table: { borderCollapse: 'separate', borderSpacing: '0 8px' },
+        scrollContainer: { borderRadius: '8px' },
+        loading: { backgroundColor: '#e9ecef' }
+      }}
+    />
+  );
+}
+```
+
+### Custom Scroll Container
+
+```tsx
+export default function CustomScrollTable() {
+  return (
+    <TableComponent<Employee>
+      columns={["Name", "Email", "Status"]}
+      data={employees}
+      props={["name", "email", "active"]}
+      maxHeight="400px"
+      scrollBehavior="scroll" // Options: 'auto', 'scroll', 'visible', 'hidden'
+      customClassNames={{
+        scrollContainer: "custom-scroll-area scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200"
+      }}
+      customStyles={{
+        scrollContainer: {
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#9ca3af #e5e7eb'
+        }
+      }}
+    />
+  );
+}
+```
+
+### Advanced Cell Expansion
+
+```tsx
+export default function AdvancedCellExpansionTable() {
+  return (
+    <TableComponent<Employee>
+      columns={["Name", "Skills", "Projects"]}
+      data={employees}
+      props={["name", "skills", "projects"]}
+      cellExpansion={{
+        enabled: true,
+        maxWidth: 250, // Custom max width
+        behavior: 'wrap' // Options: 'truncate', 'wrap', 'expand'
+      }}
+      customClassNames={{
+        cellExpansion: {
+          container: "custom-cell-expansion bg-blue-50 p-2 rounded border"
+        }
+      }}
+    />
+  );
+}
+```
+
+### Custom Loading States
+
+```tsx
+export default function CustomLoadingTable() {
+  return (
+    <TableComponent<Employee>
+      columns={["Name", "Email", "Status"]}
+      data={employees}
+      props={["name", "email", "active"]}
+      loading={true}
+      customClassNames={{
+        loadingContainer: "flex flex-col items-center justify-center p-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg",
+        loadingSkeleton: {
+          container: "space-y-3 w-full max-w-md",
+          skeletonBar: "h-4 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded animate-pulse",
+          skeletonItem: "h-3 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 rounded animate-pulse"
+        }
+      }}
+      customStyles={{
+        loading: {
+          minHeight: '200px',
+          animation: 'fadeIn 0.5s ease-in-out'
+        }
+      }}
+    />
+  );
+}
+```
+
+### Interactive State Customization
+
+```tsx
+export default function CustomInteractiveTable() {
+  return (
+    <TableComponent<Employee>
+      columns={["Name", "Email", "Status"]}
+      data={employees}
+      props={["name", "email", "active"]}
+      sortableProps={["name", "email"]}
+      customClassNames={{
+        interactive: {
+          sortableCursor: "cursor-pointer hover:text-blue-600 transition-colors",
+          clickableCursor: "cursor-pointer hover:bg-blue-50 transition-colors",
+          focusOutline: "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        }
+      }}
+    />
+  );
+}
+```
+
+### Advanced Pagination Customization
+
+```tsx
+export default function AdvancedPaginationTable() {
+  return (
+    <TableComponent<Employee>
+      columns={["Name", "Email", "Status"]}
+      data={employees}
+      props={["name", "email", "active"]}
+      enablePagination
+      page={1}
+      setPage={() => {}}
+      customClassNames={{
+        pagination: {
+          container: "flex flex-wrap items-center justify-between gap-2 p-4 bg-white border-t",
+          button: "px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors",
+          buttonDisabled: "px-3 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed",
+          pageInfo: "text-sm text-gray-700 font-medium",
+          navigation: {
+            first: "px-3 py-2 bg-blue-600 text-white rounded-l-md hover:bg-blue-700",
+            previous: "px-3 py-2 bg-blue-600 text-white hover:bg-blue-700",
+            next: "px-3 py-2 bg-blue-600 text-white hover:bg-blue-700",
+            last: "px-3 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700"
+          }
+        }
+      }}
+    />
+  );
+}
+```
+
 ## Advanced Use Cases
 
 ### Master-Detail with Expandable Rows

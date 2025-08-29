@@ -8,6 +8,13 @@ import ActionDropdown from "./ActionDropdown";
 import NoContentComponent from "./NoContentComponent";
 import PaginationComponent from "./PaginationComponent";
 
+/**
+ * A highly customizable, headless table component for React/Next.js applications.
+ *
+ * @template T - The data type for table rows
+ * @param props - Configuration object for the table component
+ * @returns A fully functional table with sorting, pagination, search, and customization options
+ */
 function TableComponent<T>({
   columns,
   data,
@@ -35,6 +42,11 @@ function TableComponent<T>({
   formatHeader,
   renderPagination,
   maxHeight = "600px",
+  customStyles = {},
+  scrollBehavior = "auto",
+  tableLayout,
+  cellExpansion = { enabled: true, maxWidth: 200, behavior: 'truncate' },
+  accessibility = { keyboardNavigation: true },
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [expandedCells, setExpandedCells] = useState<{
@@ -47,6 +59,7 @@ function TableComponent<T>({
     [key: string]: boolean;
   }>({});
 
+  // Dark mode detection
   useEffect(() => {
     if (enableDarkMode) {
       const matchMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -59,6 +72,7 @@ function TableComponent<T>({
     }
   }, [enableDarkMode]);
 
+  // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       for (const key of Object.keys(headerDropdown)) {
@@ -75,12 +89,27 @@ function TableComponent<T>({
   }, [headerDropdown]);
 
   if (loading) {
+    const loadingSkeletonClasses = customClassNames.loadingSkeleton;
+    const baseLoadingClassName = disableDefaultStyles
+      ? customClassNames.loadingContainer || ""
+      : `p-4 animate-pulse ${customClassNames.loadingContainer || ""}`;
+
+    const baseSkeletonBarClass = loadingSkeletonClasses?.skeletonBar || "h-6 bg-gray-300 mb-3 rounded";
+    const baseSkeletonItemClass = loadingSkeletonClasses?.skeletonItem || "h-4 bg-gray-200 mb-2 rounded";
+
     return (
-      <div className="p-4 animate-pulse" aria-busy="true" aria-live="polite">
-        <div className="h-6 bg-gray-300 mb-3 rounded" />
-        <div className="h-4 bg-gray-200 mb-2 rounded" />
-        <div className="h-4 bg-gray-200 mb-2 rounded" />
-        <div className="h-4 bg-gray-200 mb-2 rounded" />
+      <div
+        className={baseLoadingClassName}
+        style={customStyles.loading}
+        aria-busy="true"
+        aria-live="polite"
+        role="status"
+        aria-label={accessibility.screenReaderLabels?.loading || "Loading table data"}
+      >
+        <div className={baseSkeletonBarClass} />
+        <div className={baseSkeletonItemClass} />
+        <div className={baseSkeletonItemClass} />
+        <div className={baseSkeletonItemClass} />
       </div>
     );
   }
@@ -103,6 +132,10 @@ function TableComponent<T>({
     return <NoContentComponent text="No items found." name={noContentProps?.name} icon={noContentProps?.icon} />;
   }
 
+  /**
+   * Handles column sorting when a sortable column header is clicked
+   * @param prop - The property name to sort by
+   */
   const handleSort = (prop: string) => {
     if (sortableProps.includes(prop as keyof T) && onSort) {
       onSort(prop as keyof T);
@@ -213,13 +246,26 @@ function TableComponent<T>({
   return (
     <>
       <div
-        className="table-scroll-container pb-6"
+        className={
+          disableDefaultStyles
+            ? customClassNames.scrollContainer || ""
+            : `table-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`
+        }
         style={{
           maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight,
-          overflow: "auto"
+          overflow: scrollBehavior,
+          ...customStyles.scrollContainer,
         }}
       >
-        <table className={tableClassName} style={{ margin: 0, padding: 0 }}>
+        <table
+          className={tableClassName}
+          style={{
+            margin: 0,
+            padding: 0,
+            tableLayout: tableLayout,
+            ...customStyles.table,
+          }}
+        >
           <thead className={theadClassName}>
             <tr>
               {displayedColumns.map(({ col, indicator, prop, index }) => {
@@ -231,8 +277,8 @@ function TableComponent<T>({
                     className={thClassName(String(prop))}
                     style={{
                       cursor: sortableProps.includes(prop as keyof T)
-                        ? "pointer"
-                        : "default",
+                        ? customClassNames.interactive?.sortableCursor || "pointer"
+                        : customClassNames.interactive?.clickableCursor || "default",
                     }}
                   >
                     <div className="flex items-center">
@@ -394,10 +440,18 @@ function TableComponent<T>({
                       }
                       displayValue = (
                         <div
-                          className="flex flex-wrap gap-1"
+                          className={
+                            disableDefaultStyles
+                              ? customClassNames.cellExpansion?.container || ""
+                              : `flex flex-wrap gap-1 ${customClassNames.cellExpansion?.container || ""}`
+                          }
                           style={{
-                            maxWidth: "200px",
-                            overflowX: "auto",
+                            maxWidth: cellExpansion.enabled
+                              ? (typeof cellExpansion.maxWidth === 'number'
+                                  ? `${cellExpansion.maxWidth}px`
+                                  : cellExpansion.maxWidth || "200px")
+                              : undefined,
+                            overflowX: cellExpansion.behavior === 'truncate' ? "auto" : undefined,
                           }}
                           onClick={(e) => e.stopPropagation()}
                           onKeyDown={(e) => {

@@ -114,6 +114,133 @@ import { NoContentComponent } from "nextjs-reusable-table";
 | `totalPages` | `number` | `undefined` | Override total pages calculation |
 | `renderPagination` | `(props: PaginationRenderProps) => React.ReactNode` | `undefined` | Custom pagination renderer function |
 | `maxHeight` | `string \| number` | `"600px"` | Maximum height of the table container |
+| `customStyles` | `CustomStyles` | `{}` | Override inline styles for elements |
+| `scrollBehavior` | `'auto' \| 'scroll' \| 'visible' \| 'hidden'` | `'auto'` | Scroll behavior for table container |
+| `tableLayout` | `'auto' \| 'fixed' \| 'inherit'` | `undefined` | CSS table-layout property |
+| `cellExpansion` | `CellExpansionConfig` | `{ enabled: true, maxWidth: 200, behavior: 'truncate' }` | Configure cell expansion behavior |
+| `accessibility` | `AccessibilityConfig` | `{ keyboardNavigation: true }` | Accessibility customization |
+
+#### CustomStyles
+
+```typescript
+interface CustomStyles {
+  container?: React.CSSProperties;
+  table?: React.CSSProperties;
+  scrollContainer?: React.CSSProperties;
+  loading?: React.CSSProperties;
+}
+```
+
+#### CellExpansionConfig
+
+```typescript
+interface CellExpansionConfig {
+  enabled?: boolean;
+  maxWidth?: string | number;
+  behavior?: 'truncate' | 'wrap' | 'expand';
+}
+```
+
+
+
+#### AccessibilityConfig
+
+```typescript
+interface AccessibilityConfig {
+  focusStyles?: string;
+  screenReaderLabels?: {
+    actions?: string;
+    pagination?: string;
+    loading?: string;
+  };
+  keyboardNavigation?: boolean;
+}
+```
+
+#### Enhanced CustomClassNames
+
+```typescript
+customClassNames?: {
+  // Core table elements (existing)
+  container?: string;
+  table?: string;
+  thead?: string;
+  tbody?: string;
+  th?: string;
+  tr?: string;
+  td?: string;
+
+  // Scroll container (NEW)
+  scrollContainer?: string;
+
+  // Loading states (NEW)
+  loadingContainer?: string;
+  loadingSkeleton?: {
+    container?: string;
+    skeletonBar?: string;
+    skeletonItem?: string;
+  };
+
+  // Cell expansion (NEW)
+  cellExpansion?: {
+    container?: string;
+  };
+
+  // Interactive states (NEW)
+  interactive?: {
+    sortableCursor?: string;
+    clickableCursor?: string;
+    focusOutline?: string;
+  };
+
+  // Action dropdown (enhanced)
+  actionButton?: string;
+  actionSvg?: string;
+  actionDropdown?: {
+    container?: string;
+    menu?: string;
+    item?: string;
+    overlay?: string;
+  };
+
+  // Pagination (enhanced)
+  pagination?: {
+    container?: string;
+    button?: string;
+    buttonDisabled?: string;
+    pageInfo?: string;
+    navigation?: {
+      first?: string;
+      previous?: string;
+      next?: string;
+      last?: string;
+    };
+  };
+
+  // Layout customization (NEW)
+  layout?: {
+    tableMargin?: string;
+    tablePadding?: string;
+    containerPadding?: string;
+  };
+
+  // Responsive design (NEW)
+  responsive?: {
+    mobile?: string;
+    tablet?: string;
+    desktop?: string;
+  };
+
+  // Theme customization (NEW)
+  theme?: {
+    colorScheme?: string;
+    spacing?: string;
+    typography?: string;
+    borderRadius?: string;
+    shadows?: string;
+  };
+};
+```
 
 #### PaginationRenderProps
 

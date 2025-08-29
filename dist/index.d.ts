@@ -19,9 +19,30 @@ interface TableProps<T> {
         th?: string;
         tr?: string;
         td?: string;
+        scrollContainer?: string;
+        loadingContainer?: string;
+        loadingSkeleton?: {
+            container?: string;
+            skeletonBar?: string;
+            skeletonItem?: string;
+        };
+        cellExpansion?: {
+            container?: string;
+        };
+        interactive?: {
+            sortableCursor?: string;
+            clickableCursor?: string;
+            focusOutline?: string;
+        };
         actionTd?: string;
         actionButton?: string;
         actionSvg?: string;
+        actionDropdown?: {
+            container?: string;
+            menu?: string;
+            item?: string;
+            overlay?: string;
+        };
         dropdownMenu?: string;
         dropdownItem?: string;
         pagination?: {
@@ -29,6 +50,29 @@ interface TableProps<T> {
             button?: string;
             buttonDisabled?: string;
             pageInfo?: string;
+            navigation?: {
+                first?: string;
+                previous?: string;
+                next?: string;
+                last?: string;
+            };
+        };
+        layout?: {
+            tableMargin?: string;
+            tablePadding?: string;
+            containerPadding?: string;
+        };
+        responsive?: {
+            mobile?: string;
+            tablet?: string;
+            desktop?: string;
+        };
+        theme?: {
+            colorScheme?: string;
+            spacing?: string;
+            typography?: string;
+            borderRadius?: string;
+            shadows?: string;
         };
     };
     renderRow?: (item: T, index: number) => React.ReactNode;
@@ -49,6 +93,36 @@ interface TableProps<T> {
     };
     showRemoveColumns?: boolean;
     onSort?: (prop: keyof T) => void;
+    renderPagination?: (props: {
+        page: number;
+        setPage: (page: number) => void;
+        totalPages: number;
+        calculatedTotalPages: number;
+        itemsPerPage: number;
+    }) => React.ReactNode;
+    maxHeight?: string | number;
+    customStyles?: {
+        container?: React.CSSProperties;
+        table?: React.CSSProperties;
+        scrollContainer?: React.CSSProperties;
+        loading?: React.CSSProperties;
+    };
+    scrollBehavior?: 'auto' | 'scroll' | 'visible' | 'hidden';
+    tableLayout?: 'auto' | 'fixed' | 'inherit';
+    cellExpansion?: {
+        enabled?: boolean;
+        maxWidth?: string | number;
+        behavior?: 'truncate' | 'wrap' | 'expand';
+    };
+    accessibility?: {
+        focusStyles?: string;
+        screenReaderLabels?: {
+            actions?: string;
+            pagination?: string;
+            loading?: string;
+        };
+        keyboardNavigation?: boolean;
+    };
 }
 interface ActionDropdownProps<T> {
     item: T;
@@ -60,6 +134,12 @@ interface ActionDropdownProps<T> {
         actionTd?: string;
         actionButton?: string;
         actionSvg?: string;
+        actionDropdown?: {
+            container?: string;
+            menu?: string;
+            item?: string;
+            overlay?: string;
+        };
         dropdownMenu?: string;
         dropdownItem?: string;
     };
@@ -86,6 +166,12 @@ interface PaginationComponentProps {
         button?: string;
         buttonDisabled?: string;
         pageInfo?: string;
+        navigation?: {
+            first?: string;
+            previous?: string;
+            next?: string;
+            last?: string;
+        };
     };
     enableDarkMode?: boolean;
 }
@@ -101,7 +187,7 @@ declare const ActionDropdown: <T>({ item, actionTexts, actionFunctions, disableD
 
 declare const NoContentComponent: React$1.FC<NoContentProps>;
 
-declare function TableComponent<T>({ columns, data, props, actions, actionTexts, loading, actionFunctions, searchValue, disableDefaultStyles, customClassNames, renderRow, rowOnClick, enableDarkMode, enablePagination, page, setPage, itemsPerPage, totalPages, sortableProps, formatValue, noContentProps, showRemoveColumns, onSort, formatHeader, }: TableProps<T>): react_jsx_runtime.JSX.Element;
+declare function TableComponent<T>({ columns, data, props, actions, actionTexts, loading, actionFunctions, searchValue, disableDefaultStyles, customClassNames, renderRow, rowOnClick, enableDarkMode, enablePagination, page, setPage, itemsPerPage, totalPages, sortableProps, formatValue, noContentProps, showRemoveColumns, onSort, formatHeader, renderPagination, maxHeight, customStyles, scrollBehavior, tableLayout, cellExpansion, accessibility, }: TableProps<T>): react_jsx_runtime.JSX.Element;
 
 declare const TableSkeleton: React$1.FC<TableSkeletonProps>;
 

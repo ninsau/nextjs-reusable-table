@@ -66,8 +66,8 @@ var ActionDropdown = ({
   const baseDropdownItemClassName = "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-300";
   const buttonClassName = disableDefaultStyles ? customClassNames.actionButton || "" : `${baseButtonClassName} ${customClassNames.actionButton || ""}`;
   const svgClassName = disableDefaultStyles ? customClassNames.actionSvg || "" : `${baseSvgClassName} ${customClassNames.actionSvg || ""}`;
-  const dropdownMenuClassName = disableDefaultStyles ? customClassNames.dropdownMenu || "" : `${baseDropdownMenuClassName} ${customClassNames.dropdownMenu || ""}`;
-  const dropdownItemClassName = disableDefaultStyles ? customClassNames.dropdownItem || "" : `${baseDropdownItemClassName} ${customClassNames.dropdownItem || ""}`;
+  const dropdownMenuClassName = disableDefaultStyles ? customClassNames.actionDropdown?.menu || customClassNames.dropdownMenu || "" : `${baseDropdownMenuClassName} ${customClassNames.actionDropdown?.menu || customClassNames.dropdownMenu || ""}`;
+  const dropdownItemClassName = disableDefaultStyles ? customClassNames.actionDropdown?.item || customClassNames.dropdownItem || "" : `${baseDropdownItemClassName} ${customClassNames.actionDropdown?.item || customClassNames.dropdownItem || ""}`;
   const dropdownMenu = /* @__PURE__ */ jsx(
     "div",
     {
@@ -287,18 +287,22 @@ var PaginationComponent = ({
   }, [enableDarkMode]);
   const baseButtonClassName = disableDefaultStyles ? customClassNames.button || "" : `px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"} ${customClassNames.button || ""}`;
   const disabledButtonClassName = disableDefaultStyles ? customClassNames.buttonDisabled || "" : `opacity-50 cursor-not-allowed px-3 py-1 mx-1 rounded-md ${isDarkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-gray-200 text-gray-800 hover:bg-gray-300"} ${customClassNames.buttonDisabled || ""}`;
+  const firstButtonClassName = customClassNames.navigation?.first || baseButtonClassName;
+  const previousButtonClassName = customClassNames.navigation?.previous || baseButtonClassName;
+  const nextButtonClassName = customClassNames.navigation?.next || baseButtonClassName;
+  const lastButtonClassName = customClassNames.navigation?.last || baseButtonClassName;
   const pageInfoClassName = disableDefaultStyles ? customClassNames.pageInfo || "" : `px-3 py-1 mx-1 text-sm ${isDarkMode ? "text-gray-300" : "text-gray-700"} ${customClassNames.pageInfo || ""}`;
   return /* @__PURE__ */ jsxs3(
     "div",
     {
-      className: disableDefaultStyles ? customClassNames.container || "" : `flex justify-center items-center mt-4 ${customClassNames.container || ""}`,
+      className: disableDefaultStyles ? customClassNames?.container || "" : `flex justify-center items-center mt-4 ${customClassNames?.container || ""}`,
       children: [
         /* @__PURE__ */ jsx3(
           "button",
           {
             disabled: page === 1,
             onClick: () => setPage(1),
-            className: page === 1 ? disabledButtonClassName : baseButtonClassName,
+            className: page === 1 ? disabledButtonClassName : firstButtonClassName,
             type: "button",
             children: "First"
           }
@@ -308,7 +312,7 @@ var PaginationComponent = ({
           {
             disabled: page === 1,
             onClick: () => setPage(page - 1),
-            className: page === 1 ? disabledButtonClassName : baseButtonClassName,
+            className: page === 1 ? disabledButtonClassName : previousButtonClassName,
             type: "button",
             children: "Previous"
           }
@@ -324,7 +328,7 @@ var PaginationComponent = ({
           {
             disabled: page >= totalPages || totalPages <= 0,
             onClick: () => setPage(page + 1),
-            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName,
+            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : nextButtonClassName,
             type: "button",
             children: "Next"
           }
@@ -334,7 +338,7 @@ var PaginationComponent = ({
           {
             disabled: page >= totalPages || totalPages <= 0,
             onClick: () => setPage(totalPages),
-            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : baseButtonClassName,
+            className: page >= totalPages || totalPages <= 0 ? disabledButtonClassName : lastButtonClassName,
             type: "button",
             children: "Last"
           }
@@ -371,7 +375,15 @@ function TableComponent({
   noContentProps,
   showRemoveColumns = false,
   onSort,
-  formatHeader
+  formatHeader,
+  renderPagination,
+  maxHeight = "600px",
+  // New props with defaults for backward compatibility
+  customStyles = {},
+  scrollBehavior = "auto",
+  tableLayout,
+  cellExpansion = { enabled: true, maxWidth: 200, behavior: "truncate" },
+  accessibility = { keyboardNavigation: true }
 }) {
   const [isDarkMode, setIsDarkMode] = useState3(false);
   const [expandedCells, setExpandedCells] = useState3({});
@@ -403,12 +415,27 @@ function TableComponent({
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
   if (loading) {
-    return /* @__PURE__ */ jsxs4("div", { className: "p-4 animate-pulse", "aria-busy": "true", "aria-live": "polite", children: [
-      /* @__PURE__ */ jsx4("div", { className: "h-6 bg-gray-300 mb-3 rounded" }),
-      /* @__PURE__ */ jsx4("div", { className: "h-4 bg-gray-200 mb-2 rounded" }),
-      /* @__PURE__ */ jsx4("div", { className: "h-4 bg-gray-200 mb-2 rounded" }),
-      /* @__PURE__ */ jsx4("div", { className: "h-4 bg-gray-200 mb-2 rounded" })
-    ] });
+    const loadingSkeletonClasses = customClassNames.loadingSkeleton;
+    const baseLoadingClassName = disableDefaultStyles ? customClassNames.loadingContainer || "" : `p-4 animate-pulse ${customClassNames.loadingContainer || ""}`;
+    const baseSkeletonBarClass = loadingSkeletonClasses?.skeletonBar || "h-6 bg-gray-300 mb-3 rounded";
+    const baseSkeletonItemClass = loadingSkeletonClasses?.skeletonItem || "h-4 bg-gray-200 mb-2 rounded";
+    return /* @__PURE__ */ jsxs4(
+      "div",
+      {
+        className: baseLoadingClassName,
+        style: customStyles.loading,
+        "aria-busy": "true",
+        "aria-live": "polite",
+        role: "status",
+        "aria-label": accessibility.screenReaderLabels?.loading || "Loading table data",
+        children: [
+          /* @__PURE__ */ jsx4("div", { className: baseSkeletonBarClass }),
+          /* @__PURE__ */ jsx4("div", { className: baseSkeletonItemClass }),
+          /* @__PURE__ */ jsx4("div", { className: baseSkeletonItemClass }),
+          /* @__PURE__ */ jsx4("div", { className: baseSkeletonItemClass })
+        ]
+      }
+    );
   }
   if (!data || data.length === 0) {
     return /* @__PURE__ */ jsx4(NoContentComponent_default, { ...noContentProps });
@@ -474,174 +501,277 @@ function TableComponent({
     /* @__PURE__ */ jsx4(
       "div",
       {
-        className: "table-scroll-container pb-6",
-        style: { maxHeight: "600px", overflow: "auto" },
-        children: /* @__PURE__ */ jsxs4("table", { className: tableClassName, style: { margin: 0, padding: 0 }, children: [
-          /* @__PURE__ */ jsx4("thead", { className: theadClassName, children: /* @__PURE__ */ jsxs4("tr", { children: [
-            displayedColumns.map(({ col, indicator, prop, index }) => {
-              if (hiddenColumns[String(prop)]) return null;
-              return /* @__PURE__ */ jsx4(
-                "th",
-                {
-                  scope: "col",
-                  className: thClassName(String(prop)),
-                  style: {
-                    cursor: sortableProps.includes(prop) ? "pointer" : "default"
-                  },
-                  children: /* @__PURE__ */ jsxs4("div", { className: "flex items-center", children: [
-                    /* @__PURE__ */ jsxs4(
-                      "div",
-                      {
-                        className: "flex-1 flex items-center gap-1",
-                        onClick: () => handleSort(String(prop)),
-                        onKeyDown: (e) => {
-                          if (e.key === "Enter") handleSort(String(prop));
-                        },
-                        role: "button",
-                        tabIndex: 0,
-                        children: [
-                          formatHeader ? formatHeader(col, String(prop), index) : col,
-                          indicator && /* @__PURE__ */ jsx4("span", { className: "text-xs text-gray-400", children: indicator })
-                        ]
-                      }
-                    ),
-                    showRemoveColumns && /* @__PURE__ */ jsxs4("div", { className: "relative", children: [
-                      /* @__PURE__ */ jsx4(
-                        "button",
-                        {
-                          onClick: (_e) => setHeaderDropdown((prev) => {
-                            const newState = {};
-                            for (const key of Object.keys(prev)) {
-                              newState[key] = false;
-                            }
-                            return {
-                              ...newState,
-                              [String(prop)]: !prev[String(prop)]
-                            };
-                          }),
-                          className: "p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600",
-                          type: "button",
-                          children: /* @__PURE__ */ jsx4(
-                            "svg",
+        className: disableDefaultStyles ? customClassNames.scrollContainer || "" : `table-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`,
+        style: {
+          maxHeight: typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
+          overflow: scrollBehavior,
+          ...customStyles.scrollContainer
+        },
+        children: /* @__PURE__ */ jsxs4(
+          "table",
+          {
+            className: tableClassName,
+            style: {
+              margin: 0,
+              padding: 0,
+              tableLayout,
+              ...customStyles.table
+            },
+            children: [
+              /* @__PURE__ */ jsx4("thead", { className: theadClassName, children: /* @__PURE__ */ jsxs4("tr", { children: [
+                displayedColumns.map(({ col, indicator, prop, index }) => {
+                  if (hiddenColumns[String(prop)]) return null;
+                  return /* @__PURE__ */ jsx4(
+                    "th",
+                    {
+                      scope: "col",
+                      className: thClassName(String(prop)),
+                      style: {
+                        cursor: sortableProps.includes(prop) ? customClassNames.interactive?.sortableCursor || "pointer" : customClassNames.interactive?.clickableCursor || "default"
+                      },
+                      children: /* @__PURE__ */ jsxs4("div", { className: "flex items-center", children: [
+                        /* @__PURE__ */ jsxs4(
+                          "div",
+                          {
+                            className: "flex-1 flex items-center gap-1",
+                            onClick: () => handleSort(String(prop)),
+                            onKeyDown: (e) => {
+                              if (e.key === "Enter") handleSort(String(prop));
+                            },
+                            role: "button",
+                            tabIndex: 0,
+                            children: [
+                              formatHeader ? formatHeader(col, String(prop), index) : col,
+                              indicator && /* @__PURE__ */ jsx4("span", { className: "text-xs text-gray-400", children: indicator })
+                            ]
+                          }
+                        ),
+                        showRemoveColumns && /* @__PURE__ */ jsxs4("div", { className: "relative", children: [
+                          /* @__PURE__ */ jsx4(
+                            "button",
                             {
-                              xmlns: "http://www.w3.org/2000/svg",
-                              fill: "none",
-                              viewBox: "0 0 24 24",
-                              stroke: "currentColor",
-                              className: "w-4 h-4",
-                              role: "presentation",
+                              onClick: (_e) => setHeaderDropdown((prev) => {
+                                const newState = {};
+                                for (const key of Object.keys(prev)) {
+                                  newState[key] = false;
+                                }
+                                return {
+                                  ...newState,
+                                  [String(prop)]: !prev[String(prop)]
+                                };
+                              }),
+                              className: "p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-600",
+                              type: "button",
                               children: /* @__PURE__ */ jsx4(
-                                "path",
+                                "svg",
                                 {
-                                  strokeLinecap: "round",
-                                  strokeLinejoin: "round",
-                                  strokeWidth: 2,
-                                  d: "M12 6h.01M12 12h.01M12 18h.01"
+                                  xmlns: "http://www.w3.org/2000/svg",
+                                  fill: "none",
+                                  viewBox: "0 0 24 24",
+                                  stroke: "currentColor",
+                                  className: "w-4 h-4",
+                                  role: "presentation",
+                                  children: /* @__PURE__ */ jsx4(
+                                    "path",
+                                    {
+                                      strokeLinecap: "round",
+                                      strokeLinejoin: "round",
+                                      strokeWidth: 2,
+                                      d: "M12 6h.01M12 12h.01M12 18h.01"
+                                    }
+                                  )
+                                }
+                              )
+                            }
+                          ),
+                          headerDropdown[String(prop)] && /* @__PURE__ */ jsx4(
+                            "div",
+                            {
+                              id: `header-dropdown-${String(prop)}`,
+                              className: "absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50",
+                              children: /* @__PURE__ */ jsx4(
+                                "button",
+                                {
+                                  onClick: () => {
+                                    setHiddenColumns((prev) => ({
+                                      ...prev,
+                                      [String(prop)]: !prev[String(prop)]
+                                    }));
+                                    setHeaderDropdown((prev) => ({
+                                      ...prev,
+                                      [String(prop)]: false
+                                    }));
+                                  },
+                                  className: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left",
+                                  type: "button",
+                                  children: hiddenColumns[String(prop)] ? "Unhide Column" : "Remove Column"
                                 }
                               )
                             }
                           )
+                        ] })
+                      ] })
+                    },
+                    String(prop)
+                  );
+                }),
+                actions && actionTexts && /* @__PURE__ */ jsx4("th", { scope: "col", className: thClassName(""), children: /* @__PURE__ */ jsx4("span", { className: "sr-only", children: actionTexts.join(", ") }) })
+              ] }) }),
+              /* @__PURE__ */ jsx4("tbody", { className: tbodyClassName, children: paginatedData.map((item, dataIndex) => {
+                const rowClassNames = `${trClassName(dataIndex)} ${rowOnClick ? "cursor-pointer" : ""}`;
+                if (renderRow) {
+                  return /* @__PURE__ */ jsx4(
+                    "tr",
+                    {
+                      onClick: rowOnClick ? () => rowOnClick(item) : void 0,
+                      onKeyDown: (e) => {
+                        if (e.key === "Enter" && rowOnClick) {
+                          rowOnClick(item);
                         }
-                      ),
-                      headerDropdown[String(prop)] && /* @__PURE__ */ jsx4(
-                        "div",
-                        {
-                          id: `header-dropdown-${String(prop)}`,
-                          className: "absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg py-1 z-50",
-                          children: /* @__PURE__ */ jsx4(
-                            "button",
-                            {
-                              onClick: () => {
-                                setHiddenColumns((prev) => ({
-                                  ...prev,
-                                  [String(prop)]: !prev[String(prop)]
-                                }));
-                                setHeaderDropdown((prev) => ({
-                                  ...prev,
-                                  [String(prop)]: false
-                                }));
-                              },
-                              className: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-left",
-                              type: "button",
-                              children: hiddenColumns[String(prop)] ? "Unhide Column" : "Remove Column"
-                            }
-                          )
-                        }
-                      )
-                    ] })
-                  ] })
-                },
-                String(prop)
-              );
-            }),
-            actions && actionTexts && /* @__PURE__ */ jsx4("th", { scope: "col", className: thClassName(""), children: /* @__PURE__ */ jsx4("span", { className: "sr-only", children: actionTexts.join(", ") }) })
-          ] }) }),
-          /* @__PURE__ */ jsx4("tbody", { className: tbodyClassName, children: paginatedData.map((item, dataIndex) => {
-            const rowClassNames = `${trClassName(dataIndex)} ${rowOnClick ? "cursor-pointer" : ""}`;
-            if (renderRow) {
-              return /* @__PURE__ */ jsx4(
-                "tr",
-                {
-                  onClick: rowOnClick ? () => rowOnClick(item) : void 0,
-                  onKeyDown: (e) => {
-                    if (e.key === "Enter" && rowOnClick) {
-                      rowOnClick(item);
-                    }
-                  },
-                  className: rowClassNames,
-                  children: renderRow(item, dataIndex)
-                },
-                `dataIndex-${dataIndex + 1}`
-              );
-            }
-            return /* @__PURE__ */ jsxs4(
-              "tr",
-              {
-                onClick: rowOnClick ? () => rowOnClick(item) : void 0,
-                onKeyDown: (e) => {
-                  if (e.key === "Enter" && rowOnClick) {
-                    rowOnClick(item);
-                  }
-                },
-                className: rowClassNames,
-                children: [
-                  props.map((prop) => {
-                    if (hiddenColumns[String(prop)]) return null;
-                    let value = item[prop];
-                    if (value === null || value === void 0 || value === "") {
-                      value = "-";
-                    }
-                    const cellKey = `${dataIndex}-${String(prop)}`;
-                    const isExpanded = expandedCells[cellKey];
-                    let displayValue;
-                    let valToFormat = String(value);
-                    if (formatValue) {
-                      const customFormatted = formatValue(
-                        valToFormat,
-                        String(prop),
-                        item
-                      );
-                      if (customFormatted !== void 0 && customFormatted !== null) {
-                        displayValue = customFormatted;
+                      },
+                      className: rowClassNames,
+                      children: renderRow(item, dataIndex)
+                    },
+                    `dataIndex-${dataIndex + 1}`
+                  );
+                }
+                return /* @__PURE__ */ jsxs4(
+                  "tr",
+                  {
+                    onClick: rowOnClick ? () => rowOnClick(item) : void 0,
+                    onKeyDown: (e) => {
+                      if (e.key === "Enter" && rowOnClick) {
+                        rowOnClick(item);
                       }
-                    }
-                    if (displayValue === void 0) {
-                      if (typeof value === "string" && isDateString(value)) {
-                        valToFormat = formatDate(new Date(value), true);
-                      } else if (Array.isArray(value)) {
-                        let displayArray = value;
-                        if (!isExpanded && displayArray.length > 5) {
-                          displayArray = displayArray.slice(0, 5);
+                    },
+                    className: rowClassNames,
+                    children: [
+                      props.map((prop) => {
+                        if (hiddenColumns[String(prop)]) return null;
+                        let value = item[prop];
+                        if (value === null || value === void 0 || value === "") {
+                          value = "-";
                         }
-                        displayValue = /* @__PURE__ */ jsxs4(
-                          "div",
+                        const cellKey = `${dataIndex}-${String(prop)}`;
+                        const isExpanded = expandedCells[cellKey];
+                        let displayValue;
+                        let valToFormat = String(value);
+                        if (formatValue) {
+                          const customFormatted = formatValue(
+                            valToFormat,
+                            String(prop),
+                            item
+                          );
+                          if (customFormatted !== void 0 && customFormatted !== null) {
+                            displayValue = customFormatted;
+                          }
+                        }
+                        if (displayValue === void 0) {
+                          if (typeof value === "string" && isDateString(value)) {
+                            valToFormat = formatDate(new Date(value), true);
+                          } else if (Array.isArray(value)) {
+                            let displayArray = value;
+                            if (!isExpanded && displayArray.length > 5) {
+                              displayArray = displayArray.slice(0, 5);
+                            }
+                            displayValue = /* @__PURE__ */ jsxs4(
+                              "div",
+                              {
+                                className: disableDefaultStyles ? customClassNames.cellExpansion?.container || "" : `flex flex-wrap gap-1 ${customClassNames.cellExpansion?.container || ""}`,
+                                style: {
+                                  maxWidth: cellExpansion.enabled ? typeof cellExpansion.maxWidth === "number" ? `${cellExpansion.maxWidth}px` : cellExpansion.maxWidth || "200px" : void 0,
+                                  overflowX: cellExpansion.behavior === "truncate" ? "auto" : void 0
+                                },
+                                onClick: (e) => e.stopPropagation(),
+                                onKeyDown: (e) => {
+                                  if (e.key === "Enter") {
+                                    e.stopPropagation();
+                                    setExpandedCells((prev) => ({
+                                      ...prev,
+                                      [cellKey]: !prev[cellKey]
+                                    }));
+                                  }
+                                },
+                                role: "button",
+                                tabIndex: 0,
+                                children: [
+                                  displayArray.map((chip, idx) => /* @__PURE__ */ jsx4(
+                                    "span",
+                                    {
+                                      className: "inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs",
+                                      children: trimText(String(chip), 20)
+                                    },
+                                    typeof chip === "object" && chip !== null ? JSON.stringify(chip) : `${String(chip)}-${idx}`
+                                  )),
+                                  !isExpanded && value.length > 5 && /* @__PURE__ */ jsxs4(
+                                    "span",
+                                    {
+                                      className: "inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer",
+                                      onClick: (e) => {
+                                        e.stopPropagation();
+                                        setExpandedCells((prev) => ({
+                                          ...prev,
+                                          [cellKey]: true
+                                        }));
+                                      },
+                                      onKeyDown: (e) => {
+                                        if (e.key === "Enter") {
+                                          e.stopPropagation();
+                                          setExpandedCells((prev) => ({
+                                            ...prev,
+                                            [cellKey]: true
+                                          }));
+                                        }
+                                      },
+                                      role: "button",
+                                      tabIndex: 0,
+                                      children: [
+                                        "+",
+                                        value.length - 5,
+                                        " more"
+                                      ]
+                                    }
+                                  )
+                                ]
+                              }
+                            );
+                          } else if (typeof value === "string" && value.startsWith("http")) {
+                            displayValue = /* @__PURE__ */ jsx4(Link, { href: value, children: /* @__PURE__ */ jsx4(
+                              "span",
+                              {
+                                className: "text-blue-500 hover:underline",
+                                onClick: (e) => e.stopPropagation(),
+                                onKeyDown: (e) => {
+                                  if (e.key === "Enter") {
+                                    e.stopPropagation();
+                                  }
+                                },
+                                children: isExpanded ? value : trimText(value, 30)
+                              }
+                            ) });
+                          } else {
+                            if (!Array.isArray(value) && !isExpanded) {
+                              valToFormat = trimText(valToFormat, 30);
+                            }
+                            displayValue = valToFormat;
+                          }
+                        }
+                        if (!displayValue && !Array.isArray(value)) {
+                          displayValue = valToFormat;
+                        }
+                        return /* @__PURE__ */ jsx4(
+                          "td",
                           {
-                            className: "flex flex-wrap gap-1",
-                            style: {
-                              maxWidth: "200px",
-                              overflowX: "auto"
+                            className: tdClassName(String(prop)),
+                            onClick: (e) => {
+                              if (!rowOnClick) {
+                                e.stopPropagation();
+                                setExpandedCells((prev) => ({
+                                  ...prev,
+                                  [cellKey]: !prev[cellKey]
+                                }));
+                              }
                             },
-                            onClick: (e) => e.stopPropagation(),
                             onKeyDown: (e) => {
                               if (e.key === "Enter") {
                                 e.stopPropagation();
@@ -651,160 +781,62 @@ function TableComponent({
                                 }));
                               }
                             },
-                            role: "button",
-                            tabIndex: 0,
-                            children: [
-                              displayArray.map((chip, idx) => /* @__PURE__ */ jsx4(
-                                "span",
-                                {
-                                  className: "inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs",
-                                  children: trimText(String(chip), 20)
-                                },
-                                typeof chip === "object" && chip !== null ? JSON.stringify(chip) : `${String(chip)}-${idx}`
-                              )),
-                              !isExpanded && value.length > 5 && /* @__PURE__ */ jsxs4(
-                                "span",
-                                {
-                                  className: "inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer",
-                                  onClick: (e) => {
-                                    e.stopPropagation();
-                                    setExpandedCells((prev) => ({
-                                      ...prev,
-                                      [cellKey]: true
-                                    }));
-                                  },
-                                  onKeyDown: (e) => {
-                                    if (e.key === "Enter") {
-                                      e.stopPropagation();
-                                      setExpandedCells((prev) => ({
-                                        ...prev,
-                                        [cellKey]: true
-                                      }));
-                                    }
-                                  },
-                                  role: "button",
-                                  tabIndex: 0,
-                                  children: [
-                                    "+",
-                                    value.length - 5,
-                                    " more"
-                                  ]
-                                }
-                              )
-                            ]
-                          }
+                            children: displayValue
+                          },
+                          String(prop)
                         );
-                      } else if (typeof value === "string" && value.startsWith("http")) {
-                        displayValue = /* @__PURE__ */ jsx4(Link, { href: value, children: /* @__PURE__ */ jsx4(
-                          "span",
-                          {
-                            className: "text-blue-500 hover:underline",
-                            onClick: (e) => e.stopPropagation(),
-                            onKeyDown: (e) => {
-                              if (e.key === "Enter") {
-                                e.stopPropagation();
-                              }
-                            },
-                            children: isExpanded ? value : trimText(value, 30)
-                          }
-                        ) });
-                      } else {
-                        if (!Array.isArray(value) && !isExpanded) {
-                          valToFormat = trimText(valToFormat, 30);
-                        }
-                        displayValue = valToFormat;
-                      }
-                    }
-                    if (!displayValue && !Array.isArray(value)) {
-                      displayValue = valToFormat;
-                    }
-                    return /* @__PURE__ */ jsx4(
-                      "td",
-                      {
-                        className: tdClassName(String(prop)),
-                        onClick: (e) => {
-                          if (!rowOnClick) {
-                            e.stopPropagation();
-                            setExpandedCells((prev) => ({
-                              ...prev,
-                              [cellKey]: !prev[cellKey]
-                            }));
-                          }
-                        },
-                        onKeyDown: (e) => {
-                          if (e.key === "Enter") {
-                            e.stopPropagation();
-                            setExpandedCells((prev) => ({
-                              ...prev,
-                              [cellKey]: !prev[cellKey]
-                            }));
-                          }
-                        },
-                        children: displayValue
-                      },
-                      String(prop)
-                    );
-                  }),
-                  actions && actionTexts && actionFunctions && /* @__PURE__ */ jsx4("td", { children: /* @__PURE__ */ jsx4(
-                    "div",
-                    {
-                      onClick: (e) => e.stopPropagation(),
-                      onKeyDown: (e) => {
-                        if (e.key === "Enter") {
-                          e.stopPropagation();
-                        }
-                      },
-                      role: "presentation",
-                      children: /* @__PURE__ */ jsx4(
-                        ActionDropdown_default,
+                      }),
+                      actions && actionTexts && actionFunctions && /* @__PURE__ */ jsx4("td", { children: /* @__PURE__ */ jsx4(
+                        "div",
                         {
-                          item,
-                          index: dataIndex,
-                          actionTexts,
-                          actionFunctions,
-                          disableDefaultStyles,
-                          customClassNames,
-                          enableDarkMode
+                          onClick: (e) => e.stopPropagation(),
+                          onKeyDown: (e) => {
+                            if (e.key === "Enter") {
+                              e.stopPropagation();
+                            }
+                          },
+                          role: "presentation",
+                          children: /* @__PURE__ */ jsx4(
+                            ActionDropdown_default,
+                            {
+                              item,
+                              index: dataIndex,
+                              actionTexts,
+                              actionFunctions,
+                              disableDefaultStyles,
+                              customClassNames,
+                              enableDarkMode
+                            }
+                          )
                         }
-                      )
-                    }
-                  ) })
-                ]
-              },
-              `dataIndex-${dataIndex + 1}`
-            );
-          }) })
-        ] })
-      }
-    ),
-    enablePagination && page !== void 0 && setPage && /* @__PURE__ */ jsx4(
-      "div",
-      {
-        style: {
-          position: "fixed",
-          bottom: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 50,
-          background: "transparent",
-          padding: "0.75rem 1rem",
-          borderRadius: "0.5rem",
-          boxShadow: "none",
-          maxWidth: "90%"
-        },
-        children: /* @__PURE__ */ jsx4(
-          PaginationComponent_default,
-          {
-            page,
-            setPage,
-            totalPages: calculatedTotalPages,
-            disableDefaultStyles,
-            customClassNames: customClassNames.pagination,
-            enableDarkMode
+                      ) })
+                    ]
+                  },
+                  `dataIndex-${dataIndex + 1}`
+                );
+              }) })
+            ]
           }
         )
       }
-    )
+    ),
+    enablePagination && page !== void 0 && setPage && (renderPagination ? renderPagination({
+      page,
+      setPage,
+      totalPages: totalPages ?? calculatedTotalPages,
+      calculatedTotalPages: Math.ceil(sortedData.length / itemsPerPage),
+      itemsPerPage
+    }) : /* @__PURE__ */ jsx4(
+      PaginationComponent_default,
+      {
+        page,
+        setPage,
+        totalPages: calculatedTotalPages,
+        disableDefaultStyles,
+        customClassNames: customClassNames.pagination,
+        enableDarkMode
+      }
+    ))
   ] });
 }
 var TableComponent_default = TableComponent;

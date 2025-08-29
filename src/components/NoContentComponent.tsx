@@ -2,6 +2,9 @@
 import type React from "react";
 import type { NoContentProps } from "../types";
 
+/**
+ * Component displayed when no data is available
+ */
 const NoContentComponent: React.FC<NoContentProps> = ({
   name = "No data",
   text,

@@ -5,6 +5,9 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import type { TableSkeletonProps } from "../types";
 
+/**
+ * Loading skeleton component that displays a placeholder table structure
+ */
 const TableSkeleton: React.FC<TableSkeletonProps> = ({
   disableDefaultStyles = false,
   customClassNames = {},

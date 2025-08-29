@@ -1,3 +1,9 @@
+/**
+ * Formats a Date object into a readable string
+ * @param date - The date to format
+ * @param includeTime - Whether to include time in the formatted string
+ * @returns Formatted date string or "Invalid Date" if parsing fails
+ */
 export const formatDate = (date: Date, includeTime = false): string => {
   const options: Intl.DateTimeFormatOptions = includeTime
     ? {
@@ -15,6 +21,11 @@ export const formatDate = (date: Date, includeTime = false): string => {
   }
 };
 
+/**
+ * Determines if a string represents a valid date
+ * @param str - The string to test
+ * @returns True if the string represents a valid date, false otherwise
+ */
 export const isDateString = (str: string): boolean => {
   if (typeof str !== "string" || str.length < 8) return false;
   
@@ -87,6 +98,12 @@ export const isDateString = (str: string): boolean => {
   return year >= 1900 && year <= 2100;
 };
 
+/**
+ * Truncates text to a specified maximum length and adds ellipsis
+ * @param text - The text to truncate
+ * @param maxLength - The maximum length of the returned string
+ * @returns Truncated text with ellipsis if needed
+ */
 export const trimText = (text: string, maxLength: number): string => {
   if (maxLength <= 0) return "...";
   if (text.length <= maxLength) return text;
