@@ -27,8 +27,9 @@ A **production-ready**, highly customizable and reusable table component for Nex
 - **♿ Accessible** - Screen reader friendly with ARIA support
 - **🌙 Dark Mode** - Automatic system preference detection
 - **⚡ High Performance** - Optimized renders and lazy loading
-- **🎨 Highly Customizable** - Override any style or behavior
-- **📦 Lightweight** - ~35KB minified, tree-shakable
+- **🎨 Truly Headless** - Customize every style, behavior, and interaction
+- **🛠️ Advanced Customization** - Override any style or behavior with comprehensive APIs
+- **📦 Lightweight** - ~39KB minified, tree-shakable
 
 ## 📦 Installation
 
