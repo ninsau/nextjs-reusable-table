@@ -214,7 +214,7 @@ function TableComponent<T>({
 
   const theadClassName = disableDefaultStyles
     ? customClassNames.thead || ""
-    : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
+    : `${baseTheadClassName} ${customClassNames.thead || ""} rt-sticky-header`;
 
   const tbodyClassName = disableDefaultStyles
     ? customClassNames.tbody || ""
@@ -249,7 +249,7 @@ function TableComponent<T>({
         className={
           disableDefaultStyles
             ? customClassNames.scrollContainer || ""
-            : `table-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`
+            : `rt-table-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`
         }
         style={{
           maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight,

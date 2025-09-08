@@ -1,21 +1,18 @@
 @import "react-loading-skeleton/dist/skeleton.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
-.table-container {
+.rt-table-container {
   overflow: hidden;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
 }
 
-.table {
+.rt-table {
   min-width: 100%;
   border-bottom: 1px solid #e5e7eb;
   position: relative;
 }
 
-.table th {
+.rt-table th {
   padding-left: 1rem;
   padding-right: 1rem;
   padding-top: 0.75rem;
@@ -30,11 +27,11 @@
   min-width: 100px;
 }
 
-.table tbody tr:nth-child(even) {
+.rt-table tbody tr:nth-child(even) {
   background-color: #f9fafb;
 }
 
-.freeze-left {
+.rt-freeze-left {
   position: sticky;
   left: 0;
   z-index: 20;
@@ -42,7 +39,7 @@
   border-right: 1px solid rgb(229, 231, 235);
 }
 
-.freeze-right {
+.rt-freeze-right {
   position: sticky;
   right: 0;
   z-index: 20;
@@ -50,32 +47,32 @@
   border-left: 1px solid rgb(229, 231, 235);
 }
 
-.sticky-left {
+.rt-sticky-left {
   position: sticky;
   left: 0;
   z-index: 20;
   background-color: inherit;
 }
 
-.sticky-right {
+.rt-sticky-right {
   position: sticky;
   right: 0;
   z-index: 20;
   background-color: inherit;
 }
 
-.table-scroll-container {
+.rt-table-scroll-container {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 
-.table td,
-.table th {
+.rt-table td,
+.rt-table th {
   transition: background-color 0.2s;
   position: relative;
 }
 
-.resizer {
+.rt-resizer {
   position: absolute;
   right: 0;
   top: 0;
@@ -89,16 +86,16 @@
   transition: opacity 0.2s;
 }
 
-.resizer:hover,
-.resizing {
+.rt-resizer:hover,
+.rt-resizing {
   opacity: 1;
 }
 
-.resizer.resizing {
+.rt-resizer.rt-resizing {
   background: rgba(0, 0, 0, 0.1);
 }
 
-.header-content {
+.rt-header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -106,26 +103,26 @@
   min-height: 2.5rem;
 }
 
-.header-text {
+.rt-header-text {
   white-space: normal;
   word-break: break-word;
   flex: 1;
   padding-right: 0.5rem;
 }
 
-.header-actions {
+.rt-header-actions {
   flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
-.sort-indicator {
+.rt-sort-indicator {
   margin-right: 0.25rem;
   display: inline-flex;
   align-items: center;
 }
 
-.dropdown-menu {
+.rt-dropdown-menu {
   position: absolute;
   right: 0;
   margin-top: 0.5rem;
@@ -141,12 +138,12 @@
   border: 1px solid #e5e7eb;
 }
 
-.dark .dropdown-menu {
+.rt-table-container.dark .rt-dropdown-menu {
   background-color: #374151;
   border-color: #374151;
 }
 
-.dropdown-item {
+.rt-dropdown-item {
   display: block;
   width: 100%;
   padding-left: 1rem;
@@ -158,42 +155,42 @@
   color: #374151;
 }
 
-.dark .dropdown-item {
+.rt-table-container.dark .rt-dropdown-item {
   color: #e5e7eb;
 }
 
-.dark .table {
+.rt-table-container.dark .rt-table {
   border-color: #374151;
 }
 
-.dark .table th {
+.rt-table-container.dark .rt-table th {
   color: #d1d5db;
 }
 
-.dark .table tbody tr:nth-child(even) {
+.rt-table-container.dark .rt-table tbody tr:nth-child(even) {
   background-color: #1f2937;
 }
 
-.dark .freeze-left,
-.dark .freeze-right {
+.rt-table-container.dark .rt-freeze-left,
+.rt-table-container.dark .rt-freeze-right {
   border-color: #4b5563;
 }
 
-.table-cell {
+.rt-table-cell {
   white-space: normal;
   word-break: break-word;
   min-width: 100px;
   max-width: 300px;
 }
 
-.chip-container {
+.rt-chip-container {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
   max-width: 100%;
 }
 
-.chip {
+.rt-chip {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
@@ -202,12 +199,12 @@
   color: #1f2937;
 }
 
-.dark .chip {
+.rt-table-container.dark .rt-chip {
   background-color: #312e81;
   color: #e5e7eb;
 }
 
-.more-chip {
+.rt-more-chip {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
@@ -217,12 +214,12 @@
   color: #4b5563;
 }
 
-.dark .more-chip {
+.rt-table-container.dark .rt-more-chip {
   background-color: #4b5563;
   color: #d1d5db;
 }
 
-.sticky-header {
+.rt-sticky-header {
   position: sticky;
   top: 0;
   z-index: 30;

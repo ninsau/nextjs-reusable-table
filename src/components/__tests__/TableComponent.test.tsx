@@ -440,28 +440,28 @@ describe("TableComponent", () => {
     it("applies custom maxHeight as string", () => {
       render(<TableComponent {...defaultProps} maxHeight="400px" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rt-table-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "400px" });
     });
 
     it("applies custom maxHeight as number", () => {
       render(<TableComponent {...defaultProps} maxHeight={300} />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rt-table-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "300px" });
     });
 
     it("uses default maxHeight when not specified", () => {
       render(<TableComponent {...defaultProps} />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rt-table-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "600px" });
     });
 
     it("applies maxHeight with different units", () => {
       render(<TableComponent {...defaultProps} maxHeight="50vh" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rt-table-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "50vh" });
     });
 
@@ -515,7 +515,7 @@ describe("TableComponent", () => {
     it("applies custom scrollBehavior", () => {
       render(<TableComponent {...defaultProps} scrollBehavior="scroll" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rt-table-scroll-container");
       expect(scrollContainer).toHaveStyle({ overflow: "scroll" });
     });
 

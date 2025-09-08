@@ -378,7 +378,6 @@ function TableComponent({
   formatHeader,
   renderPagination,
   maxHeight = "600px",
-  // New props with defaults for backward compatibility
   customStyles = {},
   scrollBehavior = "auto",
   tableLayout,
@@ -486,7 +485,7 @@ function TableComponent({
   const baseTrClassName = (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "";
   const baseTdClassName = !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "";
   const tableClassName = disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`;
-  const theadClassName = disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
+  const theadClassName = disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} rt-sticky-header`;
   const tbodyClassName = disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
   const thClassName = (_prop) => {
     const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
@@ -501,7 +500,7 @@ function TableComponent({
     /* @__PURE__ */ jsx4(
       "div",
       {
-        className: disableDefaultStyles ? customClassNames.scrollContainer || "" : `table-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`,
+        className: disableDefaultStyles ? customClassNames.scrollContainer || "" : `rt-table-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`,
         style: {
           maxHeight: typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
           overflow: scrollBehavior,
