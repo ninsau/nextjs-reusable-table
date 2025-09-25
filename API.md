@@ -113,7 +113,7 @@ import { NoContentComponent } from "nextjs-reusable-table";
 | `itemsPerPage` | `number` | `10` | Number of items per page |
 | `totalPages` | `number` | `undefined` | Override total pages calculation |
 | `renderPagination` | `(props: PaginationRenderProps) => React.ReactNode` | `undefined` | Custom pagination renderer function |
-| `maxHeight` | `string \| number` | `"600px"` | Maximum height of the table container |
+| `maxHeight` | `string \| number \| undefined` | `undefined` | Maximum height of the table container. Set to undefined for no height restriction |
 | `customStyles` | `CustomStyles` | `{}` | Override inline styles for elements |
 | `scrollBehavior` | `'auto' \| 'scroll' \| 'visible' \| 'hidden'` | `'auto'` | Scroll behavior for table container |
 | `tableLayout` | `'auto' \| 'fixed' \| 'inherit'` | `undefined` | CSS table-layout property |

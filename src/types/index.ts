@@ -136,8 +136,8 @@ export interface TableProps<T> {
     calculatedTotalPages: number;
     itemsPerPage: number;
   }) => React.ReactNode;
-  /** Maximum height of the table container */
-  maxHeight?: string | number;
+  /** Maximum height of the table container. Set to undefined for no height restriction */
+  maxHeight?: string | number | undefined;
 
   /** Inline style overrides for elements */
   customStyles?: {

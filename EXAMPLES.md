@@ -920,7 +920,7 @@ export default function CustomHeightTable() {
           columns={["Name", "Email", "Join Date", "Status"]}
           data={employees}
           props={["name", "email", "joinDate", "active"]}
-          maxHeight="none"
+          maxHeight={undefined}
         />
       </div>
 

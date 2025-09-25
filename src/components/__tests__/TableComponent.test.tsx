@@ -379,11 +379,17 @@ describe("TableComponent", () => {
     it("applies default pagination positioning when no custom class is provided", () => {
       render(<TableComponent {...paginationProps} />);
 
+      // Find the pagination wrapper and verify it has the centering classes
+      const paginationWrapper = screen.getByText((_content, element) => {
+        return element?.textContent === 'Page 1 of 2';
+      }).closest("div")?.parentElement;
+      expect(paginationWrapper).toHaveClass("w-full", "flex", "justify-center", "mt-4");
+      
       // Find the pagination container and verify it has the default classes
       const paginationContainer = screen.getByText((_content, element) => {
         return element?.textContent === 'Page 1 of 2';
       }).closest("div");
-      expect(paginationContainer).toHaveClass("flex", "justify-center", "items-center", "mt-4");
+      expect(paginationContainer).toHaveClass("flex", "items-center");
     });
 
     it("renders custom pagination component when renderPagination is provided", () => {
@@ -440,28 +446,28 @@ describe("TableComponent", () => {
     it("applies custom maxHeight as string", () => {
       render(<TableComponent {...defaultProps} maxHeight="400px" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "400px" });
     });
 
     it("applies custom maxHeight as number", () => {
       render(<TableComponent {...defaultProps} maxHeight={300} />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "300px" });
     });
 
     it("uses default maxHeight when not specified", () => {
       render(<TableComponent {...defaultProps} />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "600px" });
     });
 
     it("applies maxHeight with different units", () => {
       render(<TableComponent {...defaultProps} maxHeight="50vh" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "50vh" });
     });
 
@@ -515,7 +521,7 @@ describe("TableComponent", () => {
     it("applies custom scrollBehavior", () => {
       render(<TableComponent {...defaultProps} scrollBehavior="scroll" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".table-scroll-container");
+      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ overflow: "scroll" });
     });
 

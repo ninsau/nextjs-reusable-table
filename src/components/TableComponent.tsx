@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import type { TableProps } from "../types";
 import { formatDate, isDateString, trimText } from "../utils/helpers";
 import ActionDropdown from "./ActionDropdown";
@@ -118,15 +118,15 @@ function TableComponent<T>({
     return <NoContentComponent {...noContentProps} />;
   }
 
-  let filteredData = data;
-  if (searchValue) {
-    filteredData = data.filter((item) => {
+  const filteredData = useMemo(() => {
+    if (!searchValue) return data;
+    return data.filter((item) => {
       return props.some((prop) => {
         const value = item[prop];
         return String(value).toLowerCase().includes(searchValue.toLowerCase());
       });
     });
-  }
+  }, [data, searchValue, props]);
 
   if (filteredData.length === 0) {
     return <NoContentComponent text="No items found." name={noContentProps?.name} icon={noContentProps?.icon} />;
@@ -142,117 +142,138 @@ function TableComponent<T>({
     }
   };
 
-  const displayedColumns = columns.map((col, i) => {
-    return {
+  const displayedColumns = useMemo(() =>
+    columns.map((col, i) => ({
       col,
       indicator: sortableProps.includes(props[i]) ? "⇅" : "",
       prop: props[i],
       index: i,
-    };
-  });
+    })), [columns, sortableProps, props]);
 
   const sortedData = filteredData;
 
-  let paginatedData = sortedData;
-  const calculatedTotalPages =
-    totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
+  const { paginatedData, calculatedTotalPages } = useMemo(() => {
+    const totalPagesCalc = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
+    let paginated = sortedData;
 
-  if (enablePagination) {
-    if (totalPages !== undefined) {
-      paginatedData = sortedData;
-    } else {
+    if (enablePagination && totalPages === undefined) {
       const startIndex = (page - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
-      paginatedData = sortedData.slice(startIndex, endIndex);
+      paginated = sortedData.slice(startIndex, endIndex);
     }
-    if (page > calculatedTotalPages && setPage) {
+
+    return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
+  }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
+
+  // Handle page bounds checking
+  useEffect(() => {
+    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
       setPage(calculatedTotalPages);
     }
-  }
+  }, [enablePagination, page, calculatedTotalPages, setPage]);
 
-  const baseTableClassName = !disableDefaultStyles
-    ? `w-full divide-y ${
-        enableDarkMode && isDarkMode
-          ? "bg-gray-900 text-gray-200 divide-gray-700"
-          : "bg-white text-gray-900 divide-gray-200"
-      }`
-    : "";
+  const baseTableClassName = useMemo(() =>
+    !disableDefaultStyles
+      ? `w-full divide-y ${
+          enableDarkMode && isDarkMode
+            ? "bg-gray-900 text-gray-200 divide-gray-700"
+            : "bg-white text-gray-900 divide-gray-200"
+        }`
+      : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
 
-  const baseTheadClassName =
+  const baseTheadClassName = useMemo(() =>
     !disableDefaultStyles && enableDarkMode
       ? isDarkMode
         ? "bg-gray-700 text-gray-300"
         : "bg-gray-50 text-gray-500"
-      : "";
+      : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
 
-  const baseTbodyClassName = !disableDefaultStyles
-    ? `divide-y ${
-        enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
-      }`
-    : "";
-
-  const baseTrClassName = (index: number) =>
+  const baseTbodyClassName = useMemo(() =>
     !disableDefaultStyles
-      ? index % 2 === 0
-        ? isDarkMode
-          ? "bg-gray-800"
-          : "bg-white"
-        : isDarkMode
+      ? `divide-y ${
+          enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
+        }`
+      : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+
+  const baseTrClassName = useMemo(() =>
+    (index: number) =>
+      !disableDefaultStyles
+        ? index % 2 === 0
+          ? isDarkMode
+            ? "bg-gray-800"
+            : "bg-white"
+          : isDarkMode
           ? "bg-gray-700"
           : "bg-gray-100"
-      : "";
+        : "", [disableDefaultStyles, isDarkMode]);
 
-  const baseTdClassName = !disableDefaultStyles
-    ? isDarkMode
-      ? "text-gray-300"
-      : "text-gray-700"
-    : "";
+  const baseTdClassName = useMemo(() =>
+    !disableDefaultStyles
+      ? isDarkMode
+        ? "text-gray-300"
+        : "text-gray-700"
+      : "", [disableDefaultStyles, isDarkMode]);
 
-  const tableClassName = disableDefaultStyles
-    ? customClassNames.table || ""
-    : `${baseTableClassName} ${customClassNames.table || ""}`;
-
-  const theadClassName = disableDefaultStyles
-    ? customClassNames.thead || ""
-    : `${baseTheadClassName} ${customClassNames.thead || ""} sticky-header`;
-
-  const tbodyClassName = disableDefaultStyles
-    ? customClassNames.tbody || ""
-    : `${baseTbodyClassName} ${customClassNames.tbody || ""}`;
-
-  const thClassName = (_prop: string) => {
-    const baseClass = !disableDefaultStyles
-      ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
-          customClassNames.th || ""
-        }`
-      : customClassNames.th || "";
-    return `${baseClass}`;
-  };
-
-  const trClassName = (index: number) =>
+  const tableClassName = useMemo(() =>
     disableDefaultStyles
-      ? customClassNames.tr || ""
-      : `${baseTrClassName(index)} ${customClassNames.tr || ""}`;
+      ? customClassNames.table || ""
+      : `${baseTableClassName} ${customClassNames.table || ""}`, [disableDefaultStyles, baseTableClassName, customClassNames.table]);
 
-  const tdClassName = (_prop: string) => {
-    const baseClass = !disableDefaultStyles
-      ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
-          customClassNames.td || ""
-        }`
-      : customClassNames.td || "";
-    return `${baseClass}`;
-  };
+  const theadClassName = useMemo(() =>
+    disableDefaultStyles
+      ? customClassNames.thead || ""
+      : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`, [disableDefaultStyles, baseTheadClassName, customClassNames.thead]);
+
+  const tbodyClassName = useMemo(() =>
+    disableDefaultStyles
+      ? customClassNames.tbody || ""
+      : `${baseTbodyClassName} ${customClassNames.tbody || ""}`, [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]);
+
+  const thClassName = useMemo(() =>
+    (_prop: string) => {
+      const baseClass = !disableDefaultStyles
+        ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
+            customClassNames.th || ""
+          }`
+        : customClassNames.th || "";
+      return `${baseClass}`;
+    }, [disableDefaultStyles, customClassNames.th]);
+
+  const trClassName = useMemo(() =>
+    (index: number) =>
+      disableDefaultStyles
+        ? customClassNames.tr || ""
+        : `${baseTrClassName(index)} ${customClassNames.tr || ""}`, [disableDefaultStyles, baseTrClassName, customClassNames.tr]);
+
+  const tdClassName = useMemo(() =>
+    (_prop: string) => {
+      const baseClass = !disableDefaultStyles
+        ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
+            customClassNames.td || ""
+          }`
+        : customClassNames.td || "";
+      return `${baseClass}`;
+    }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
 
   return (
-    <div className="rt-table-wrapper">
+    <div
+      className={
+        disableDefaultStyles
+          ? customClassNames.container || ""
+          : `rtbl-container ${isDarkMode ? "dark" : ""} ${customClassNames.container || ""}`
+      }
+      style={customStyles.container}
+    >
       <div
         className={
           disableDefaultStyles
             ? customClassNames.scrollContainer || ""
-            : `table-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`
+            : `rtbl-scroll-container pb-6 ${customClassNames.scrollContainer || ""}`
         }
         style={{
-          maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight,
+          ...(maxHeight !== undefined && {
+            maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight,
+          }),
           overflow: scrollBehavior,
           ...customStyles.scrollContainer,
         }}
@@ -591,24 +612,26 @@ function TableComponent<T>({
         </table>
       </div>
       {enablePagination && page !== undefined && setPage && (
-        renderPagination ? (
-          renderPagination({
-            page,
-            setPage,
-            totalPages: totalPages ?? calculatedTotalPages,
-            calculatedTotalPages: Math.ceil(sortedData.length / itemsPerPage),
-            itemsPerPage,
-          })
-        ) : (
-          <PaginationComponent
-            page={page}
-            setPage={setPage}
-            totalPages={calculatedTotalPages}
-            disableDefaultStyles={disableDefaultStyles}
-            customClassNames={customClassNames.pagination}
-            enableDarkMode={enableDarkMode}
-          />
-        )
+        <div className="w-full flex justify-center mt-4">
+          {renderPagination ? (
+            renderPagination({
+              page,
+              setPage,
+              totalPages: totalPages ?? calculatedTotalPages,
+              calculatedTotalPages: Math.ceil(sortedData.length / itemsPerPage),
+              itemsPerPage,
+            })
+          ) : (
+            <PaginationComponent
+              page={page}
+              setPage={setPage}
+              totalPages={calculatedTotalPages}
+              disableDefaultStyles={disableDefaultStyles}
+              customClassNames={customClassNames.pagination}
+              enableDarkMode={enableDarkMode}
+            />
+          )}
+        </div>
       )}
     </div>
   );

@@ -55,7 +55,7 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
       className={
         disableDefaultStyles
           ? customClassNames?.container || ""
-          : `flex justify-center items-center mt-4 ${customClassNames?.container || ""}`
+          : `flex items-center ${customClassNames?.container || ""}`
       }
     >
       <button
