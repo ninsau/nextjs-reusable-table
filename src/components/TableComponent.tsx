@@ -88,36 +88,7 @@ function TableComponent<T>({
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
 
-  if (loading) {
-    const loadingSkeletonClasses = customClassNames.loadingSkeleton;
-    const baseLoadingClassName = disableDefaultStyles
-      ? customClassNames.loadingContainer || ""
-      : `p-4 animate-pulse ${customClassNames.loadingContainer || ""}`;
-
-    const baseSkeletonBarClass = loadingSkeletonClasses?.skeletonBar || "h-6 bg-gray-300 mb-3 rounded";
-    const baseSkeletonItemClass = loadingSkeletonClasses?.skeletonItem || "h-4 bg-gray-200 mb-2 rounded";
-
-    return (
-      <div
-        className={baseLoadingClassName}
-        style={customStyles.loading}
-        aria-busy="true"
-        aria-live="polite"
-        role="status"
-        aria-label={accessibility.screenReaderLabels?.loading || "Loading table data"}
-      >
-        <div className={baseSkeletonBarClass} />
-        <div className={baseSkeletonItemClass} />
-        <div className={baseSkeletonItemClass} />
-        <div className={baseSkeletonItemClass} />
-      </div>
-    );
-  }
-
-  if (!data || data.length === 0) {
-    return <NoContentComponent {...noContentProps} />;
-  }
-
+  // Memoized calculations - must be called before any early returns
   const filteredData = useMemo(() => {
     if (!searchValue) return data;
     return data.filter((item) => {
@@ -127,20 +98,6 @@ function TableComponent<T>({
       });
     });
   }, [data, searchValue, props]);
-
-  if (filteredData.length === 0) {
-    return <NoContentComponent text="No items found." name={noContentProps?.name} icon={noContentProps?.icon} />;
-  }
-
-  /**
-   * Handles column sorting when a sortable column header is clicked
-   * @param prop - The property name to sort by
-   */
-  const handleSort = (prop: string) => {
-    if (sortableProps.includes(prop as keyof T) && onSort) {
-      onSort(prop as keyof T);
-    }
-  };
 
   const displayedColumns = useMemo(() =>
     columns.map((col, i) => ({
@@ -164,13 +121,6 @@ function TableComponent<T>({
 
     return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
   }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
-
-  // Handle page bounds checking
-  useEffect(() => {
-    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
-      setPage(calculatedTotalPages);
-    }
-  }, [enablePagination, page, calculatedTotalPages, setPage]);
 
   const baseTableClassName = useMemo(() =>
     !disableDefaultStyles
@@ -254,6 +204,57 @@ function TableComponent<T>({
         : customClassNames.td || "";
       return `${baseClass}`;
     }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
+
+  // Handle page bounds checking
+  useEffect(() => {
+    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
+      setPage(calculatedTotalPages);
+    }
+  }, [enablePagination, page, calculatedTotalPages, setPage]);
+
+  if (loading) {
+    const loadingSkeletonClasses = customClassNames.loadingSkeleton;
+    const baseLoadingClassName = disableDefaultStyles
+      ? customClassNames.loadingContainer || ""
+      : `p-4 animate-pulse ${customClassNames.loadingContainer || ""}`;
+
+    const baseSkeletonBarClass = loadingSkeletonClasses?.skeletonBar || "h-6 bg-gray-300 mb-3 rounded";
+    const baseSkeletonItemClass = loadingSkeletonClasses?.skeletonItem || "h-4 bg-gray-200 mb-2 rounded";
+
+    return (
+      <div
+        className={baseLoadingClassName}
+        style={customStyles.loading}
+        aria-busy="true"
+        aria-live="polite"
+        role="status"
+        aria-label={accessibility.screenReaderLabels?.loading || "Loading table data"}
+      >
+        <div className={baseSkeletonBarClass} />
+        <div className={baseSkeletonItemClass} />
+        <div className={baseSkeletonItemClass} />
+        <div className={baseSkeletonItemClass} />
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return <NoContentComponent {...noContentProps} />;
+  }
+
+  if (filteredData.length === 0) {
+    return <NoContentComponent text="No items found." name={noContentProps?.name} icon={noContentProps?.icon} />;
+  }
+
+  /**
+   * Handles column sorting when a sortable column header is clicked
+   * @param prop - The property name to sort by
+   */
+  const handleSort = (prop: string) => {
+    if (sortableProps.includes(prop as keyof T) && onSort) {
+      onSort(prop as keyof T);
+    }
+  };
 
   return (
     <div

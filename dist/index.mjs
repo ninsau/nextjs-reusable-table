@@ -413,6 +413,54 @@ function TableComponent({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
+  const filteredData = useMemo(() => {
+    if (!searchValue) return data;
+    return data.filter((item) => {
+      return props.some((prop) => {
+        const value = item[prop];
+        return String(value).toLowerCase().includes(searchValue.toLowerCase());
+      });
+    });
+  }, [data, searchValue, props]);
+  const displayedColumns = useMemo(() => columns.map((col, i) => ({
+    col,
+    indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
+    prop: props[i],
+    index: i
+  })), [columns, sortableProps, props]);
+  const sortedData = filteredData;
+  const { paginatedData, calculatedTotalPages } = useMemo(() => {
+    const totalPagesCalc = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
+    let paginated = sortedData;
+    if (enablePagination && totalPages === void 0) {
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      paginated = sortedData.slice(startIndex, endIndex);
+    }
+    return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
+  }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
+  const baseTableClassName = useMemo(() => !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTheadClassName = useMemo(() => !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTbodyClassName = useMemo(() => !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTrClassName = useMemo(() => (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "", [disableDefaultStyles, isDarkMode]);
+  const baseTdClassName = useMemo(() => !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "", [disableDefaultStyles, isDarkMode]);
+  const tableClassName = useMemo(() => disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`, [disableDefaultStyles, baseTableClassName, customClassNames.table]);
+  const theadClassName = useMemo(() => disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`, [disableDefaultStyles, baseTheadClassName, customClassNames.thead]);
+  const tbodyClassName = useMemo(() => disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`, [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]);
+  const thClassName = useMemo(() => (_prop) => {
+    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
+    return `${baseClass}`;
+  }, [disableDefaultStyles, customClassNames.th]);
+  const trClassName = useMemo(() => (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`, [disableDefaultStyles, baseTrClassName, customClassNames.tr]);
+  const tdClassName = useMemo(() => (_prop) => {
+    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
+    return `${baseClass}`;
+  }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
+  useEffect3(() => {
+    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
+      setPage(calculatedTotalPages);
+    }
+  }, [enablePagination, page, calculatedTotalPages, setPage]);
   if (loading) {
     const loadingSkeletonClasses = customClassNames.loadingSkeleton;
     const baseLoadingClassName = disableDefaultStyles ? customClassNames.loadingContainer || "" : `p-4 animate-pulse ${customClassNames.loadingContainer || ""}`;
@@ -439,15 +487,6 @@ function TableComponent({
   if (!data || data.length === 0) {
     return /* @__PURE__ */ jsx4(NoContentComponent_default, { ...noContentProps });
   }
-  const filteredData = useMemo(() => {
-    if (!searchValue) return data;
-    return data.filter((item) => {
-      return props.some((prop) => {
-        const value = item[prop];
-        return String(value).toLowerCase().includes(searchValue.toLowerCase());
-      });
-    });
-  }, [data, searchValue, props]);
   if (filteredData.length === 0) {
     return /* @__PURE__ */ jsx4(NoContentComponent_default, { text: "No items found.", name: noContentProps?.name, icon: noContentProps?.icon });
   }
@@ -456,45 +495,6 @@ function TableComponent({
       onSort(prop);
     }
   };
-  const displayedColumns = useMemo(() => columns.map((col, i) => ({
-    col,
-    indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
-    prop: props[i],
-    index: i
-  })), [columns, sortableProps, props]);
-  const sortedData = filteredData;
-  const { paginatedData, calculatedTotalPages } = useMemo(() => {
-    const totalPagesCalc = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
-    let paginated = sortedData;
-    if (enablePagination && totalPages === void 0) {
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      paginated = sortedData.slice(startIndex, endIndex);
-    }
-    return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
-  }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
-  useEffect3(() => {
-    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
-      setPage(calculatedTotalPages);
-    }
-  }, [enablePagination, page, calculatedTotalPages, setPage]);
-  const baseTableClassName = useMemo(() => !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTheadClassName = useMemo(() => !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTbodyClassName = useMemo(() => !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTrClassName = useMemo(() => (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "", [disableDefaultStyles, isDarkMode]);
-  const baseTdClassName = useMemo(() => !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "", [disableDefaultStyles, isDarkMode]);
-  const tableClassName = useMemo(() => disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`, [disableDefaultStyles, baseTableClassName, customClassNames.table]);
-  const theadClassName = useMemo(() => disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`, [disableDefaultStyles, baseTheadClassName, customClassNames.thead]);
-  const tbodyClassName = useMemo(() => disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`, [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]);
-  const thClassName = useMemo(() => (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
-    return `${baseClass}`;
-  }, [disableDefaultStyles, customClassNames.th]);
-  const trClassName = useMemo(() => (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`, [disableDefaultStyles, baseTrClassName, customClassNames.tr]);
-  const tdClassName = useMemo(() => (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
-    return `${baseClass}`;
-  }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
   return /* @__PURE__ */ jsxs4(
     "div",
     {

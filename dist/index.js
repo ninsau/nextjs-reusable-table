@@ -452,6 +452,54 @@ function TableComponent({
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [headerDropdown]);
+  const filteredData = (0, import_react3.useMemo)(() => {
+    if (!searchValue) return data;
+    return data.filter((item) => {
+      return props.some((prop) => {
+        const value = item[prop];
+        return String(value).toLowerCase().includes(searchValue.toLowerCase());
+      });
+    });
+  }, [data, searchValue, props]);
+  const displayedColumns = (0, import_react3.useMemo)(() => columns.map((col, i) => ({
+    col,
+    indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
+    prop: props[i],
+    index: i
+  })), [columns, sortableProps, props]);
+  const sortedData = filteredData;
+  const { paginatedData, calculatedTotalPages } = (0, import_react3.useMemo)(() => {
+    const totalPagesCalc = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
+    let paginated = sortedData;
+    if (enablePagination && totalPages === void 0) {
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      paginated = sortedData.slice(startIndex, endIndex);
+    }
+    return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
+  }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
+  const baseTableClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTheadClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTbodyClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTrClassName = (0, import_react3.useMemo)(() => (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "", [disableDefaultStyles, isDarkMode]);
+  const baseTdClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "", [disableDefaultStyles, isDarkMode]);
+  const tableClassName = (0, import_react3.useMemo)(() => disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`, [disableDefaultStyles, baseTableClassName, customClassNames.table]);
+  const theadClassName = (0, import_react3.useMemo)(() => disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`, [disableDefaultStyles, baseTheadClassName, customClassNames.thead]);
+  const tbodyClassName = (0, import_react3.useMemo)(() => disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`, [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]);
+  const thClassName = (0, import_react3.useMemo)(() => (_prop) => {
+    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
+    return `${baseClass}`;
+  }, [disableDefaultStyles, customClassNames.th]);
+  const trClassName = (0, import_react3.useMemo)(() => (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`, [disableDefaultStyles, baseTrClassName, customClassNames.tr]);
+  const tdClassName = (0, import_react3.useMemo)(() => (_prop) => {
+    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
+    return `${baseClass}`;
+  }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
+  (0, import_react3.useEffect)(() => {
+    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
+      setPage(calculatedTotalPages);
+    }
+  }, [enablePagination, page, calculatedTotalPages, setPage]);
   if (loading) {
     const loadingSkeletonClasses = customClassNames.loadingSkeleton;
     const baseLoadingClassName = disableDefaultStyles ? customClassNames.loadingContainer || "" : `p-4 animate-pulse ${customClassNames.loadingContainer || ""}`;
@@ -478,15 +526,6 @@ function TableComponent({
   if (!data || data.length === 0) {
     return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(NoContentComponent_default, { ...noContentProps });
   }
-  const filteredData = (0, import_react3.useMemo)(() => {
-    if (!searchValue) return data;
-    return data.filter((item) => {
-      return props.some((prop) => {
-        const value = item[prop];
-        return String(value).toLowerCase().includes(searchValue.toLowerCase());
-      });
-    });
-  }, [data, searchValue, props]);
   if (filteredData.length === 0) {
     return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(NoContentComponent_default, { text: "No items found.", name: noContentProps?.name, icon: noContentProps?.icon });
   }
@@ -495,45 +534,6 @@ function TableComponent({
       onSort(prop);
     }
   };
-  const displayedColumns = (0, import_react3.useMemo)(() => columns.map((col, i) => ({
-    col,
-    indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
-    prop: props[i],
-    index: i
-  })), [columns, sortableProps, props]);
-  const sortedData = filteredData;
-  const { paginatedData, calculatedTotalPages } = (0, import_react3.useMemo)(() => {
-    const totalPagesCalc = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
-    let paginated = sortedData;
-    if (enablePagination && totalPages === void 0) {
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      paginated = sortedData.slice(startIndex, endIndex);
-    }
-    return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
-  }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
-  (0, import_react3.useEffect)(() => {
-    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
-      setPage(calculatedTotalPages);
-    }
-  }, [enablePagination, page, calculatedTotalPages, setPage]);
-  const baseTableClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTheadClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTbodyClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTrClassName = (0, import_react3.useMemo)(() => (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "", [disableDefaultStyles, isDarkMode]);
-  const baseTdClassName = (0, import_react3.useMemo)(() => !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "", [disableDefaultStyles, isDarkMode]);
-  const tableClassName = (0, import_react3.useMemo)(() => disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`, [disableDefaultStyles, baseTableClassName, customClassNames.table]);
-  const theadClassName = (0, import_react3.useMemo)(() => disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`, [disableDefaultStyles, baseTheadClassName, customClassNames.thead]);
-  const tbodyClassName = (0, import_react3.useMemo)(() => disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`, [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]);
-  const thClassName = (0, import_react3.useMemo)(() => (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
-    return `${baseClass}`;
-  }, [disableDefaultStyles, customClassNames.th]);
-  const trClassName = (0, import_react3.useMemo)(() => (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`, [disableDefaultStyles, baseTrClassName, customClassNames.tr]);
-  const tdClassName = (0, import_react3.useMemo)(() => (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
-    return `${baseClass}`;
-  }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
     "div",
     {
