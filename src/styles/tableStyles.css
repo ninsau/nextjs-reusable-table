@@ -1,18 +1,19 @@
 @import "react-loading-skeleton/dist/skeleton.css";
 
-.rt-table-container {
+/* Scoped container for all table styles to prevent leaking - using unique prefix */
+.rtbl-container {
   overflow: hidden;
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
 }
 
-.rt-table {
+.rtbl-table {
   min-width: 100%;
   border-bottom: 1px solid #e5e7eb;
   position: relative;
 }
 
-.rt-table th {
+.rtbl-table th {
   padding-left: 1rem;
   padding-right: 1rem;
   padding-top: 0.75rem;
@@ -27,11 +28,11 @@
   min-width: 100px;
 }
 
-.rt-table tbody tr:nth-child(even) {
+.rtbl-table tbody tr:nth-child(even) {
   background-color: #f9fafb;
 }
 
-.rt-freeze-left {
+.rtbl-freeze-left {
   position: sticky;
   left: 0;
   z-index: 20;
@@ -39,7 +40,7 @@
   border-right: 1px solid rgb(229, 231, 235);
 }
 
-.rt-freeze-right {
+.rtbl-freeze-right {
   position: sticky;
   right: 0;
   z-index: 20;
@@ -47,32 +48,32 @@
   border-left: 1px solid rgb(229, 231, 235);
 }
 
-.rt-sticky-left {
+.rtbl-sticky-left {
   position: sticky;
   left: 0;
   z-index: 20;
   background-color: inherit;
 }
 
-.rt-sticky-right {
+.rtbl-sticky-right {
   position: sticky;
   right: 0;
   z-index: 20;
   background-color: inherit;
 }
 
-.rt-table-scroll-container {
+.rtbl-scroll-container {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
 
-.rt-table td,
-.rt-table th {
+.rtbl-table td,
+.rtbl-table th {
   transition: background-color 0.2s;
   position: relative;
 }
 
-.rt-resizer {
+.rtbl-resizer {
   position: absolute;
   right: 0;
   top: 0;
@@ -86,16 +87,16 @@
   transition: opacity 0.2s;
 }
 
-.rt-resizer:hover,
-.rt-resizing {
+.rtbl-resizer:hover,
+.rtbl-resizing {
   opacity: 1;
 }
 
-.rt-resizer.rt-resizing {
+.rtbl-resizer.rtbl-resizing {
   background: rgba(0, 0, 0, 0.1);
 }
 
-.rt-header-content {
+.rtbl-header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -103,26 +104,26 @@
   min-height: 2.5rem;
 }
 
-.rt-header-text {
+.rtbl-header-text {
   white-space: normal;
   word-break: break-word;
   flex: 1;
   padding-right: 0.5rem;
 }
 
-.rt-header-actions {
+.rtbl-header-actions {
   flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
-.rt-sort-indicator {
+.rtbl-sort-indicator {
   margin-right: 0.25rem;
   display: inline-flex;
   align-items: center;
 }
 
-.rt-dropdown-menu {
+.rtbl-dropdown-menu {
   position: absolute;
   right: 0;
   margin-top: 0.5rem;
@@ -138,12 +139,12 @@
   border: 1px solid #e5e7eb;
 }
 
-.rt-table-container.dark .rt-dropdown-menu {
+.rtbl-container.dark .rtbl-dropdown-menu {
   background-color: #374151;
   border-color: #374151;
 }
 
-.rt-dropdown-item {
+.rtbl-dropdown-item {
   display: block;
   width: 100%;
   padding-left: 1rem;
@@ -155,42 +156,42 @@
   color: #374151;
 }
 
-.rt-table-container.dark .rt-dropdown-item {
+.rtbl-container.dark .rtbl-dropdown-item {
   color: #e5e7eb;
 }
 
-.rt-table-container.dark .rt-table {
+.rtbl-container.dark .rtbl-table {
   border-color: #374151;
 }
 
-.rt-table-container.dark .rt-table th {
+.rtbl-container.dark .rtbl-table th {
   color: #d1d5db;
 }
 
-.rt-table-container.dark .rt-table tbody tr:nth-child(even) {
+.rtbl-container.dark .rtbl-table tbody tr:nth-child(even) {
   background-color: #1f2937;
 }
 
-.rt-table-container.dark .rt-freeze-left,
-.rt-table-container.dark .rt-freeze-right {
+.rtbl-container.dark .rtbl-freeze-left,
+.rtbl-container.dark .rtbl-freeze-right {
   border-color: #4b5563;
 }
 
-.rt-table-cell {
+.rtbl-table-cell {
   white-space: normal;
   word-break: break-word;
   min-width: 100px;
   max-width: 300px;
 }
 
-.rt-chip-container {
+.rtbl-chip-container {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
   max-width: 100%;
 }
 
-.rt-chip {
+.rtbl-chip {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
@@ -199,12 +200,12 @@
   color: #1f2937;
 }
 
-.rt-table-container.dark .rt-chip {
+.rtbl-container.dark .rtbl-chip {
   background-color: #312e81;
   color: #e5e7eb;
 }
 
-.rt-more-chip {
+.rtbl-more-chip {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
@@ -214,12 +215,12 @@
   color: #4b5563;
 }
 
-.rt-table-container.dark .rt-more-chip {
+.rtbl-container.dark .rtbl-more-chip {
   background-color: #4b5563;
   color: #d1d5db;
 }
 
-.rt-sticky-header {
+.rtbl-sticky-header {
   position: sticky;
   top: 0;
   z-index: 30;
