@@ -5,7 +5,37 @@ All notable changes to **nextjs-reusable-table** will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.8.0] - 2024-01-XX
+## [4.1.0] - 2026-03-08
+
+### Fixed
+- CSS style leaking: removed `@import "react-loading-skeleton/dist/skeleton.css"` from `tableStyles.css`; skeleton CSS is now loaded on-demand by `TableSkeleton.tsx` only, preventing it from affecting pages that never use the skeleton
+- All `.rtbl-*` CSS is now wrapped in `@layer rtbl` for cascade isolation, ensuring library styles never override unlayered consumer styles
+
+### Added
+- `.cursor/rules/*.mdc` — Cursor IDE rules auto-attached per file type for contributors
+- `skills/nextjs-reusable-table/SKILL.md` — installable agentskills.io skill for AI editors (Cursor, Claude Code, GitHub Copilot)
+- `skills/nextjs-reusable-table/references/api-reference.md` — condensed API reference for AI context windows
+- `llms.txt` — AI-discovery index following the llms.txt standard
+- `llms-full.txt` — complete inlined library reference for AI context windows
+- Exported `formatDate`, `isDateString`, `trimText` from public package index
+- Modern `exports` field in `package.json` for proper ESM/CJS resolution and `styles.css` import alias
+- `.node-version` pinned to Node 22
+
+### Changed
+- Peer dependencies updated: `react >=18`, `react-dom >=18`, `next >=13`, `tailwindcss >=3.0.0`
+- `react` and `react-dom` moved from `dependencies` to `devDependencies` (they are peer deps and should not be bundled)
+- Dev dependency `@types/react` and `@types/react-dom` updated to v19
+- CI matrix updated to Node 20/22 (Node 18 is EOL)
+- Consolidated FAQ.md content into TROUBLESHOOTING.md
+- SECURITY.md updated to reflect supported versions (4.0.x, 4.1.x)
+- README restructured: removed duplicate prop table, added documentation index, updated prerequisites
+
+## [4.0.8] - 2025-09-25
+
+### Fixed
+- Resolved Rules of Hooks violations by moving `useMemo` hooks before early returns
+
+## [3.8.0] - 2024-10-15
 
 ### 🚀 **Added**
 - Comprehensive CI/CD pipeline with GitHub Actions
@@ -57,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added EditorConfig for consistent coding styles
 - Added VS Code settings for optimal development experience
 
-## [3.7.2] - 2024-01-XX
+## [3.7.2] - 2024-09-01
 
 ### ✨ **Added**
 - Enhanced TypeScript support with strict type checking
@@ -84,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved CSS-in-JS handling
 - Better peer dependency management
 
-## [3.7.1] - 2024-01-XX
+## [3.7.1] - 2024-07-15
 
 ### 🐛 **Fixed**
 - Critical bug fix for table rendering in SSR environments
@@ -97,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved touch interactions
 - Better keyboard navigation on mobile devices
 
-## [3.7.0] - 2024-01-XX
+## [3.7.0] - 2024-05-01
 
 ### 🚀 **Added**
 - New `formatHeader` prop for custom header formatting
@@ -117,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better ARIA label implementation
 - WCAG 2.1 AA compliance improvements
 
-## [3.6.0] - 2023-12-XX
+## [3.6.0] - 2023-12-01
 
 ### 🚀 **Added**
 - Dark mode support with system preference detection
@@ -137,7 +167,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved TypeScript definitions
 - Enhanced build process
 
-## [3.5.0] - 2023-11-XX
+## [3.5.0] - 2023-11-01
 
 ### 🚀 **Added**
 - Action dropdown functionality
@@ -151,7 +181,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced performance optimizations
 - Memory leak fixes
 
-## [3.0.0] - 2023-10-XX
+## [3.0.0] - 2023-10-01
 
 ### 💥 **Breaking Changes**
 - Complete rewrite with TypeScript
@@ -170,7 +200,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Usage examples
 - Migration guide
 
-## [2.x.x] - 2023-XX-XX
+## [2.x.x] - 2023-08-01
 
 ### 🚀 **Added**
 - Pagination support
@@ -178,7 +208,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search capabilities
 - Loading states
 
-## [1.x.x] - 2023-XX-XX
+## [1.x.x] - 2023-06-01
 
 ### 🚀 **Added**
 - Initial table component

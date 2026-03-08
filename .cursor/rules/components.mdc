@@ -1,0 +1,62 @@
+---
+description: Rules for React components in src/components/. Auto-attaches when editing component files.
+globs: ["src/components/**/*.tsx"]
+alwaysApply: false
+---
+
+# Component Rules
+
+## Required Structure for Every Component
+
+```tsx
+"use client";
+import type React from "react";
+// ... other imports
+
+const MyComponent: React.FC<MyComponentProps> = ({ prop = default }) => {
+  // All hooks FIRST — before any early returns
+  const [state, setState] = useState(false);
+  const computed = useMemo(() => ..., [deps]);
+
+  // Early returns after all hooks
+  if (!data) return null;
+
+  return <div>...</div>;
+};
+
+export default MyComponent;
+```
+
+## Generic Table Components
+Use `<T>` generic for all data-typed components:
+```tsx
+const TableComponent = <T,>({ data, props }: TableProps<T>) => { ... };
+```
+
+## Styling Pattern
+Always merge default + custom class names using the `disableDefaultStyles` guard:
+```tsx
+const containerClass = disableDefaultStyles
+  ? customClassNames.container || ""
+  : `rtbl-container ${customClassNames.container || ""}`;
+```
+Never hardcode colors inline — use Tailwind utilities or `rtbl-*` CSS classes.
+
+## Dark Mode
+Detect via `window.matchMedia("(prefers-color-scheme: dark)")` inside a `useEffect`.
+Pass `isDarkMode` state to conditionally apply Tailwind dark classes (`bg-gray-900`, etc.).
+Apply `dark` class to `rtbl-container` so CSS dark variants activate: `${isDarkMode ? "dark" : ""}`.
+
+## Accessibility
+- Every interactive element needs `role`, `tabIndex`, and `onKeyDown` (Enter key at minimum)
+- Action buttons: `aria-label`, `type="button"`
+- Loading states: `aria-busy="true"`, `aria-live="polite"`, `role="status"`
+- Tables: use `scope="col"` on `<th>`, `<span className="sr-only">` for screen-reader-only text
+
+## Portal Usage (ActionDropdown)
+The action dropdown uses `createPortal(menu, document.body)` to escape table overflow clipping.
+Position is computed from `buttonRef.current.getBoundingClientRect()` on open.
+Always clean up event listeners in `useEffect` return.
+
+## Props Interface Location
+All interfaces go in `src/types/index.ts`, NOT inline in the component file.

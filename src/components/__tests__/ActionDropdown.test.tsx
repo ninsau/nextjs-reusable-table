@@ -271,7 +271,11 @@ describe("ActionDropdown", () => {
       const user = userEvent.setup();
       const propsWithMissingFunction = {
         ...defaultProps,
-        actionFunctions: [jest.fn(), undefined as unknown as (item: unknown) => void, jest.fn()],
+        actionFunctions: [
+          jest.fn(),
+          undefined as unknown as (item: unknown) => void,
+          jest.fn(),
+        ],
       };
 
       render(<ActionDropdown {...propsWithMissingFunction} />);

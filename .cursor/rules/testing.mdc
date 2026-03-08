@@ -1,0 +1,82 @@
+---
+description: Rules for test files. Auto-attaches when editing test files.
+globs: ["src/**/__tests__/**/*.{ts,tsx}", "src/**/*.test.{ts,tsx}"]
+alwaysApply: false
+---
+
+# Testing Rules
+
+## Test File Location
+- Component tests: `src/components/__tests__/ComponentName.test.tsx`
+- Utility tests: `src/utils/__tests__/filename.test.ts`
+
+## Required Test Structure
+```tsx
+import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import ComponentName from "../ComponentName";
+
+const defaultProps = {
+  // Always define a typed defaultProps object so tests are self-documenting
+};
+
+describe("ComponentName", () => {
+  describe("rendering", () => {
+    it("renders with required props", () => { ... });
+    it("renders empty/loading/error states", () => { ... });
+  });
+
+  describe("interactions", () => {
+    it("handles click events", async () => {
+      const user = userEvent.setup();
+      const handler = jest.fn();
+      render(<ComponentName {...defaultProps} onClick={handler} />);
+      await user.click(screen.getByRole("button"));
+      expect(handler).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("accessibility", () => {
+    it("has correct ARIA attributes", () => { ... });
+  });
+});
+```
+
+## Coverage Requirements
+- 90%+ coverage for all new or modified code
+- Test: rendering, user interactions, edge cases (empty arrays, undefined props), dark mode, custom class names
+
+## Mock Patterns
+```ts
+// Mock next/link
+jest.mock("next/link", () => ({ __esModule: true, default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
+
+// Mock window.matchMedia
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: jest.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  })),
+});
+
+// Mock createPortal
+jest.mock("react-dom", () => ({
+  ...jest.requireActual("react-dom"),
+  createPortal: (node: React.ReactNode) => node,
+}));
+```
+
+## Data Fixtures
+Use realistic, typed data that reflects real usage:
+```ts
+interface User { id: string; name: string; email: string; }
+const mockUsers: User[] = [
+  { id: "1", name: "Alice", email: "alice@example.com" },
+];
+```
+
+## Biome in Test Files
+Test files follow the same Biome rules. No `any` in test code — cast with `as` only when unavoidable and comment why.

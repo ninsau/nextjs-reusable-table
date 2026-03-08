@@ -1,0 +1,54 @@
+---
+description: Rules for CSS and styling. Auto-attaches when editing CSS or Tailwind config files.
+globs: ["src/styles/**/*.css", "tailwind.config.js", "postcss.config.js"]
+alwaysApply: false
+---
+
+# Styling Rules
+
+## CSS Architecture
+The library has two styling layers:
+
+1. **`src/styles/tableStyles.css`** — Scoped component CSS, wrapped in `@layer rtbl { ... }` to prevent cascade conflicts with consumer styles. All selectors use the `rtbl-` prefix.
+2. **Tailwind utility classes** — Applied inline in JSX for dynamic, state-driven styles (dark mode, hover, responsive).
+
+## `@layer rtbl` Requirement
+All rules in `tableStyles.css` MUST live inside `@layer rtbl { ... }`. Never add bare/global rules.
+
+Reason: CSS Cascade Layers (`@layer`) ensure library styles have lower specificity than any unlayered consumer styles, so the library never wins a specificity war.
+
+## `rtbl-` Prefix
+Every class defined in `tableStyles.css` MUST start with `rtbl-`. This prevents naming collisions with consumer CSS frameworks or component libraries.
+
+## Never `@import` Third-Party CSS Here
+`@import "react-loading-skeleton/dist/skeleton.css"` was intentionally removed.
+The skeleton CSS is loaded by `TableSkeleton.tsx` via a JS import, which only runs when the component is actually rendered.
+Do NOT re-add any `@import` of third-party CSS to `tableStyles.css` — it would bundle those styles into `dist/index.css` unconditionally.
+
+## Tailwind Config (`tailwind.config.js`)
+- `preflight: false` — disables Tailwind's CSS reset to avoid affecting consumer pages
+- Content paths scan only `./src/**/*.{js,ts,jsx,tsx}` — do not widen this
+
+## Dark Mode in Tailwind
+The library uses class-based dark mode via `isDarkMode` state + `.dark` class on the container.
+CSS dark variants target `.rtbl-container.dark .rtbl-*`.
+Tailwind dark utilities (`dark:bg-gray-700`) work because `enableDarkMode` adds `.dark` to the container class.
+
+## Consumer Setup (Tailwind v3)
+Consumers must add the library to their `content` array for Tailwind to scan its classes:
+```js
+// tailwind.config.js
+module.exports = {
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/nextjs-reusable-table/dist/**/*.{js,mjs}",
+  ],
+};
+```
+
+## Consumer Setup (Tailwind v4)
+```css
+/* globals.css */
+@import "tailwindcss";
+@source "../node_modules/nextjs-reusable-table/dist";
+```

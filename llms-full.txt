@@ -1,0 +1,477 @@
+# nextjs-reusable-table — Complete AI Reference
+
+> A production-ready, highly customizable table component for Next.js (13+) and React (18+). Features sorting, pagination, search, row actions, dark mode, TypeScript generics, and zero runtime dependencies. v4.1.0+
+
+## Installation
+
+```bash
+npm install nextjs-reusable-table
+```
+
+Import the scoped CSS in your root layout (required for `.rtbl-*` styles):
+
+```ts
+import "nextjs-reusable-table/dist/index.css";
+// or use the exports map:
+import "nextjs-reusable-table/styles.css";
+```
+
+**Tailwind v3** — add to `tailwind.config.js`:
+
+```js
+content: [
+  "./src/**/*.{js,ts,jsx,tsx}",
+  "./node_modules/nextjs-reusable-table/dist/**/*.{js,mjs}",
+]
+```
+
+**Tailwind v4** — add a `@source` directive:
+
+```css
+@import "tailwindcss";
+@source "../node_modules/nextjs-reusable-table/dist";
+```
+
+---
+
+## Quick Start
+
+```tsx
+"use client";
+import { TableComponent } from "nextjs-reusable-table";
+import "nextjs-reusable-table/dist/index.css";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const users: User[] = [
+  { id: 1, name: "Alice", email: "alice@example.com" },
+  { id: 2, name: "Bob", email: "bob@example.com" },
+];
+
+export default function UsersPage() {
+  return (
+    <TableComponent<User>
+      columns={["ID", "Name", "Email"]}
+      data={users}
+      props={["id", "name", "email"]}
+    />
+  );
+}
+```
+
+---
+
+## All Exports
+
+```ts
+// Components
+import {
+  TableComponent,       // main table
+  ActionDropdown,       // row action dropdown
+  PaginationComponent,  // standalone pagination
+  TableSkeleton,        // loading skeleton
+  NoContentComponent,   // empty state
+} from "nextjs-reusable-table";
+
+// Types
+import type {
+  TableProps,
+  ActionDropdownProps,
+  PaginationComponentProps,
+  TableSkeletonProps,
+  NoContentProps,
+} from "nextjs-reusable-table";
+
+// Utility functions
+import { formatDate, isDateString, trimText } from "nextjs-reusable-table";
+```
+
+---
+
+## TableComponent\<T\> — Full Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `columns` | `string[]` | required | Column header labels |
+| `data` | `T[]` | required | Row data |
+| `props` | `ReadonlyArray<keyof T>` | required | Keys to display per column |
+| `loading` | `boolean` | `false` | Show skeleton |
+| `searchValue` | `string` | — | Filter rows |
+| `actions` | `boolean` | `false` | Per-row action dropdown |
+| `actionTexts` | `string[]` | — | Dropdown action labels |
+| `actionFunctions` | `Array<(item: T) => void>` | — | Dropdown action handlers |
+| `rowOnClick` | `(item: T) => void` | — | Row click handler |
+| `enableDarkMode` | `boolean` | `true` | OS dark mode detection |
+| `disableDefaultStyles` | `boolean` | `false` | Full headless mode |
+| `enablePagination` | `boolean` | `false` | Enable pagination |
+| `page` | `number` | `1` | Current page |
+| `setPage` | `(page: number) => void` | — | Page setter |
+| `itemsPerPage` | `number` | `10` | Rows per page |
+| `totalPages` | `number` | — | Server-side page count |
+| `sortableProps` | `Array<keyof T>` | `[]` | Sortable columns |
+| `onSort` | `(prop: keyof T) => void` | — | Sort handler |
+| `formatValue` | `(value, prop, item) => ReactNode` | — | Cell renderer override |
+| `formatHeader` | `(header, prop, index) => ReactNode` | — | Header renderer override |
+| `renderRow` | `(item, index) => ReactNode` | — | Full row renderer override |
+| `renderPagination` | `(props) => ReactNode` | — | Custom pagination renderer |
+| `showRemoveColumns` | `boolean` | `false` | Column hide/show controls |
+| `maxHeight` | `string \| number` | `"600px"` | Scroll container height |
+| `scrollBehavior` | `"auto"\|"scroll"\|"visible"\|"hidden"` | `"auto"` | CSS overflow |
+| `tableLayout` | `"auto"\|"fixed"\|"inherit"` | — | CSS table-layout |
+| `cellExpansion` | `CellExpansionConfig` | see below | Truncation config |
+| `accessibility` | `AccessibilityConfig` | see below | ARIA config |
+| `noContentProps` | `{text?,icon?,name?}` | — | Empty state content |
+| `customClassNames` | `CustomClassNames` | `{}` | Per-element class overrides |
+| `customStyles` | `{container?,table?,scrollContainer?,loading?}` | `{}` | Inline style overrides |
+
+### CellExpansionConfig default
+```ts
+{ enabled: true, maxWidth: 200, behavior: "truncate" }
+```
+
+### AccessibilityConfig default
+```ts
+{ keyboardNavigation: true }
+```
+
+---
+
+## Common Recipes
+
+### Search + Pagination
+
+```tsx
+const [search, setSearch] = useState("");
+const [page, setPage] = useState(1);
+
+<input value={search} onChange={(e) => setSearch(e.target.value)} />
+<TableComponent<User>
+  columns={["Name", "Email"]}
+  data={users}
+  props={["name", "email"]}
+  searchValue={search}
+  enablePagination
+  page={page}
+  setPage={setPage}
+  itemsPerPage={10}
+/>
+```
+
+### Sorting (client-side)
+
+```tsx
+const [sortProp, setSortProp] = useState<keyof User | null>(null);
+const [asc, setAsc] = useState(true);
+
+const sorted = useMemo(() =>
+  sortProp
+    ? [...users].sort((a, b) =>
+        asc
+          ? String(a[sortProp]).localeCompare(String(b[sortProp]))
+          : String(b[sortProp]).localeCompare(String(a[sortProp]))
+      )
+    : users,
+  [users, sortProp, asc]
+);
+
+<TableComponent<User>
+  data={sorted}
+  columns={["Name", "Email"]}
+  props={["name", "email"]}
+  sortableProps={["name", "email"]}
+  onSort={(prop) => {
+    if (prop === sortProp) setAsc((v) => !v);
+    else { setSortProp(prop); setAsc(true); }
+  }}
+/>
+```
+
+### Row Actions
+
+```tsx
+<TableComponent<User>
+  columns={["Name", "Email"]}
+  data={users}
+  props={["name", "email"]}
+  actions
+  actionTexts={["Edit", "Delete"]}
+  actionFunctions={[
+    (u) => router.push(`/users/${u.id}`),
+    (u) => deleteUser(u.id),
+  ]}
+/>
+```
+
+### Custom Cell Renderer
+
+```tsx
+<TableComponent<User>
+  formatValue={(value, prop, item) => {
+    if (prop === "status")
+      return <span className={item.active ? "text-green-600" : "text-red-500"}>{value}</span>;
+    if (prop === "score")
+      return <strong>{Number(value).toFixed(2)}</strong>;
+    return value;
+  }}
+/>
+```
+
+### Headless (disableDefaultStyles)
+
+```tsx
+<TableComponent<User>
+  disableDefaultStyles
+  customClassNames={{
+    container: "border rounded-xl overflow-hidden",
+    table: "w-full text-sm",
+    thead: "bg-slate-100 text-slate-700",
+    th: "px-4 py-3 font-semibold text-left",
+    tr: "border-b last:border-0 hover:bg-slate-50",
+    td: "px-4 py-3",
+    pagination: {
+      container: "flex justify-center gap-2 py-4",
+      button: "px-3 py-1 rounded bg-indigo-600 text-white text-sm",
+      buttonDisabled: "px-3 py-1 rounded bg-gray-200 text-gray-400 text-sm",
+      pageInfo: "px-3 py-1 text-sm text-gray-600",
+    },
+  }}
+/>
+```
+
+### Custom Pagination Renderer
+
+```tsx
+<TableComponent<User>
+  enablePagination
+  page={page}
+  setPage={setPage}
+  renderPagination={({ page, setPage, calculatedTotalPages }) => (
+    <div className="flex gap-2">
+      {Array.from({ length: calculatedTotalPages }, (_, i) => (
+        <button
+          key={i + 1}
+          onClick={() => setPage(i + 1)}
+          className={page === i + 1 ? "font-bold underline" : ""}
+        >
+          {i + 1}
+        </button>
+      ))}
+    </div>
+  )}
+/>
+```
+
+### Server-Side Pagination
+
+```tsx
+<TableComponent<User>
+  data={pageData}          // only current page's data
+  enablePagination
+  page={page}
+  setPage={setPage}
+  totalPages={serverTotalPages}  // prevents client-side page calculation
+  itemsPerPage={20}
+/>
+```
+
+### Loading State
+
+```tsx
+<TableComponent<User>
+  columns={["Name", "Email"]}
+  data={[]}
+  props={["name", "email"]}
+  loading={isLoading}
+/>
+// or use standalone skeleton:
+import { TableSkeleton } from "nextjs-reusable-table";
+{isLoading && <TableSkeleton />}
+```
+
+---
+
+## Standalone Components
+
+```tsx
+import { TableSkeleton, PaginationComponent, ActionDropdown } from "nextjs-reusable-table";
+
+<TableSkeleton enableDarkMode />
+
+<PaginationComponent
+  page={page}
+  setPage={setPage}
+  totalPages={10}
+  customClassNames={{
+    button: "px-2 py-1 bg-blue-500 text-white rounded",
+  }}
+/>
+```
+
+---
+
+## Utility Functions
+
+```ts
+import { formatDate, isDateString, trimText } from "nextjs-reusable-table";
+
+formatDate(new Date(), false)    // "Mar 8, 2026"
+formatDate(new Date(), true)     // "Mar 8, 2026, 09:30 AM"
+
+isDateString("2024-01-15")       // true
+isDateString("not a date")       // false
+
+trimText("Hello, World!", 5)     // "Hello..."
+trimText("Hi", 10)               // "Hi"
+```
+
+---
+
+## Type Definitions
+
+```ts
+interface TableProps<T> {
+  columns: string[];
+  data: T[];
+  props: ReadonlyArray<keyof T>;
+  actions?: boolean;
+  actionTexts?: string[];
+  loading?: boolean;
+  actionFunctions?: Array<(item: T) => void>;
+  searchValue?: string;
+  disableDefaultStyles?: boolean;
+  renderRow?: (item: T, index: number) => React.ReactNode;
+  rowOnClick?: (item: T) => void;
+  enableDarkMode?: boolean;
+  enablePagination?: boolean;
+  page?: number;
+  setPage?: (page: number) => void;
+  itemsPerPage?: number;
+  totalPages?: number;
+  sortableProps?: Array<keyof T>;
+  formatValue?: (value: string, prop: string, item: T) => React.ReactNode;
+  formatHeader?: (header: string, prop: string, index: number) => React.ReactNode;
+  noContentProps?: { text?: string; icon?: React.ReactNode; name?: string };
+  showRemoveColumns?: boolean;
+  onSort?: (prop: keyof T) => void;
+  renderPagination?: (props: {
+    page: number;
+    setPage: (page: number) => void;
+    totalPages: number;
+    calculatedTotalPages: number;
+    itemsPerPage: number;
+  }) => React.ReactNode;
+  maxHeight?: string | number;
+  customStyles?: {
+    container?: React.CSSProperties;
+    table?: React.CSSProperties;
+    scrollContainer?: React.CSSProperties;
+    loading?: React.CSSProperties;
+  };
+  scrollBehavior?: "auto" | "scroll" | "visible" | "hidden";
+  tableLayout?: "auto" | "fixed" | "inherit";
+  cellExpansion?: {
+    enabled?: boolean;
+    maxWidth?: string | number;
+    behavior?: "truncate" | "wrap" | "expand";
+  };
+  accessibility?: {
+    focusStyles?: string;
+    screenReaderLabels?: { actions?: string; pagination?: string; loading?: string };
+    keyboardNavigation?: boolean;
+  };
+  customClassNames?: {
+    container?: string;
+    table?: string;
+    thead?: string;
+    tbody?: string;
+    th?: string;
+    tr?: string;
+    td?: string;
+    scrollContainer?: string;
+    loadingContainer?: string;
+    loadingSkeleton?: { container?: string; skeletonBar?: string; skeletonItem?: string };
+    cellExpansion?: { container?: string };
+    interactive?: { sortableCursor?: string; clickableCursor?: string; focusOutline?: string };
+    actionTd?: string;
+    actionButton?: string;
+    actionSvg?: string;
+    actionDropdown?: { container?: string; menu?: string; item?: string; overlay?: string };
+    dropdownMenu?: string;
+    dropdownItem?: string;
+    pagination?: {
+      container?: string;
+      button?: string;
+      buttonDisabled?: string;
+      pageInfo?: string;
+      navigation?: { first?: string; previous?: string; next?: string; last?: string };
+    };
+    layout?: { tableMargin?: string; tablePadding?: string; containerPadding?: string };
+    responsive?: { mobile?: string; tablet?: string; desktop?: string };
+    theme?: { colorScheme?: string; spacing?: string; typography?: string; borderRadius?: string; shadows?: string };
+  };
+}
+
+interface PaginationComponentProps {
+  page: number;
+  setPage: (page: number) => void;
+  totalPages: number;
+  disableDefaultStyles?: boolean;
+  enableDarkMode?: boolean;
+  customClassNames?: {
+    container?: string;
+    button?: string;
+    buttonDisabled?: string;
+    pageInfo?: string;
+    navigation?: { first?: string; previous?: string; next?: string; last?: string };
+  };
+}
+
+interface TableSkeletonProps {
+  disableDefaultStyles?: boolean;
+  enableDarkMode?: boolean;
+  customClassNames?: { container?: string; table?: string; th?: string; tr?: string; td?: string };
+}
+
+interface NoContentProps {
+  text?: string;
+  icon?: React.ReactNode;
+  name?: string;
+}
+```
+
+---
+
+## Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Tailwind classes not applied | Add `./node_modules/nextjs-reusable-table/dist/**/*.{js,mjs}` to Tailwind `content` |
+| Styles leaking globally | Upgrade to v4.1.0+ — skeleton CSS `@import` removed from `dist/index.css` |
+| React peer dep warning | Requires `react >=18`. Run `npm install react@latest react-dom@latest` |
+| `"use client"` error | Wrap in a client component or use `dynamic(() => import(...), { ssr: false })` |
+| Dark mode not activating | Ensure OS dark mode is on and `enableDarkMode={true}` (default) |
+| Table overflows container | Set `maxHeight` prop or add `overflow-hidden` to parent |
+| Actions dropdown clipped | Uses `createPortal` to render in `document.body`; ensure `z-index` is sufficient |
+
+---
+
+## CSS Architecture
+
+All library styles are in `dist/index.css` under `@layer rtbl`:
+- All selectors use `rtbl-` prefix — no global element rules
+- Dark mode via `.rtbl-container.dark .rtbl-*` selectors
+- `@layer rtbl` ensures library styles never override consumer unlayered styles
+- `react-loading-skeleton` CSS is loaded on-demand by `TableSkeleton` component only
+
+---
+
+## Requirements
+
+- React 18+
+- Next.js 13+ (App Router or Pages Router)
+- Tailwind CSS 3+ or 4+
+- Node.js 20+

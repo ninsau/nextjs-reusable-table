@@ -124,9 +124,9 @@ interface TableProps<T> {
         loading?: React.CSSProperties;
     };
     /** Scroll behavior for the table container */
-    scrollBehavior?: 'auto' | 'scroll' | 'visible' | 'hidden';
+    scrollBehavior?: "auto" | "scroll" | "visible" | "hidden";
     /** CSS table-layout property */
-    tableLayout?: 'auto' | 'fixed' | 'inherit';
+    tableLayout?: "auto" | "fixed" | "inherit";
     /** Cell expansion behavior configuration */
     cellExpansion?: {
         /** Enable/disable cell expansion */
@@ -134,7 +134,7 @@ interface TableProps<T> {
         /** Maximum width for expanded cells */
         maxWidth?: string | number;
         /** Expansion behavior: truncate, wrap, or expand */
-        behavior?: 'truncate' | 'wrap' | 'expand';
+        behavior?: "truncate" | "wrap" | "expand";
     };
     /** Accessibility configuration */
     accessibility?: {
@@ -254,6 +254,11 @@ declare const ActionDropdown: <T>({ item, actionTexts, actionFunctions, disableD
 declare const NoContentComponent: React$1.FC<NoContentProps>;
 
 /**
+ * Pagination component with customizable styling and navigation controls
+ */
+declare const PaginationComponent: React$1.FC<PaginationComponentProps>;
+
+/**
  * A highly customizable, headless table component for React/Next.js applications.
  *
  * @template T - The data type for table rows
@@ -267,4 +272,25 @@ declare function TableComponent<T>({ columns, data, props, actions, actionTexts,
  */
 declare const TableSkeleton: React$1.FC<TableSkeletonProps>;
 
-export { ActionDropdown, type ActionDropdownProps, NoContentComponent, type NoContentProps, type PaginationComponentProps, TableComponent, type TableProps, TableSkeleton, type TableSkeletonProps };
+/**
+ * Formats a Date object into a readable string
+ * @param date - The date to format
+ * @param includeTime - Whether to include time in the formatted string
+ * @returns Formatted date string or "Invalid Date" if parsing fails
+ */
+declare const formatDate: (date: Date, includeTime?: boolean) => string;
+/**
+ * Determines if a string represents a valid date
+ * @param str - The string to test
+ * @returns True if the string represents a valid date, false otherwise
+ */
+declare const isDateString: (str: string) => boolean;
+/**
+ * Truncates text to a specified maximum length and adds ellipsis
+ * @param text - The text to truncate
+ * @param maxLength - The maximum length of the returned string
+ * @returns Truncated text with ellipsis if needed
+ */
+declare const trimText: (text: string, maxLength: number) => string;
+
+export { ActionDropdown, type ActionDropdownProps, NoContentComponent, type NoContentProps, PaginationComponent, type PaginationComponentProps, TableComponent, type TableProps, TableSkeleton, type TableSkeletonProps, formatDate, isDateString, trimText };

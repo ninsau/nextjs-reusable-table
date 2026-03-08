@@ -120,9 +120,7 @@ describe("TableComponent", () => {
       const user = userEvent.setup();
       render(<TableComponent {...sortableProps} />);
 
-      const nameHeader = screen
-        .getByText("Name")
-        .closest("div[role='button']");
+      const nameHeader = screen.getByText("Name").closest("div[role='button']");
       expect(nameHeader).not.toBeNull();
       await user.click(nameHeader as HTMLElement);
 
@@ -133,9 +131,7 @@ describe("TableComponent", () => {
       const user = userEvent.setup();
       render(<TableComponent {...sortableProps} />);
 
-      const nameHeader = screen
-        .getByText("Name")
-        .closest("div[role='button']");
+      const nameHeader = screen.getByText("Name").closest("div[role='button']");
       expect(nameHeader).not.toBeNull();
       (nameHeader as HTMLElement).focus();
       await user.keyboard("{Enter}");
@@ -256,23 +252,45 @@ describe("TableComponent", () => {
 
       render(
         <TableComponent
-          columns={["ID", "Name", "Email", "Join Date", "Status", "Tags", "Website"]}
+          columns={[
+            "ID",
+            "Name",
+            "Email",
+            "Join Date",
+            "Status",
+            "Tags",
+            "Website",
+          ]}
           data={testData}
-          props={["id", "name", "email", "joinDate", "active", "tags", "website"]}
+          props={[
+            "id",
+            "name",
+            "email",
+            "joinDate",
+            "active",
+            "tags",
+            "website",
+          ]}
           formatValue={formatValue}
-        />
+        />,
       );
 
       // Should show custom format instead of auto-formatted date
-      expect(screen.getByText("Custom: 2024-01-15T10:30:00Z")).toBeInTheDocument();
-      expect(formatValue).toHaveBeenCalledWith("2024-01-15T10:30:00Z", "joinDate", testData[0]);
+      expect(
+        screen.getByText("Custom: 2024-01-15T10:30:00Z"),
+      ).toBeInTheDocument();
+      expect(formatValue).toHaveBeenCalledWith(
+        "2024-01-15T10:30:00Z",
+        "joinDate",
+        testData[0],
+      );
     });
 
     it("formatValue can return null/undefined to fall back to default formatting", () => {
       const testData = [
         {
           id: 1,
-          name: "John Doe", 
+          name: "John Doe",
           email: "john@example.com",
           joinDate: "2024-01-15T10:30:00Z",
           tags: ["react"],
@@ -290,16 +308,36 @@ describe("TableComponent", () => {
 
       render(
         <TableComponent
-          columns={["ID", "Name", "Email", "Join Date", "Status", "Tags", "Website"]}
+          columns={[
+            "ID",
+            "Name",
+            "Email",
+            "Join Date",
+            "Status",
+            "Tags",
+            "Website",
+          ]}
           data={testData}
-          props={["id", "name", "email", "joinDate", "active", "tags", "website"]}
+          props={[
+            "id",
+            "name",
+            "email",
+            "joinDate",
+            "active",
+            "tags",
+            "website",
+          ]}
           formatValue={formatValue}
-        />
+        />,
       );
 
       // Should fall back to default date formatting
       expect(screen.getByText(/Jan 15, 2024.*10:30/)).toBeInTheDocument();
-      expect(formatValue).toHaveBeenCalledWith("2024-01-15T10:30:00Z", "joinDate", testData[0]);
+      expect(formatValue).toHaveBeenCalledWith(
+        "2024-01-15T10:30:00Z",
+        "joinDate",
+        testData[0],
+      );
     });
 
     it("formatValue takes precedence over URL link formatting", () => {
@@ -314,7 +352,7 @@ describe("TableComponent", () => {
 
       // Should show custom format instead of link
       expect(screen.getByText("🌐 https://johndoe.com")).toBeInTheDocument();
-      // Should not have link behavior 
+      // Should not have link behavior
       expect(screen.queryByRole("link")).not.toBeInTheDocument();
     });
 
@@ -342,9 +380,11 @@ describe("TableComponent", () => {
     it("shows pagination controls when enabled", () => {
       render(<TableComponent {...paginationProps} />);
 
-      expect(screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 2';
-      })).toBeInTheDocument();
+      expect(
+        screen.getByText((_content, element) => {
+          return element?.textContent === "Page 1 of 2";
+        }),
+      ).toBeInTheDocument();
     });
 
     it("shows only items for current page", () => {
@@ -366,13 +406,15 @@ describe("TableComponent", () => {
           customClassNames={{
             pagination: customPaginationClassNames,
           }}
-        />
+        />,
       );
 
       // Find the pagination container and verify it has the custom class
-      const paginationContainer = screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 2';
-      }).closest("div");
+      const paginationContainer = screen
+        .getByText((_content, element) => {
+          return element?.textContent === "Page 1 of 2";
+        })
+        .closest("div");
       expect(paginationContainer).toHaveClass("custom-pagination-position");
     });
 
@@ -380,15 +422,24 @@ describe("TableComponent", () => {
       render(<TableComponent {...paginationProps} />);
 
       // Find the pagination wrapper and verify it has the centering classes
-      const paginationWrapper = screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 2';
-      }).closest("div")?.parentElement;
-      expect(paginationWrapper).toHaveClass("w-full", "flex", "justify-center", "mt-4");
-      
+      const paginationWrapper = screen
+        .getByText((_content, element) => {
+          return element?.textContent === "Page 1 of 2";
+        })
+        .closest("div")?.parentElement;
+      expect(paginationWrapper).toHaveClass(
+        "w-full",
+        "flex",
+        "justify-center",
+        "mt-4",
+      );
+
       // Find the pagination container and verify it has the default classes
-      const paginationContainer = screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 2';
-      }).closest("div");
+      const paginationContainer = screen
+        .getByText((_content, element) => {
+          return element?.textContent === "Page 1 of 2";
+        })
+        .closest("div");
       expect(paginationContainer).toHaveClass("flex", "items-center");
     });
 
@@ -396,7 +447,9 @@ describe("TableComponent", () => {
       const customPagination = jest.fn((props) => (
         <div data-testid="custom-pagination">
           Custom Page {props.page} of {props.totalPages}
-          <button type="button" onClick={() => props.setPage(props.page + 1)}>Next</button>
+          <button type="button" onClick={() => props.setPage(props.page + 1)}>
+            Next
+          </button>
         </div>
       ));
 
@@ -404,7 +457,7 @@ describe("TableComponent", () => {
         <TableComponent
           {...paginationProps}
           renderPagination={customPagination}
-        />
+        />,
       );
 
       // Should render custom pagination instead of built-in
@@ -431,7 +484,7 @@ describe("TableComponent", () => {
           itemsPerPage={5}
           totalPages={10}
           renderPagination={mockRenderPagination}
-        />
+        />,
       );
 
       expect(mockRenderPagination).toHaveBeenCalledWith({
@@ -446,28 +499,36 @@ describe("TableComponent", () => {
     it("applies custom maxHeight as string", () => {
       render(<TableComponent {...defaultProps} maxHeight="400px" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
+      const scrollContainer = screen
+        .getByText("John Doe")
+        .closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "400px" });
     });
 
     it("applies custom maxHeight as number", () => {
       render(<TableComponent {...defaultProps} maxHeight={300} />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
+      const scrollContainer = screen
+        .getByText("John Doe")
+        .closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "300px" });
     });
 
     it("uses default maxHeight when not specified", () => {
       render(<TableComponent {...defaultProps} />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
+      const scrollContainer = screen
+        .getByText("John Doe")
+        .closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "600px" });
     });
 
     it("applies maxHeight with different units", () => {
       render(<TableComponent {...defaultProps} maxHeight="50vh" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
+      const scrollContainer = screen
+        .getByText("John Doe")
+        .closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ maxHeight: "50vh" });
     });
 
@@ -476,7 +537,7 @@ describe("TableComponent", () => {
         <TableComponent
           {...defaultProps}
           customClassNames={{ scrollContainer: "custom-scroll-container" }}
-        />
+        />,
       );
 
       const scrollContainer = screen.getByText("John Doe").closest("div");
@@ -489,7 +550,7 @@ describe("TableComponent", () => {
           {...defaultProps}
           loading
           customClassNames={{ loadingContainer: "custom-loading" }}
-        />
+        />,
       );
 
       const loadingContainer = screen.getByRole("status");
@@ -504,10 +565,10 @@ describe("TableComponent", () => {
           customClassNames={{
             loadingSkeleton: {
               skeletonBar: "custom-bar",
-              skeletonItem: "custom-item"
-            }
+              skeletonItem: "custom-item",
+            },
           }}
-        />
+        />,
       );
 
       const loadingContainer = screen.getByRole("status");
@@ -521,7 +582,9 @@ describe("TableComponent", () => {
     it("applies custom scrollBehavior", () => {
       render(<TableComponent {...defaultProps} scrollBehavior="scroll" />);
 
-      const scrollContainer = screen.getByText("John Doe").closest(".rtbl-scroll-container");
+      const scrollContainer = screen
+        .getByText("John Doe")
+        .closest(".rtbl-scroll-container");
       expect(scrollContainer).toHaveStyle({ overflow: "scroll" });
     });
 
@@ -536,8 +599,8 @@ describe("TableComponent", () => {
       render(
         <TableComponent
           {...defaultProps}
-          cellExpansion={{ enabled: true, maxWidth: 150, behavior: 'wrap' }}
-        />
+          cellExpansion={{ enabled: true, maxWidth: 150, behavior: "wrap" }}
+        />,
       );
 
       // Test that the cell expansion settings are applied
@@ -551,10 +614,10 @@ describe("TableComponent", () => {
           customClassNames={{
             interactive: {
               sortableCursor: "custom-sortable-cursor",
-              clickableCursor: "custom-clickable-cursor"
-            }
+              clickableCursor: "custom-clickable-cursor",
+            },
           }}
-        />
+        />,
       );
 
       // The cursor styles are applied via inline styles, so we can't easily test the class names

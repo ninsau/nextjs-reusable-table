@@ -1,0 +1,51 @@
+---
+description: Rules for TypeScript types in src/types/. Auto-attaches when editing type files.
+globs: ["src/types/**/*.ts"]
+alwaysApply: false
+---
+
+# Type Definition Rules
+
+## All Interfaces Live in `src/types/index.ts`
+Never define props interfaces inside component files. All public-facing types are exported from `src/types/index.ts` and re-exported via `src/index.ts` with `export * from "./types"`.
+
+## Interface Naming
+- Table component props: `TableProps<T>`
+- Sub-component props: `ActionDropdownProps<T>`, `PaginationComponentProps`, `TableSkeletonProps`, `NoContentProps`
+- Internal helpers: prefix with `I` or suffix with `Config` (e.g., `CellExpansionConfig`)
+
+## Generic Constraints
+```ts
+// Always use T for row data — never object or any
+interface TableProps<T> {
+  data: T[];
+  props: ReadonlyArray<keyof T>;   // keyof T enforces type-safe column access
+  sortableProps?: Array<keyof T>;
+  formatValue?: (value: string, prop: string, item: T) => React.ReactNode;
+}
+```
+
+## Optional Props with Nested Objects
+Group related optional config into named nested objects:
+```ts
+cellExpansion?: {
+  enabled?: boolean;
+  maxWidth?: string | number;
+  behavior?: "truncate" | "wrap" | "expand";
+};
+accessibility?: {
+  keyboardNavigation?: boolean;
+  screenReaderLabels?: { actions?: string; pagination?: string; loading?: string };
+};
+```
+
+## customClassNames Shape
+The `customClassNames` prop mirrors the DOM structure of the rendered table.
+Every element the consumer might want to style has its own key.
+New styled elements added to components MUST get a corresponding key in `TableProps["customClassNames"]`.
+
+## No `any`
+Biome enforces `noExplicitAny: "error"`. Use:
+- `unknown` for truly unknown values, then narrow with type guards
+- `React.ReactNode` for renderable content
+- `Record<string, boolean>` for string-keyed boolean maps

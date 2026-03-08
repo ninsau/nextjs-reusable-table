@@ -98,11 +98,15 @@ const ActionDropdown = <T,>({
     : `${baseSvgClassName} ${customClassNames.actionSvg || ""}`;
 
   const dropdownMenuClassName = disableDefaultStyles
-    ? (customClassNames.actionDropdown?.menu || customClassNames.dropdownMenu || "")
+    ? customClassNames.actionDropdown?.menu ||
+      customClassNames.dropdownMenu ||
+      ""
     : `${baseDropdownMenuClassName} ${customClassNames.actionDropdown?.menu || customClassNames.dropdownMenu || ""}`;
 
   const dropdownItemClassName = disableDefaultStyles
-    ? (customClassNames.actionDropdown?.item || customClassNames.dropdownItem || "")
+    ? customClassNames.actionDropdown?.item ||
+      customClassNames.dropdownItem ||
+      ""
     : `${baseDropdownItemClassName} ${customClassNames.actionDropdown?.item || customClassNames.dropdownItem || ""}`;
 
   const dropdownMenu = (

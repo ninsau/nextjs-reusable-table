@@ -177,91 +177,6 @@ var NoContentComponent = ({
 ] });
 var NoContentComponent_default = NoContentComponent;
 
-// src/components/TableComponent.tsx
-import Link from "next/link";
-import { useEffect as useEffect3, useState as useState3, useMemo } from "react";
-
-// src/utils/helpers.ts
-var formatDate = (date, includeTime = false) => {
-  const options = includeTime ? {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  } : { year: "numeric", month: "short", day: "numeric" };
-  try {
-    return new Intl.DateTimeFormat("en-US", options).format(date);
-  } catch {
-    return "Invalid Date";
-  }
-};
-var isDateString = (str) => {
-  if (typeof str !== "string" || str.length < 8) return false;
-  if (/^\d+$/.test(str.trim())) return false;
-  const datePatterns = [
-    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?([+-]\d{2}:\d{2}|Z)?)?$/,
-    // ISO format with timezone
-    /^\d{4}-\d{1,2}-\d{1,2}$/,
-    // YYYY-M-D or YYYY-MM-DD
-    /^\d{1,2}\/\d{1,2}\/\d{4}$/,
-    // M/D/YYYY or MM/DD/YYYY
-    /^\d{1,2}-\d{1,2}-\d{4}$/,
-    // M-D-YYYY or MM-DD-YYYY
-    /^(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+\d{4}$/i
-    // Month DD, YYYY
-  ];
-  const hasDatePattern = datePatterns.some((pattern) => pattern.test(str.trim()));
-  if (!hasDatePattern) return false;
-  const parsedDate = Date.parse(str);
-  if (Number.isNaN(parsedDate)) return false;
-  const date = new Date(parsedDate);
-  if (Number.isNaN(date.getTime())) return false;
-  const ymd = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  const isoWithTime = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
-  const mdy = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
-  if (ymd || mdy || isoWithTime) {
-    let inputYear;
-    let inputMonth;
-    let inputDay;
-    let parsedYear;
-    let parsedMonth;
-    let parsedDay;
-    if (isoWithTime) {
-      inputYear = Number(isoWithTime[1]);
-      inputMonth = Number(isoWithTime[2]);
-      inputDay = Number(isoWithTime[3]);
-      parsedYear = date.getUTCFullYear();
-      parsedMonth = date.getUTCMonth() + 1;
-      parsedDay = date.getUTCDate();
-    } else if (ymd) {
-      inputYear = Number(ymd[1]);
-      inputMonth = Number(ymd[2]);
-      inputDay = Number(ymd[3]);
-      parsedYear = date.getUTCFullYear();
-      parsedMonth = date.getUTCMonth() + 1;
-      parsedDay = date.getUTCDate();
-    } else {
-      inputMonth = Number(mdy?.[1]);
-      inputDay = Number(mdy?.[2]);
-      inputYear = Number(mdy?.[3]);
-      parsedYear = date.getFullYear();
-      parsedMonth = date.getMonth() + 1;
-      parsedDay = date.getDate();
-    }
-    if (parsedYear !== inputYear || parsedMonth !== inputMonth || parsedDay !== inputDay) {
-      return false;
-    }
-  }
-  const year = ymd || isoWithTime ? date.getUTCFullYear() : date.getFullYear();
-  return year >= 1900 && year <= 2100;
-};
-var trimText = (text, maxLength) => {
-  if (maxLength <= 0) return "...";
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength)}...`;
-};
-
 // src/components/PaginationComponent.tsx
 import { useEffect as useEffect2, useState as useState2 } from "react";
 import { jsx as jsx3, jsxs as jsxs3 } from "react/jsx-runtime";
@@ -350,6 +265,93 @@ var PaginationComponent = ({
 var PaginationComponent_default = PaginationComponent;
 
 // src/components/TableComponent.tsx
+import Link from "next/link";
+import { useEffect as useEffect3, useMemo, useState as useState3 } from "react";
+
+// src/utils/helpers.ts
+var formatDate = (date, includeTime = false) => {
+  const options = includeTime ? {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  } : { year: "numeric", month: "short", day: "numeric" };
+  try {
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  } catch {
+    return "Invalid Date";
+  }
+};
+var isDateString = (str) => {
+  if (typeof str !== "string" || str.length < 8) return false;
+  if (/^\d+$/.test(str.trim())) return false;
+  const datePatterns = [
+    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?([+-]\d{2}:\d{2}|Z)?)?$/,
+    // ISO format with timezone
+    /^\d{4}-\d{1,2}-\d{1,2}$/,
+    // YYYY-M-D or YYYY-MM-DD
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/,
+    // M/D/YYYY or MM/DD/YYYY
+    /^\d{1,2}-\d{1,2}-\d{4}$/,
+    // M-D-YYYY or MM-DD-YYYY
+    /^(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2},?\s+\d{4}$/i
+    // Month DD, YYYY
+  ];
+  const hasDatePattern = datePatterns.some(
+    (pattern) => pattern.test(str.trim())
+  );
+  if (!hasDatePattern) return false;
+  const parsedDate = Date.parse(str);
+  if (Number.isNaN(parsedDate)) return false;
+  const date = new Date(parsedDate);
+  if (Number.isNaN(date.getTime())) return false;
+  const ymd = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  const isoWithTime = str.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+  const mdy = str.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (ymd || mdy || isoWithTime) {
+    let inputYear;
+    let inputMonth;
+    let inputDay;
+    let parsedYear;
+    let parsedMonth;
+    let parsedDay;
+    if (isoWithTime) {
+      inputYear = Number(isoWithTime[1]);
+      inputMonth = Number(isoWithTime[2]);
+      inputDay = Number(isoWithTime[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else if (ymd) {
+      inputYear = Number(ymd[1]);
+      inputMonth = Number(ymd[2]);
+      inputDay = Number(ymd[3]);
+      parsedYear = date.getUTCFullYear();
+      parsedMonth = date.getUTCMonth() + 1;
+      parsedDay = date.getUTCDate();
+    } else {
+      inputMonth = Number(mdy?.[1]);
+      inputDay = Number(mdy?.[2]);
+      inputYear = Number(mdy?.[3]);
+      parsedYear = date.getFullYear();
+      parsedMonth = date.getMonth() + 1;
+      parsedDay = date.getDate();
+    }
+    if (parsedYear !== inputYear || parsedMonth !== inputMonth || parsedDay !== inputDay) {
+      return false;
+    }
+  }
+  const year = ymd || isoWithTime ? date.getUTCFullYear() : date.getFullYear();
+  return year >= 1900 && year <= 2100;
+};
+var trimText = (text, maxLength) => {
+  if (maxLength <= 0) return "...";
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+};
+
+// src/components/TableComponent.tsx
 import { jsx as jsx4, jsxs as jsxs4 } from "react/jsx-runtime";
 function TableComponent({
   columns,
@@ -422,12 +424,15 @@ function TableComponent({
       });
     });
   }, [data, searchValue, props]);
-  const displayedColumns = useMemo(() => columns.map((col, i) => ({
-    col,
-    indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
-    prop: props[i],
-    index: i
-  })), [columns, sortableProps, props]);
+  const displayedColumns = useMemo(
+    () => columns.map((col, i) => ({
+      col,
+      indicator: sortableProps.includes(props[i]) ? "\u21C5" : "",
+      prop: props[i],
+      index: i
+    })),
+    [columns, sortableProps, props]
+  );
   const sortedData = filteredData;
   const { paginatedData, calculatedTotalPages } = useMemo(() => {
     const totalPagesCalc = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
@@ -439,23 +444,56 @@ function TableComponent({
     }
     return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
   }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
-  const baseTableClassName = useMemo(() => !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTheadClassName = useMemo(() => !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTbodyClassName = useMemo(() => !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
-  const baseTrClassName = useMemo(() => (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "", [disableDefaultStyles, isDarkMode]);
-  const baseTdClassName = useMemo(() => !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "", [disableDefaultStyles, isDarkMode]);
-  const tableClassName = useMemo(() => disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`, [disableDefaultStyles, baseTableClassName, customClassNames.table]);
-  const theadClassName = useMemo(() => disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`, [disableDefaultStyles, baseTheadClassName, customClassNames.thead]);
-  const tbodyClassName = useMemo(() => disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`, [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]);
-  const thClassName = useMemo(() => (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
-    return `${baseClass}`;
-  }, [disableDefaultStyles, customClassNames.th]);
-  const trClassName = useMemo(() => (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`, [disableDefaultStyles, baseTrClassName, customClassNames.tr]);
-  const tdClassName = useMemo(() => (_prop) => {
-    const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
-    return `${baseClass}`;
-  }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
+  const baseTableClassName = useMemo(
+    () => !disableDefaultStyles ? `w-full divide-y ${enableDarkMode && isDarkMode ? "bg-gray-900 text-gray-200 divide-gray-700" : "bg-white text-gray-900 divide-gray-200"}` : "",
+    [disableDefaultStyles, enableDarkMode, isDarkMode]
+  );
+  const baseTheadClassName = useMemo(
+    () => !disableDefaultStyles && enableDarkMode ? isDarkMode ? "bg-gray-700 text-gray-300" : "bg-gray-50 text-gray-500" : "",
+    [disableDefaultStyles, enableDarkMode, isDarkMode]
+  );
+  const baseTbodyClassName = useMemo(
+    () => !disableDefaultStyles ? `divide-y ${enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"}` : "",
+    [disableDefaultStyles, enableDarkMode, isDarkMode]
+  );
+  const baseTrClassName = useMemo(
+    () => (index) => !disableDefaultStyles ? index % 2 === 0 ? isDarkMode ? "bg-gray-800" : "bg-white" : isDarkMode ? "bg-gray-700" : "bg-gray-100" : "",
+    [disableDefaultStyles, isDarkMode]
+  );
+  const baseTdClassName = useMemo(
+    () => !disableDefaultStyles ? isDarkMode ? "text-gray-300" : "text-gray-700" : "",
+    [disableDefaultStyles, isDarkMode]
+  );
+  const tableClassName = useMemo(
+    () => disableDefaultStyles ? customClassNames.table || "" : `${baseTableClassName} ${customClassNames.table || ""}`,
+    [disableDefaultStyles, baseTableClassName, customClassNames.table]
+  );
+  const theadClassName = useMemo(
+    () => disableDefaultStyles ? customClassNames.thead || "" : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`,
+    [disableDefaultStyles, baseTheadClassName, customClassNames.thead]
+  );
+  const tbodyClassName = useMemo(
+    () => disableDefaultStyles ? customClassNames.tbody || "" : `${baseTbodyClassName} ${customClassNames.tbody || ""}`,
+    [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]
+  );
+  const thClassName = useMemo(
+    () => (_prop) => {
+      const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${customClassNames.th || ""}` : customClassNames.th || "";
+      return `${baseClass}`;
+    },
+    [disableDefaultStyles, customClassNames.th]
+  );
+  const trClassName = useMemo(
+    () => (index) => disableDefaultStyles ? customClassNames.tr || "" : `${baseTrClassName(index)} ${customClassNames.tr || ""}`,
+    [disableDefaultStyles, baseTrClassName, customClassNames.tr]
+  );
+  const tdClassName = useMemo(
+    () => (_prop) => {
+      const baseClass = !disableDefaultStyles ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${customClassNames.td || ""}` : customClassNames.td || "";
+      return `${baseClass}`;
+    },
+    [disableDefaultStyles, baseTdClassName, customClassNames.td]
+  );
   useEffect3(() => {
     if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
       setPage(calculatedTotalPages);
@@ -488,7 +526,14 @@ function TableComponent({
     return /* @__PURE__ */ jsx4(NoContentComponent_default, { ...noContentProps });
   }
   if (filteredData.length === 0) {
-    return /* @__PURE__ */ jsx4(NoContentComponent_default, { text: "No items found.", name: noContentProps?.name, icon: noContentProps?.icon });
+    return /* @__PURE__ */ jsx4(
+      NoContentComponent_default,
+      {
+        text: "No items found.",
+        name: noContentProps?.name,
+        icon: noContentProps?.icon
+      }
+    );
   }
   const handleSort = (prop) => {
     if (sortableProps.includes(prop) && onSort) {
@@ -987,6 +1032,10 @@ var TableSkeleton_default = TableSkeleton;
 export {
   ActionDropdown_default as ActionDropdown,
   NoContentComponent_default as NoContentComponent,
+  PaginationComponent_default as PaginationComponent,
   TableComponent_default as TableComponent,
-  TableSkeleton_default as TableSkeleton
+  TableSkeleton_default as TableSkeleton,
+  formatDate,
+  isDateString,
+  trimText
 };

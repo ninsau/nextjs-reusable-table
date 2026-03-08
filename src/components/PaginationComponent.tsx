@@ -41,10 +41,14 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
           : "bg-gray-200 text-gray-800 hover:bg-gray-300"
       } ${customClassNames.buttonDisabled || ""}`;
 
-  const firstButtonClassName = customClassNames.navigation?.first || baseButtonClassName;
-  const previousButtonClassName = customClassNames.navigation?.previous || baseButtonClassName;
-  const nextButtonClassName = customClassNames.navigation?.next || baseButtonClassName;
-  const lastButtonClassName = customClassNames.navigation?.last || baseButtonClassName;
+  const firstButtonClassName =
+    customClassNames.navigation?.first || baseButtonClassName;
+  const previousButtonClassName =
+    customClassNames.navigation?.previous || baseButtonClassName;
+  const nextButtonClassName =
+    customClassNames.navigation?.next || baseButtonClassName;
+  const lastButtonClassName =
+    customClassNames.navigation?.last || baseButtonClassName;
   const pageInfoClassName = disableDefaultStyles
     ? customClassNames.pageInfo || ""
     : `px-3 py-1 mx-1 text-sm ${
@@ -69,7 +73,9 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
       <button
         disabled={page === 1}
         onClick={() => setPage(page - 1)}
-        className={page === 1 ? disabledButtonClassName : previousButtonClassName}
+        className={
+          page === 1 ? disabledButtonClassName : previousButtonClassName
+        }
         type="button"
       >
         Previous
@@ -81,7 +87,9 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         disabled={page >= totalPages || totalPages <= 0}
         onClick={() => setPage(page + 1)}
         className={
-          page >= totalPages || totalPages <= 0 ? disabledButtonClassName : nextButtonClassName
+          page >= totalPages || totalPages <= 0
+            ? disabledButtonClassName
+            : nextButtonClassName
         }
         type="button"
       >
@@ -91,7 +99,9 @@ const PaginationComponent: React.FC<PaginationComponentProps> = ({
         disabled={page >= totalPages || totalPages <= 0}
         onClick={() => setPage(totalPages)}
         className={
-          page >= totalPages || totalPages <= 0 ? disabledButtonClassName : lastButtonClassName
+          page >= totalPages || totalPages <= 0
+            ? disabledButtonClassName
+            : lastButtonClassName
         }
         type="button"
       >

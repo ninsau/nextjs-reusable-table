@@ -31,7 +31,9 @@ const NoContentComponent: React.FC<NoContentProps> = ({
     ) : (
       icon
     )}
-    <p className="text-gray-500 text-lg">{text !== undefined ? text : "No data available"}</p>
+    <p className="text-gray-500 text-lg">
+      {text !== undefined ? text : "No data available"}
+    </p>
   </div>
 );
 export default NoContentComponent;

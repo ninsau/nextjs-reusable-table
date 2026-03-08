@@ -1,0 +1,52 @@
+---
+description: General project conventions for nextjs-reusable-table. Applies always.
+alwaysApply: true
+---
+
+# nextjs-reusable-table — General Conventions
+
+## Tech Stack
+- **Language**: TypeScript 5.x (strict mode, no `any`)
+- **Framework**: React 18+ / Next.js 13+ (App Router, `"use client"` directive required on all components)
+- **Styling**: Tailwind CSS utility classes in JSX + scoped `@layer rtbl { ... }` CSS in `src/styles/tableStyles.css`
+- **Linter/Formatter**: Biome 2.x (`npm run check:fix` to auto-fix)
+- **Build**: tsup (ESM + CJS dual output) + Tailwind CLI for CSS
+- **Tests**: Jest 30 + React Testing Library
+
+## Code Style (Biome enforced)
+- Indent: 2 spaces, LF line endings, 80-char line width
+- Quotes: double for JS/JSX (`"use client"`, JSX attributes)
+- Semicolons: always
+- Arrow functions: always parenthesise (`(x) => x`)
+- No `any` — use proper interfaces. No non-null assertion without comment.
+
+## TypeScript Patterns
+- Table data is always generic `<T>` — never typed as `object` or `Record<string, unknown>`
+- Props interfaces follow `ComponentNameProps<T>` naming and live in `src/types/index.ts`
+- Use `ReadonlyArray<keyof T>` for props/columns arrays
+- Export types from `src/index.ts` via `export * from "./types"`
+
+## Key Constraints
+- All components must include `"use client"` at the top (line 1)
+- Never use React Context for state that can be passed as props
+- `useMemo` / `useCallback` hooks must be called before any early returns (Rules of Hooks)
+- CSS class prefix is `rtbl-` — never introduce bare element or global selectors in `tableStyles.css`
+- `react-loading-skeleton` CSS is loaded by `TableSkeleton.tsx` JS import only — do NOT re-add `@import` to the CSS file
+
+## Quality Checks (run before committing)
+```bash
+npm run check:fix   # fix lint + format
+npm run type-check  # TypeScript
+npm run test        # Jest
+npm run build       # tsup + Tailwind CSS
+```
+
+## File Layout
+```
+src/components/          # React components (TableComponent, ActionDropdown, …)
+src/components/__tests__ # Jest tests (*.test.tsx)
+src/types/index.ts       # All TypeScript interfaces
+src/utils/helpers.ts     # Pure utility functions
+src/styles/tableStyles.css
+src/index.ts             # Public exports
+```

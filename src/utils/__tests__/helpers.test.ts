@@ -68,7 +68,7 @@ describe("Helper Functions", () => {
     it("returns true for valid date formats", () => {
       const validDates = [
         "March 15, 2024",
-        "Mar 15, 2024", 
+        "Mar 15, 2024",
         "3/15/2024",
         "03/15/2024",
         "3-15-2024",
@@ -124,7 +124,7 @@ describe("Helper Functions", () => {
         [],
         true,
         false,
-              ] as unknown[];
+      ] as unknown[];
 
       invalidInputs.forEach((input) => {
         expect(isDateString(input as string)).toBe(false);
@@ -234,7 +234,7 @@ describe("Helper Functions", () => {
     it("rejects pure numeric strings even if they could be timestamps", () => {
       const pureNumbers = [
         "1234567890", // Unix timestamp
-        "1640995200000", // Millisecond timestamp  
+        "1640995200000", // Millisecond timestamp
         "20240315", // YYYYMMDD format but pure numbers
         "123456789012345", // Very large number
       ];
@@ -247,7 +247,7 @@ describe("Helper Functions", () => {
     it("accepts valid dates within year range (1900-2100)", () => {
       const validYearDates = [
         "1900-01-01",
-        "2024-06-15", 
+        "2024-06-15",
         "2099-12-31",
         "2100-01-01",
       ];
@@ -272,18 +272,18 @@ describe("Helper Functions", () => {
 
     it("handles pattern matching correctly", () => {
       // Valid patterns
-      expect(isDateString("2024-1-1")).toBe(true);       // YYYY-M-D
-      expect(isDateString("2024-01-01")).toBe(true);     // YYYY-MM-DD
-      expect(isDateString("1/1/2024")).toBe(true);       // M/D/YYYY
-      expect(isDateString("01/01/2024")).toBe(true);     // MM/DD/YYYY
-      expect(isDateString("1-1-2024")).toBe(true);       // M-D-YYYY
-      expect(isDateString("01-01-2024")).toBe(true);     // MM-DD-YYYY
-      expect(isDateString("Jan 1, 2024")).toBe(true);    // Month DD, YYYY
+      expect(isDateString("2024-1-1")).toBe(true); // YYYY-M-D
+      expect(isDateString("2024-01-01")).toBe(true); // YYYY-MM-DD
+      expect(isDateString("1/1/2024")).toBe(true); // M/D/YYYY
+      expect(isDateString("01/01/2024")).toBe(true); // MM/DD/YYYY
+      expect(isDateString("1-1-2024")).toBe(true); // M-D-YYYY
+      expect(isDateString("01-01-2024")).toBe(true); // MM-DD-YYYY
+      expect(isDateString("Jan 1, 2024")).toBe(true); // Month DD, YYYY
       expect(isDateString("January 1 2024")).toBe(true); // Month DD YYYY
 
       // Invalid patterns but parseable dates
-      expect(isDateString("2024/01/01")).toBe(false);    // Not in our patterns
-      expect(isDateString("01 Jan 2024")).toBe(false);   // Not in our patterns
+      expect(isDateString("2024/01/01")).toBe(false); // Not in our patterns
+      expect(isDateString("01 Jan 2024")).toBe(false); // Not in our patterns
     });
   });
 

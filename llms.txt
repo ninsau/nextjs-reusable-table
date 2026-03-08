@@ -1,0 +1,34 @@
+# nextjs-reusable-table
+
+> A production-ready, highly customizable table component for Next.js (13+) and React (18+). Features sorting, pagination, search, row actions, dark mode, TypeScript generics, and zero runtime dependencies.
+
+## Documentation
+
+- [README](https://github.com/ninsau/nextjs-reusable-table/blob/main/README.md): Installation, quick start, and feature overview
+- [API Reference](https://github.com/ninsau/nextjs-reusable-table/blob/main/API.md): Complete props, types, and utility functions
+- [Examples](https://github.com/ninsau/nextjs-reusable-table/blob/main/EXAMPLES.md): Real-world usage patterns and recipes
+- [Changelog](https://github.com/ninsau/nextjs-reusable-table/blob/main/CHANGELOG.md): Version history
+
+## AI Tooling
+
+- [Agent Skill](https://github.com/ninsau/nextjs-reusable-table/blob/main/skills/nextjs-reusable-table/SKILL.md): Install into Cursor, Claude Code, or any agentskills-compatible AI editor
+- [AI Reference](https://github.com/ninsau/nextjs-reusable-table/blob/main/skills/nextjs-reusable-table/references/api-reference.md): Compact API reference optimized for AI context windows
+
+## Package
+
+- [npm](https://www.npmjs.com/package/nextjs-reusable-table): `npm install nextjs-reusable-table`
+- [GitHub](https://github.com/ninsau/nextjs-reusable-table): Source code, issues, and contributions
+
+## Key Exports
+
+- `TableComponent<T>` — main generic table with sorting, pagination, search, actions
+- `TableSkeleton` — loading skeleton placeholder
+- `PaginationComponent` — standalone pagination
+- `ActionDropdown<T>` — standalone row action dropdown
+- `NoContentComponent` — empty state display
+- `formatDate`, `isDateString`, `trimText` — utility functions
+
+## Optional
+
+- [Contributing](https://github.com/ninsau/nextjs-reusable-table/blob/main/CONTRIBUTING.md): How to contribute
+- [Security Policy](https://github.com/ninsau/nextjs-reusable-table/blob/main/SECURITY.md): Supported versions and vulnerability reporting

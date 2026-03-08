@@ -20,9 +20,11 @@ describe("PaginationComponent", () => {
 
       expect(screen.getByText("Previous")).toBeInTheDocument();
       expect(screen.getByText("Next")).toBeInTheDocument();
-      expect(screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 5';
-      })).toBeInTheDocument();
+      expect(
+        screen.getByText((_content, element) => {
+          return element?.textContent === "Page 1 of 5";
+        }),
+      ).toBeInTheDocument();
     });
 
     it("shows correct page information", () => {
@@ -30,17 +32,21 @@ describe("PaginationComponent", () => {
         <PaginationComponent {...defaultProps} page={3} totalPages={10} />,
       );
 
-      expect(screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 3 of 10';
-      })).toBeInTheDocument();
+      expect(
+        screen.getByText((_content, element) => {
+          return element?.textContent === "Page 3 of 10";
+        }),
+      ).toBeInTheDocument();
     });
 
     it("renders with single page", () => {
       render(<PaginationComponent {...defaultProps} page={1} totalPages={1} />);
 
-      expect(screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 1';
-      })).toBeInTheDocument();
+      expect(
+        screen.getByText((_content, element) => {
+          return element?.textContent === "Page 1 of 1";
+        }),
+      ).toBeInTheDocument();
       expect(screen.getByText("Previous")).toBeInTheDocument();
       expect(screen.getByText("Next")).toBeInTheDocument();
     });
@@ -177,7 +183,7 @@ describe("PaginationComponent", () => {
       expect(nextButton).toHaveClass("custom-button");
 
       const pageInfo = screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 5';
+        return element?.textContent === "Page 1 of 5";
       });
       expect(pageInfo).toHaveClass("custom-page-info");
     });
@@ -217,9 +223,11 @@ describe("PaginationComponent", () => {
     it("handles zero total pages", () => {
       render(<PaginationComponent {...defaultProps} totalPages={0} />);
 
-      expect(screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 1 of 0';
-      })).toBeInTheDocument();
+      expect(
+        screen.getByText((_content, element) => {
+          return element?.textContent === "Page 1 of 0";
+        }),
+      ).toBeInTheDocument();
 
       const previousButton = screen.getByText("Previous");
       const nextButton = screen.getByText("Next");
@@ -243,9 +251,11 @@ describe("PaginationComponent", () => {
         <PaginationComponent {...defaultProps} page={10} totalPages={5} />,
       );
 
-      expect(screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 10 of 5';
-      })).toBeInTheDocument();
+      expect(
+        screen.getByText((_content, element) => {
+          return element?.textContent === "Page 10 of 5";
+        }),
+      ).toBeInTheDocument();
 
       const nextButton = screen.getByText("Next");
       expect(nextButton).toBeDisabled();
@@ -284,7 +294,7 @@ describe("PaginationComponent", () => {
       );
 
       const pageInfo = screen.getByText((_content, element) => {
-        return element?.textContent === 'Page 3 of 10';
+        return element?.textContent === "Page 3 of 10";
       });
       expect(pageInfo).toBeInTheDocument();
 

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import type React from "react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { TableProps } from "../types";
 import { formatDate, isDateString, trimText } from "../utils/helpers";
 import ActionDropdown from "./ActionDropdown";
@@ -45,7 +45,7 @@ function TableComponent<T>({
   customStyles = {},
   scrollBehavior = "auto",
   tableLayout,
-  cellExpansion = { enabled: true, maxWidth: 200, behavior: 'truncate' },
+  cellExpansion = { enabled: true, maxWidth: 200, behavior: "truncate" },
   accessibility = { keyboardNavigation: true },
 }: TableProps<T>) {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -99,18 +99,22 @@ function TableComponent<T>({
     });
   }, [data, searchValue, props]);
 
-  const displayedColumns = useMemo(() =>
-    columns.map((col, i) => ({
-      col,
-      indicator: sortableProps.includes(props[i]) ? "⇅" : "",
-      prop: props[i],
-      index: i,
-    })), [columns, sortableProps, props]);
+  const displayedColumns = useMemo(
+    () =>
+      columns.map((col, i) => ({
+        col,
+        indicator: sortableProps.includes(props[i]) ? "⇅" : "",
+        prop: props[i],
+        index: i,
+      })),
+    [columns, sortableProps, props],
+  );
 
   const sortedData = filteredData;
 
   const { paginatedData, calculatedTotalPages } = useMemo(() => {
-    const totalPagesCalc = totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
+    const totalPagesCalc =
+      totalPages ?? Math.ceil(sortedData.length / itemsPerPage);
     let paginated = sortedData;
 
     if (enablePagination && totalPages === undefined) {
@@ -122,92 +126,126 @@ function TableComponent<T>({
     return { paginatedData: paginated, calculatedTotalPages: totalPagesCalc };
   }, [sortedData, totalPages, itemsPerPage, enablePagination, page]);
 
-  const baseTableClassName = useMemo(() =>
-    !disableDefaultStyles
-      ? `w-full divide-y ${
-          enableDarkMode && isDarkMode
-            ? "bg-gray-900 text-gray-200 divide-gray-700"
-            : "bg-white text-gray-900 divide-gray-200"
-        }`
-      : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTableClassName = useMemo(
+    () =>
+      !disableDefaultStyles
+        ? `w-full divide-y ${
+            enableDarkMode && isDarkMode
+              ? "bg-gray-900 text-gray-200 divide-gray-700"
+              : "bg-white text-gray-900 divide-gray-200"
+          }`
+        : "",
+    [disableDefaultStyles, enableDarkMode, isDarkMode],
+  );
 
-  const baseTheadClassName = useMemo(() =>
-    !disableDefaultStyles && enableDarkMode
-      ? isDarkMode
-        ? "bg-gray-700 text-gray-300"
-        : "bg-gray-50 text-gray-500"
-      : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTheadClassName = useMemo(
+    () =>
+      !disableDefaultStyles && enableDarkMode
+        ? isDarkMode
+          ? "bg-gray-700 text-gray-300"
+          : "bg-gray-50 text-gray-500"
+        : "",
+    [disableDefaultStyles, enableDarkMode, isDarkMode],
+  );
 
-  const baseTbodyClassName = useMemo(() =>
-    !disableDefaultStyles
-      ? `divide-y ${
-          enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
-        }`
-      : "", [disableDefaultStyles, enableDarkMode, isDarkMode]);
+  const baseTbodyClassName = useMemo(
+    () =>
+      !disableDefaultStyles
+        ? `divide-y ${
+            enableDarkMode && isDarkMode ? "divide-gray-700" : "divide-gray-200"
+          }`
+        : "",
+    [disableDefaultStyles, enableDarkMode, isDarkMode],
+  );
 
-  const baseTrClassName = useMemo(() =>
-    (index: number) =>
+  const baseTrClassName = useMemo(
+    () => (index: number) =>
       !disableDefaultStyles
         ? index % 2 === 0
           ? isDarkMode
             ? "bg-gray-800"
             : "bg-white"
           : isDarkMode
-          ? "bg-gray-700"
-          : "bg-gray-100"
-        : "", [disableDefaultStyles, isDarkMode]);
+            ? "bg-gray-700"
+            : "bg-gray-100"
+        : "",
+    [disableDefaultStyles, isDarkMode],
+  );
 
-  const baseTdClassName = useMemo(() =>
-    !disableDefaultStyles
-      ? isDarkMode
-        ? "text-gray-300"
-        : "text-gray-700"
-      : "", [disableDefaultStyles, isDarkMode]);
+  const baseTdClassName = useMemo(
+    () =>
+      !disableDefaultStyles
+        ? isDarkMode
+          ? "text-gray-300"
+          : "text-gray-700"
+        : "",
+    [disableDefaultStyles, isDarkMode],
+  );
 
-  const tableClassName = useMemo(() =>
-    disableDefaultStyles
-      ? customClassNames.table || ""
-      : `${baseTableClassName} ${customClassNames.table || ""}`, [disableDefaultStyles, baseTableClassName, customClassNames.table]);
+  const tableClassName = useMemo(
+    () =>
+      disableDefaultStyles
+        ? customClassNames.table || ""
+        : `${baseTableClassName} ${customClassNames.table || ""}`,
+    [disableDefaultStyles, baseTableClassName, customClassNames.table],
+  );
 
-  const theadClassName = useMemo(() =>
-    disableDefaultStyles
-      ? customClassNames.thead || ""
-      : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`, [disableDefaultStyles, baseTheadClassName, customClassNames.thead]);
+  const theadClassName = useMemo(
+    () =>
+      disableDefaultStyles
+        ? customClassNames.thead || ""
+        : `${baseTheadClassName} ${customClassNames.thead || ""} rtbl-sticky-header`,
+    [disableDefaultStyles, baseTheadClassName, customClassNames.thead],
+  );
 
-  const tbodyClassName = useMemo(() =>
-    disableDefaultStyles
-      ? customClassNames.tbody || ""
-      : `${baseTbodyClassName} ${customClassNames.tbody || ""}`, [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody]);
+  const tbodyClassName = useMemo(
+    () =>
+      disableDefaultStyles
+        ? customClassNames.tbody || ""
+        : `${baseTbodyClassName} ${customClassNames.tbody || ""}`,
+    [disableDefaultStyles, baseTbodyClassName, customClassNames.tbody],
+  );
 
-  const thClassName = useMemo(() =>
-    (_prop: string) => {
+  const thClassName = useMemo(
+    () => (_prop: string) => {
       const baseClass = !disableDefaultStyles
         ? `px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium uppercase tracking-wider ${
             customClassNames.th || ""
           }`
         : customClassNames.th || "";
       return `${baseClass}`;
-    }, [disableDefaultStyles, customClassNames.th]);
+    },
+    [disableDefaultStyles, customClassNames.th],
+  );
 
-  const trClassName = useMemo(() =>
-    (index: number) =>
+  const trClassName = useMemo(
+    () => (index: number) =>
       disableDefaultStyles
         ? customClassNames.tr || ""
-        : `${baseTrClassName(index)} ${customClassNames.tr || ""}`, [disableDefaultStyles, baseTrClassName, customClassNames.tr]);
+        : `${baseTrClassName(index)} ${customClassNames.tr || ""}`,
+    [disableDefaultStyles, baseTrClassName, customClassNames.tr],
+  );
 
-  const tdClassName = useMemo(() =>
-    (_prop: string) => {
+  const tdClassName = useMemo(
+    () => (_prop: string) => {
       const baseClass = !disableDefaultStyles
         ? `px-2 py-2 sm:px-4 sm:py-2 text-sm ${baseTdClassName} ${
             customClassNames.td || ""
           }`
         : customClassNames.td || "";
       return `${baseClass}`;
-    }, [disableDefaultStyles, baseTdClassName, customClassNames.td]);
+    },
+    [disableDefaultStyles, baseTdClassName, customClassNames.td],
+  );
 
   // Handle page bounds checking
   useEffect(() => {
-    if (enablePagination && page > calculatedTotalPages && setPage && calculatedTotalPages > 0) {
+    if (
+      enablePagination &&
+      page > calculatedTotalPages &&
+      setPage &&
+      calculatedTotalPages > 0
+    ) {
       setPage(calculatedTotalPages);
     }
   }, [enablePagination, page, calculatedTotalPages, setPage]);
@@ -218,8 +256,10 @@ function TableComponent<T>({
       ? customClassNames.loadingContainer || ""
       : `p-4 animate-pulse ${customClassNames.loadingContainer || ""}`;
 
-    const baseSkeletonBarClass = loadingSkeletonClasses?.skeletonBar || "h-6 bg-gray-300 mb-3 rounded";
-    const baseSkeletonItemClass = loadingSkeletonClasses?.skeletonItem || "h-4 bg-gray-200 mb-2 rounded";
+    const baseSkeletonBarClass =
+      loadingSkeletonClasses?.skeletonBar || "h-6 bg-gray-300 mb-3 rounded";
+    const baseSkeletonItemClass =
+      loadingSkeletonClasses?.skeletonItem || "h-4 bg-gray-200 mb-2 rounded";
 
     return (
       <div
@@ -228,7 +268,9 @@ function TableComponent<T>({
         aria-busy="true"
         aria-live="polite"
         role="status"
-        aria-label={accessibility.screenReaderLabels?.loading || "Loading table data"}
+        aria-label={
+          accessibility.screenReaderLabels?.loading || "Loading table data"
+        }
       >
         <div className={baseSkeletonBarClass} />
         <div className={baseSkeletonItemClass} />
@@ -243,7 +285,13 @@ function TableComponent<T>({
   }
 
   if (filteredData.length === 0) {
-    return <NoContentComponent text="No items found." name={noContentProps?.name} icon={noContentProps?.icon} />;
+    return (
+      <NoContentComponent
+        text="No items found."
+        name={noContentProps?.name}
+        icon={noContentProps?.icon}
+      />
+    );
   }
 
   /**
@@ -273,7 +321,8 @@ function TableComponent<T>({
         }
         style={{
           ...(maxHeight !== undefined && {
-            maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight,
+            maxHeight:
+              typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight,
           }),
           overflow: scrollBehavior,
           ...customStyles.scrollContainer,
@@ -299,8 +348,10 @@ function TableComponent<T>({
                     className={thClassName(String(prop))}
                     style={{
                       cursor: sortableProps.includes(prop as keyof T)
-                        ? customClassNames.interactive?.sortableCursor || "pointer"
-                        : customClassNames.interactive?.clickableCursor || "default",
+                        ? customClassNames.interactive?.sortableCursor ||
+                          "pointer"
+                        : customClassNames.interactive?.clickableCursor ||
+                          "default",
                     }}
                   >
                     <div className="flex items-center">
@@ -446,7 +497,10 @@ function TableComponent<T>({
                         String(prop),
                         item,
                       );
-                      if (customFormatted !== undefined && customFormatted !== null) {
+                      if (
+                        customFormatted !== undefined &&
+                        customFormatted !== null
+                      ) {
                         displayValue = customFormatted;
                       }
                     }
@@ -456,96 +510,100 @@ function TableComponent<T>({
                       if (typeof value === "string" && isDateString(value)) {
                         valToFormat = formatDate(new Date(value), true);
                       } else if (Array.isArray(value)) {
-                      let displayArray: T[keyof T][] = value;
-                      if (!isExpanded && displayArray.length > 5) {
-                        displayArray = displayArray.slice(0, 5);
-                      }
-                      displayValue = (
-                        <div
-                          className={
-                            disableDefaultStyles
-                              ? customClassNames.cellExpansion?.container || ""
-                              : `flex flex-wrap gap-1 ${customClassNames.cellExpansion?.container || ""}`
-                          }
-                          style={{
-                            maxWidth: cellExpansion.enabled
-                              ? (typeof cellExpansion.maxWidth === 'number'
-                                  ? `${cellExpansion.maxWidth}px`
-                                  : cellExpansion.maxWidth || "200px")
-                              : undefined,
-                            overflowX: cellExpansion.behavior === 'truncate' ? "auto" : undefined,
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.stopPropagation();
-                              setExpandedCells((prev) => ({
-                                ...prev,
-                                [cellKey]: !prev[cellKey],
-                              }));
+                        let displayArray: T[keyof T][] = value;
+                        if (!isExpanded && displayArray.length > 5) {
+                          displayArray = displayArray.slice(0, 5);
+                        }
+                        displayValue = (
+                          <div
+                            className={
+                              disableDefaultStyles
+                                ? customClassNames.cellExpansion?.container ||
+                                  ""
+                                : `flex flex-wrap gap-1 ${customClassNames.cellExpansion?.container || ""}`
                             }
-                          }}
-                          role="button"
-                          tabIndex={0}
-                        >
-                          {displayArray.map((chip, idx) => (
-                            <span
-                              key={
-                                typeof chip === "object" && chip !== null
-                                  ? JSON.stringify(chip)
-                                  : `${String(chip)}-${idx}`
-                              }
-                              className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
-                            >
-                              {trimText(String(chip), 20)}
-                            </span>
-                          ))}
-                          {!isExpanded && value.length > 5 && (
-                            <span
-                              className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
-                              onClick={(e) => {
+                            style={{
+                              maxWidth: cellExpansion.enabled
+                                ? typeof cellExpansion.maxWidth === "number"
+                                  ? `${cellExpansion.maxWidth}px`
+                                  : cellExpansion.maxWidth || "200px"
+                                : undefined,
+                              overflowX:
+                                cellExpansion.behavior === "truncate"
+                                  ? "auto"
+                                  : undefined,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
                                 e.stopPropagation();
                                 setExpandedCells((prev) => ({
                                   ...prev,
-                                  [cellKey]: true,
+                                  [cellKey]: !prev[cellKey],
                                 }));
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
+                              }
+                            }}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            {displayArray.map((chip, idx) => (
+                              <span
+                                key={
+                                  typeof chip === "object" && chip !== null
+                                    ? JSON.stringify(chip)
+                                    : `${String(chip)}-${idx}`
+                                }
+                                className="inline-block bg-indigo-100 text-gray-800 px-2 py-1 rounded-full text-xs"
+                              >
+                                {trimText(String(chip), 20)}
+                              </span>
+                            ))}
+                            {!isExpanded && value.length > 5 && (
+                              <span
+                                className="inline-block bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs cursor-pointer"
+                                onClick={(e) => {
                                   e.stopPropagation();
                                   setExpandedCells((prev) => ({
                                     ...prev,
                                     [cellKey]: true,
                                   }));
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.stopPropagation();
+                                    setExpandedCells((prev) => ({
+                                      ...prev,
+                                      [cellKey]: true,
+                                    }));
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                              >
+                                +{value.length - 5} more
+                              </span>
+                            )}
+                          </div>
+                        );
+                      } else if (
+                        typeof value === "string" &&
+                        value.startsWith("http")
+                      ) {
+                        displayValue = (
+                          <Link href={value}>
+                            <span
+                              className="text-blue-500 hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.stopPropagation();
                                 }
                               }}
-                              role="button"
-                              tabIndex={0}
                             >
-                              +{value.length - 5} more
+                              {isExpanded ? value : trimText(value, 30)}
                             </span>
-                          )}
-                        </div>
-                      );
-                    } else if (
-                      typeof value === "string" &&
-                      value.startsWith("http")
-                    ) {
-                      displayValue = (
-                        <Link href={value}>
-                          <span
-                            className="text-blue-500 hover:underline"
-                            onClick={(e) => e.stopPropagation()}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.stopPropagation();
-                              }
-                            }}
-                          >
-                            {isExpanded ? value : trimText(value, 30)}
-                          </span>
-                        </Link>
-                      );
+                          </Link>
+                        );
                       } else {
                         if (!Array.isArray(value) && !isExpanded) {
                           valToFormat = trimText(valToFormat, 30);

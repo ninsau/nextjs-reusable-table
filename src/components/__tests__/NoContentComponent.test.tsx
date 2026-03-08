@@ -119,7 +119,11 @@ describe("NoContentComponent", () => {
       const multilineText = "No data available.\nPlease try again later.";
       render(<NoContentComponent text={multilineText} />);
 
-      expect(screen.getByText((_content, element) => element?.textContent === multilineText)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (_content, element) => element?.textContent === multilineText,
+        ),
+      ).toBeInTheDocument();
     });
   });
 
@@ -142,7 +146,11 @@ describe("NoContentComponent", () => {
 
     it("maintains accessibility when custom icon is provided", () => {
       const customIcon = (
-        <div data-testid="accessible-icon" role="img" aria-label="Custom empty state">
+        <div
+          data-testid="accessible-icon"
+          role="img"
+          aria-label="Custom empty state"
+        >
           📭
         </div>
       );

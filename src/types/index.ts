@@ -148,9 +148,9 @@ export interface TableProps<T> {
   };
 
   /** Scroll behavior for the table container */
-  scrollBehavior?: 'auto' | 'scroll' | 'visible' | 'hidden';
+  scrollBehavior?: "auto" | "scroll" | "visible" | "hidden";
   /** CSS table-layout property */
-  tableLayout?: 'auto' | 'fixed' | 'inherit';
+  tableLayout?: "auto" | "fixed" | "inherit";
 
   /** Cell expansion behavior configuration */
   cellExpansion?: {
@@ -159,7 +159,7 @@ export interface TableProps<T> {
     /** Maximum width for expanded cells */
     maxWidth?: string | number;
     /** Expansion behavior: truncate, wrap, or expand */
-    behavior?: 'truncate' | 'wrap' | 'expand';
+    behavior?: "truncate" | "wrap" | "expand";
   };
 
   /** Accessibility configuration */

@@ -1,6 +1,39 @@
-# 🔧 Troubleshooting Guide
+# Troubleshooting & FAQ
 
-Common issues and solutions when using nextjs-reusable-table.
+Common questions and solutions for nextjs-reusable-table.
+
+## Quick Answers
+
+**What is this library?**
+A production-ready, customizable table component for Next.js 13+ and React 18+. It includes sorting, pagination, search, row actions, dark mode, TypeScript generics, and zero runtime dependencies.
+
+**Do I need extra dependencies?**
+No runtime dependencies. You need React 18+, Next.js 13+, and Tailwind CSS 3+ as peer dependencies (which you likely already have).
+
+**How do I import the CSS?**
+```ts
+import "nextjs-reusable-table/dist/index.css";
+```
+Add this once in `layout.tsx` or `_app.tsx`.
+
+**Why aren't Tailwind classes applying?**
+Add the library's dist folder to your Tailwind `content` config — see [README.md](README.md#tailwind-setup).
+
+**How do I use it in a Pages Router project?**
+```ts
+const TableComponent = dynamic(
+  () => import("nextjs-reusable-table").then((m) => m.TableComponent),
+  { ssr: false }
+);
+```
+
+**Does dark mode work automatically?**
+Yes — set `enableDarkMode={true}` (the default) and it detects `prefers-color-scheme: dark` from the OS.
+
+**Where is the full API?**
+See [API.md](API.md) for all props and types, and [EXAMPLES.md](EXAMPLES.md) for usage recipes.
+
+---
 
 ## Table of Contents
 - [Installation Issues](#installation-issues)
@@ -36,7 +69,7 @@ npm install nextjs-reusable-table --registry https://registry.npmjs.org/
 **Solution**:
 ```bash
 # Install all required peer dependencies
-npm install react@^16.8.0 react-dom@^16.8.0 next@^12.0.0
+npm install react@latest react-dom@latest next@latest
 
 # For TypeScript projects
 npm install -D @types/react @types/react-dom

@@ -6,9 +6,10 @@ We actively support the following versions with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 3.7.x   | :white_check_mark: |
-| 3.6.x   | :white_check_mark: |
-| < 3.6.0 | :x:                |
+| 4.1.x   | :white_check_mark: |
+| 4.0.x   | :white_check_mark: |
+| 3.x     | :x: (end of life)  |
+| < 3.0.0 | :x:                |
 
 ## 🚨 **Reporting Vulnerabilities**
 
